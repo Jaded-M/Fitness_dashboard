@@ -1,0 +1,16 @@
+# Secrets
+creds.json
+fitness_credentials.json
+token.pickle
+G API key.txt
+
+# Data & DB
+*.csv
+*.xlsx
+gym.db
+*.db
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
