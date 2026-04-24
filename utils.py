@@ -40,6 +40,24 @@ def safe_to_datetime(series: pd.Series, dayfirst: bool = True, formats: Optional
     return pd.to_datetime(series, errors='coerce', dayfirst=dayfirst)
 
 
+def get_day_stats(df, target_date):
+    """
+    Return (calories, protein, carbs, fats, fiber) totals for a given date.
+    Shared helper used by Nutrition page and Nutrition charts to avoid duplication.
+    """
+    ts = pd.Timestamp(target_date)
+    day_df = df[df["date"].dt.normalize() == ts]
+    if day_df.empty: 
+        return 0, 0, 0, 0, 0
+    return (
+        int(day_df["calories"].sum()), 
+        int(day_df["protein"].sum()),
+        int(day_df["carbs"].sum()), 
+        int(day_df["fats"].sum()), 
+        int(day_df["fiber"].sum())
+    )
+
+
 def safe_to_numeric(series: pd.Series) -> pd.Series:
     """Convert a Series to numbers safely.
 

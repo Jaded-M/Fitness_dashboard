@@ -1,0 +1,23 @@
+# ─────────────────────────────────────────────
+# Elite Fitness Dashboard — Python Dependencies
+# Install with: pip install -r requirements.txt
+# ─────────────────────────────────────────────
+
+# Core app framework
+streamlit>=1.35.0
+
+# Data processing
+pandas>=2.0.0
+numpy>=1.26.0
+openpyxl>=3.1.0          # needed for pd.read_excel()
+
+# Charts
+plotly>=5.18.0
+
+# Spotify integration
+spotipy>=2.23.0
+
+# Google Fit integration (optional — app works without it)
+google-auth>=2.28.0
+google-auth-oauthlib>=1.2.0
+google-api-python-client>=2.120.0
