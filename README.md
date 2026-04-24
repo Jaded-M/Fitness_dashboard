@@ -1,46 +1,63 @@
-# 💪 Fitness & Nutrition Tracker (Gamified)
+# Personal Health Intelligence Platform
 
-## Overview
-This is a comprehensive personal health dashboard built with **Python** and **Streamlit**. It tracks workouts, nutrition, hydration, and turns fitness into an RPG game with XP and levels.
+A Python and Streamlit application for tracking training, nutrition, body weight, activity, and daily check-ins in one place.
 
-## 🛠️ Tech Stack
-- **Frontend**: [Streamlit](https://streamlit.io/) (Web UI)
-- **Data Manipulation**: [Pandas](https://pandas.pydata.org/)
-- **Database**: [SQLite](https://www.sqlite.org/index.html) (Local `.db` files)
-- **Visualization**: [Plotly](https://plotly.com/python/) & [Altair](https://altair-viz.github.io/)
+## Current Product Direction
 
-## 📂 Project Structure
+The app is being rebuilt into a cleaner, more portfolio-ready health dashboard with:
 
-### 1. Core Application
-- **`Fitness.py`**: The **Main Entry Point**.
-    - Handles the Sidebar (Gym Bro AI, Rest Timer).
-    - Logs Workouts (Sets, Reps, Weight).
-    - Displays the **RPG System** (Level, XP, Badges).
-    - Renders main dashboard charts.
-- **`pages/1_🍎_Nutrition.py`**: The **Nutrition Sub-page**.
-    - Logs Food (Macros, Calories) & Water.
-    - Features "Editable Cheat Meals" & "Recipe Ideas".
-    - Displays Weekly Calorie Trends & Macro Split.
+- a streamlined command center
+- fast daily logging flows
+- SQLite-backed health data
+- clearer analytics and trend views
+- modular components and services
 
-### 2. Logic Modules
-- **`database.py`**: The **Backend**.
-    - Handles all SQL connections for `gym.db` (workouts) and `nutrition.db` (food/water).
-    - Functions: `add_workout`, `get_food_logs`, `delete_food_log`, etc.
-- **`charts.py`**: The **Artist**.
-    - Contains all plotting logic to keep the main files clean.
-    - Renders Donut charts, Heatmaps, and Bar charts.
-- **`styles.py`**: The **Designer**.
-    - Injects CSS for the "Midnight Gradient" theme and card styling.
+## Tech Stack
 
-## 🎮 Features
-- **Gamification**: 
-    - XP = Volume (Sets × Reps × Weight).
-    - Unlock Badges like "Bulldozer" (100k volume) or "On Fire" (Streaks).
-- **Gym Bro AI**: A fun random-response bot in the sidebar.
-- **Cheat Meal Config**: Log cheat meals responsibly (or not) with custom calorie edits.
-- **Interactive Deletion**: Manage your history directly from the UI.
+- Python
+- Streamlit
+- Pandas
+- Plotly
+- SQLite
 
-## 🚀 How to Run
+## Project Structure
+
+- `Fitness.py`
+  Main app entry point and dashboard shell.
+- `components/`
+  Reusable UI pieces such as the design system, overview widgets, and quick logging dialogs.
+- `services/`
+  Data shaping and summary logic for the app.
+- `pages/`
+  Secondary Streamlit pages, currently nutrition and muscle atlas.
+- `database.py`
+  SQLite schema setup and CRUD helpers.
+- `ui/`
+  Legacy and page-specific UI modules still used by the nutrition page.
+- `core/`
+  Older domain logic and migration scripts retained during the rebuild.
+
+## Features
+
+- workout logging
+- meal and macro logging
+- step tracking
+- body-weight tracking
+- daily check-ins
+- weekly readiness and summary metrics
+- nutrition and activity trend charts
+
+## Run Locally
+
 ```bash
 streamlit run Fitness.py
 ```
+
+## Status
+
+This project is actively being cleaned up and refactored. The current focus is:
+
+- removing redundant files
+- tightening architecture
+- improving dark-mode product quality
+- rebuilding analytics in phases
