@@ -30,29 +30,29 @@ PHYSICAL_DATA_PATH = Path(__file__).resolve().parent.parent / "Physical_attribut
 
 def render_hydration_form(today_date, today_water, water_goal):
     """Renders the single-click hydration tracking buttons."""
-    st.markdown("### 💧 Hydration")
+    st.markdown("### Hydration")
     water_pct = min(today_water / water_goal, 1.0) if water_goal else 0
     st.progress(water_pct)
     
     w1, w2, w3 = st.columns(3)
-    if w1.button("💧 +1",  use_container_width=True): 
+    if w1.button("+1 cup",  use_container_width=True): 
         database.log_water(today_date, 1)
         st.rerun()
-    if w2.button("🥤 +2",  use_container_width=True): 
+    if w2.button("+2 cups",  use_container_width=True): 
         database.log_water(today_date, 2)
         st.rerun()
-    if w3.button("🚿 +3",  use_container_width=True): 
+    if w3.button("+3 cups",  use_container_width=True): 
         database.log_water(today_date, 3)
         st.rerun()
         
     if today_water >= water_goal:
-        st.success("🌊 Hydration goal smashed!")
+        st.success("Hydration goal reached.")
     else:
         st.caption(f"{water_goal - today_water} cup(s) to go!")
     st.markdown("---")
 
 
-@st.dialog("🍽️ Log Meal")
+@st.dialog("Log Meal")
 def render_food_log_form(today_date):
     """
     // WHAT IT DOES: Renders the Quick Log and Meal Builder tabs in a popup Modal.
@@ -60,7 +60,7 @@ def render_food_log_form(today_date):
     log_date  = st.date_input("Date", today_date, key="food_date")
     meal_type = st.radio("Meal", ["Breakfast", "Lunch", "Snack", "Dinner"], horizontal=True)
     
-    tab_quick, tab_builder = st.tabs(["⚡ Quick Log", "🛒 Meal Builder (Beta)"])
+    tab_quick, tab_builder = st.tabs(["Quick Log", "Meal Builder"])
     
     # ── Quick Log ──
     with tab_quick:
@@ -75,22 +75,22 @@ def render_food_log_form(today_date):
         with q_fc5: q_fib  = st.number_input("Fiber (g)", 0.0, 500.0, 0.0, key="q_fib")
 
         cc_col1, cc_col2 = st.columns([2, 1])
-        if cc_col1.button("➕ Log Entry", type="primary", use_container_width=True):
+        if cc_col1.button("Log Entry", type="primary", use_container_width=True):
             if q_name and q_cal > 0:
                 database.add_food_log(log_date, q_name, int(q_cal), int(q_prot), int(q_carb), int(q_fat), int(q_fib), meal_type)
-                st.success(f"✅ Added {q_name}!")
+                st.success(f"Added {q_name}.")
                 time.sleep(0.5); st.rerun()
             else:
                 st.warning("Food name and calories are required.")
                 
-        if cc_col2.button("🍕 Cheat Meal", use_container_width=True, help="Logs 1000 calories instantly"):
+        if cc_col2.button("Cheat Meal", use_container_width=True, help="Logs 1000 calories instantly"):
             database.add_food_log(log_date, "Cheat Meal (Quick)", 1000, 0, 0, 0, 0, meal_type)
-            st.toast("Logged Cheat Meal! Tomorrow is a new day 🍕")
+            st.toast("Logged cheat meal. Tomorrow is a new day.")
             time.sleep(1); st.rerun()
 
     # ── Meal Builder (Draft Table) ──
     with tab_builder:
-        st.info("💡 **Future Update:** This will connect to an AI database that knows Indian macros automatically.")
+        st.info("Build a meal from individual food items and save it as one log.")
         food_name = st.text_input("Item Name", placeholder="e.g., Paneer Tikka", key="b_name")
         
         fc1, fc2 = st.columns(2)
@@ -104,7 +104,7 @@ def render_food_log_form(today_date):
 
         draft_df = database.get_draft_foods()
 
-        if st.button("➕ Add Food Item", use_container_width=True):
+        if st.button("Add Food Item", use_container_width=True):
             if food_name:
                 calc_cals = calories if calories > 0 else (protein * 4) + (carbs * 4) + (fats * 9)
                 final_name = food_name.strip()
@@ -116,7 +116,7 @@ def render_food_log_form(today_date):
                 st.warning("Please enter an item name.")
 
         if not draft_df.empty:
-            st.markdown(f"#### 🛒 Current {meal_type}")
+            st.markdown(f"#### Current {meal_type}")
             tot_cal = tot_prot = tot_carb = tot_fat = 0
             for _, item in draft_df.iterrows():
                 st.markdown(f"- **{item['food_item']}**: {item['calories']} kcal  |  {item['protein']}g P  |  {item['carbs']}g C  |  {item['fats']}g F")
@@ -126,17 +126,17 @@ def render_food_log_form(today_date):
             st.info(f"**Meal Total:** {tot_cal} kcal  |  {tot_prot}g P  |  {tot_carb}g C  |  {tot_fat}g F")
             
             c1, c2 = st.columns(2)
-            if c1.button("🗑️ Clear Meal", use_container_width=True):
+            if c1.button("Clear Meal", use_container_width=True):
                 database.clear_draft_foods()
                 st.rerun()
-            if c2.button("💾 Save Meal", type="primary", use_container_width=True):
+            if c2.button("Save Meal", type="primary", use_container_width=True):
                 for _, item in draft_df.iterrows():
                     database.add_food_log(log_date, item['food_item'], item['calories'], item['protein'], item['carbs'], item['fats'], 0, meal_type)
-                st.success(f"✅ Saved meal with {len(draft_df)} items!")
+                st.success(f"Saved meal with {len(draft_df)} items.")
                 database.clear_draft_foods()
                 time.sleep(1); st.rerun()
 
-@st.dialog("⚖️ Log Measurements")
+@st.dialog("Log Measurements")
 def render_measurements_form(today_date):
     """Renders the physical measurement logging form in a popup Modal."""
     w_date    = st.date_input("Date", today_date, key="weight_date")
@@ -151,7 +151,7 @@ def render_measurements_form(today_date):
     with fc9: chest_in = st.number_input("Chest (in)", 0.0, 100.0, 0.0, step=0.1, format="%.1f")
     with fc10: arms_in = st.number_input("Arms (in)", 0.0, 100.0, 0.0, step=0.1, format="%.1f")
 
-    if st.button("💾 Save Measurements", use_container_width=True):
+    if st.button("Save Measurements", use_container_width=True):
         if weight_kg > 0:
             database.add_measurement(
                 date=w_date, 
@@ -162,7 +162,7 @@ def render_measurements_form(today_date):
                 chest=chest_in or None, 
                 arms=arms_in or None
             )
-            st.success("Saved! 💪")
+            st.success("Saved.")
             time.sleep(0.5); st.rerun()
         else:
             st.warning("Enter a weight value.")

@@ -8,16 +8,19 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import database
-import styles
+from components.design_system import apply_platform_theme, page_header, stat_card, insight_card
+from components.sidebar import render_sidebar_shell
 from ui import nutrition_charts as charts
 from ui import nutrition_forms as forms
 from config import STREAK_TOLERANCE_KCAL, MACRO_SPLIT_PROTEIN, MACRO_SPLIT_CARBS, MACRO_SPLIT_FATS
 from utils import get_day_stats
 
 # --- PAGE CONFIG ---
-st.set_page_config(page_title="Nutrition", page_icon="🍎", layout="wide")
+st.set_page_config(page_title="Nutrition", page_icon="PHI", layout="wide")
 
-st.markdown(styles.load_css(), unsafe_allow_html=True)
+# Apply PHI theme
+apply_platform_theme()
+render_sidebar_shell("pages/1_🍎_Nutrition.py")
 
 # --- Initialize Session State ---
 if "cal_goal" not in st.session_state:
@@ -51,36 +54,46 @@ if not food_df.empty:
     t_cal, t_prot, t_carb, t_fat, t_fib = get_day_stats(food_df, today_date)
 
 # ============================================================
-# PAGE HEADER + TOP METRICS
+# PAGE HEADER
 # ============================================================
-col_title, col_action = st.columns([0.8, 0.2])
-with col_title:
-    st.title("Nutrition")
+page_header(
+    "Nutrition",
+    "Track your calories, macros, hydration, and body composition in one place.",
+    eyebrow="Personal Health Intelligence",
+)
 
-# --- Synergy Logic: Load Gym Data for Nutrition Intel ---
+# ============================================================
+# TRAINING INTEL STRIP (cross-module synergy)
+# ============================================================
 workout_raw = database.get_all_workouts()
 w_count = 0
 max_lift = 0
 if not workout_raw.empty:
     w_df = pd.DataFrame(workout_raw)
-    w_count = w_df["date"].nunique()
-    if 'weight' in w_df.columns:
-        max_lift = pd.to_numeric(w_df["weight"], errors='coerce').max()
+    w_count = w_df["date"].nunique() if "date" in w_df.columns else 0
+    if "weight" in w_df.columns:
+        max_lift = pd.to_numeric(w_df["weight"], errors="coerce").max()
 
-with st.container(border=True):
-    st.markdown(f"""
-    <div style="padding: 4px;">
-        <h3 style="margin-top:0; color:#888888;">Training Intelligence</h3>
-        <p style="font-size:14px; font-weight:500; margin:0;">
-            Completed Sessions: <strong>{w_count}</strong> &nbsp;|&nbsp; Current Max Lift: <strong>{max_lift:.1f} kg</strong><br/>
-            <span style="color:#888;">{"Fully fueled for training!" if t_prot >= (st.session_state.cal_goal * 0.3 / 4 * 0.8) else "Tip: Increase protein intake for your next heavy session."}</span>
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+protein_status = (
+    "Fully fueled for training."
+    if t_prot >= (st.session_state.cal_goal * 0.3 / 4 * 0.8)
+    else "Increase protein for your next heavy session."
+)
 
-st.markdown("<br>", unsafe_allow_html=True)
+c1, c2, c3 = st.columns(3)
+with c1:
+    stat_card("Training sessions", str(w_count), "Total completed sessions")
+with c2:
+    stat_card("Max lift logged", f"{max_lift:.1f} kg" if max_lift else "No lift", "Personal best weight")
+with c3:
+    tone = "good" if t_prot >= (st.session_state.cal_goal * 0.3 / 4 * 0.8) else "warn"
+    insight_card("Protein status", protein_status, tone)
 
-# STREAK CALCULATION
+st.markdown("")
+
+# ============================================================
+# STREAK + 7-DAY AVG CALCULATIONS
+# ============================================================
 cal_streak = 0
 if not food_df.empty:
     daily_cals = food_df.groupby(food_df["date"].dt.date)["calories"].sum()
@@ -102,57 +115,83 @@ if not food_df.empty:
     if not recent_food.empty:
         seven_day_avg = int(recent_food.groupby(recent_food["date"].dt.date)["calories"].sum().mean())
 
-target_protein = int((st.session_state.cal_goal * MACRO_SPLIT_PROTEIN) / 4) 
-target_carbs   = int((st.session_state.cal_goal * MACRO_SPLIT_CARBS) / 4)   
-target_fats    = int((st.session_state.cal_goal * MACRO_SPLIT_FATS) / 9)    
+target_protein = int((st.session_state.cal_goal * MACRO_SPLIT_PROTEIN) / 4)
+target_carbs   = int((st.session_state.cal_goal * MACRO_SPLIT_CARBS) / 4)
+target_fats    = int((st.session_state.cal_goal * MACRO_SPLIT_FATS) / 9)
 
-# Metric Rows
-with st.container(border=True):
-    r1c1, r1c2, r1c3, r1c4 = st.columns(4)
-    r1c1.metric("Calories", f"{t_cal}", f"{(st.session_state.cal_goal - t_cal):+} remaining", delta_color="inverse")
-    r1c2.metric("Protein",  f"{t_prot}g", f"{(target_protein - t_prot):+} remaining", delta_color="inverse")
-    r1c3.metric("Carbs",    f"{t_carb}g", f"{(target_carbs - t_carb):+} remaining", delta_color="inverse")
-    r1c4.metric("Fats",      f"{t_fat}g", f"{(target_fats - t_fat):+} remaining", delta_color="inverse")
+# ============================================================
+# PRIMARY METRICS ROW
+# ============================================================
+st.markdown(
+    """
+    <div class="phi-section">
+        <div class="phi-section-title">Today's Nutrition</div>
+        <div class="phi-section-caption">Daily targets and macro breakdown.</div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+r1c1, r1c2, r1c3, r1c4 = st.columns(4)
+r1c1.metric("Calories", f"{t_cal:,}", f"{(st.session_state.cal_goal - t_cal):+,} remaining", delta_color="inverse")
+r1c2.metric("Protein",  f"{t_prot}g", f"{(target_protein - t_prot):+} remaining", delta_color="inverse")
+r1c3.metric("Carbs",    f"{t_carb}g", f"{(target_carbs - t_carb):+} remaining", delta_color="inverse")
+r1c4.metric("Fats",     f"{t_fat}g",  f"{(target_fats - t_fat):+} remaining", delta_color="inverse")
 
-with st.container(border=True):
+st.markdown("")
+
+# ============================================================
+# SECONDARY METRICS (collapsible to reduce overwhelm)
+# ============================================================
+with st.expander("Secondary stats: streak, hydration, 7-day average", expanded=False):
     r2c1, r2c2, r2c3, r2c4 = st.columns(4)
-    r2c1.metric("7-Day Avg",      f"{seven_day_avg} kcal")
-    r2c2.metric("Goal Streak",    f"{cal_streak} Days")
-    r2c3.metric("Water",          f"{today_water} / {st.session_state.water_goal} cup")
-    r2c4.metric("Weight",         f"{latest_weight:.1f} kg" if latest_weight else "—")
+    r2c1.metric("7-Day Avg",   f"{seven_day_avg:,} kcal")
+    r2c2.metric("Goal Streak", f"{cal_streak} days")
+    r2c3.metric("Water",       f"{today_water} / {st.session_state.water_goal} cups")
+    r2c4.metric("Weight",      f"{latest_weight:.1f} kg" if latest_weight else "No log")
 
-st.markdown("<br>", unsafe_allow_html=True)
+st.markdown("")
+
+# ============================================================
+# CALORIE PROGRESS BAR
+# ============================================================
 cal_pct_val = min(t_cal / st.session_state.cal_goal, 1.0) * 100 if st.session_state.cal_goal > 0 else 0
-with st.container(border=True):
-    st.markdown(f"""
-    <div style="padding: 4px;">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-            <span style="font-weight: 500; color: #888888; font-size:14px; text-transform:uppercase;">Calorie Tracker</span>
-            <span style="color: #FFFFFF; font-weight: 600;">{t_cal:,} / {st.session_state.cal_goal:,} kcal</span>
+over_class = "over" if t_cal > st.session_state.cal_goal else ""
+st.markdown(
+    f"""
+    <div class="phi-card compact" style="margin-bottom:1rem;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+            <span class="phi-label">Calorie tracker</span>
+            <span style="color:var(--ink);font-weight:700;">{t_cal:,} / {st.session_state.cal_goal:,} kcal</span>
         </div>
         <div class="custom-progress-track">
-            <div class="custom-progress-fill {'over' if t_cal > st.session_state.cal_goal else ''}" 
-                 style="width: {cal_pct_val}%;"></div>
+            <div class="custom-progress-fill {over_class}" style="width:{cal_pct_val}%;"></div>
         </div>
     </div>
-    """, unsafe_allow_html=True)
-
-st.markdown("---")
+    """,
+    unsafe_allow_html=True,
+)
 
 # ============================================================
-# MAIN LAYOUT — ACTION BUTTONS
+# ACTION BUTTONS
 # ============================================================
+st.markdown(
+    """
+    <div class="phi-action-bar">
+        <div class="phi-action-bar-label">Nutrition Actions</div>
+    """,
+    unsafe_allow_html=True,
+)
 action1, action2, action3, action4 = st.columns(4)
 with action1:
-    if st.button("Log Meal", use_container_width=True, type="primary"):
+    if st.button("🍎 Log Meal", use_container_width=True, type="primary"):
         forms.render_food_log_form(today_date)
 with action2:
-    if st.button("Log Measurements", use_container_width=True):
+    if st.button("⚖️ Log Measurements", use_container_width=True):
         forms.render_measurements_form(today_date)
 with action3:
-    st.button("+1 Cup Water", use_container_width=True, on_click=database.log_water, args=(today_date, 1))
+    st.button("💧 +1 Cup Water", use_container_width=True, on_click=database.log_water, args=(today_date, 1))
 with action4:
-    with st.popover("Goals & Settings", use_container_width=True):
+    with st.popover("⚙️ Goals & Settings", use_container_width=True):
         st.session_state.cal_goal   = st.number_input("Daily Calorie Goal", 1000, 5000, st.session_state.cal_goal)
         st.session_state.water_goal = st.number_input("Daily Water Goal", 1, 20, st.session_state.water_goal)
         recipes = [
@@ -160,14 +199,21 @@ with action4:
             "**Paneer Tikka Salad**: paneer + greens + mint chutney ≈ 400 kcal",
             "**Tuna Salad**: 1 can tuna + light mayo + corn ≈ 300 kcal",
         ]
-        st.info(f"🥗 **Recipe Idea**: {random.choice(recipes)}")
+        st.info(f"Recipe idea: {random.choice(recipes)}")
 
-st.markdown("---")
+st.markdown("</div>", unsafe_allow_html=True)
+st.markdown("")
 
 # ============================================================
 # DASHBOARD TABS
 # ============================================================
-timeframe = st.radio("Timeframe", ["7 Days", "14 Days", "30 Days", "90 Days", "All Time"], index=1, horizontal=True)
+timeframe = st.radio(
+    "Timeframe",
+    ["7 Days", "14 Days", "30 Days", "90 Days", "All Time"],
+    index=1,
+    horizontal=True,
+    label_visibility="collapsed",
+)
 tf_days = {"7 Days": 7, "14 Days": 14, "30 Days": 30, "90 Days": 90, "All Time": 9999}[timeframe]
 
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
@@ -175,19 +221,36 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "Macro History", "Biological Engine", "Manage Logs"
 ])
 
-with tab1: charts.render_weekly_trends(food_df, tf_days, st.session_state.cal_goal)
-with tab2: charts.render_day_breakdown(food_df, st.session_state.cal_goal, MACRO_SPLIT_PROTEIN, MACRO_SPLIT_CARBS, MACRO_SPLIT_FATS)
-with tab3: charts.render_body_progress(physical_df, tf_days)
-with tab4: charts.render_macro_history(food_df, water_df_raw, tf_days, st.session_state.water_goal)
-with tab5: charts.render_bca_engine(latest_weight)
+with tab1:
+    charts.render_weekly_trends(food_df, tf_days, st.session_state.cal_goal)
+with tab2:
+    charts.render_day_breakdown(food_df, st.session_state.cal_goal, MACRO_SPLIT_PROTEIN, MACRO_SPLIT_CARBS, MACRO_SPLIT_FATS)
+with tab3:
+    charts.render_body_progress(physical_df, tf_days)
+with tab4:
+    charts.render_macro_history(food_df, water_df_raw, tf_days, st.session_state.water_goal)
+with tab5:
+    charts.render_bca_engine(latest_weight)
 
 with tab6:
     st.markdown("##### Delete Food Log Entries")
     if not food_df.empty:
-        recent_disp = food_df.head(30)
-        del_ids = st.multiselect("Select IDs to delete:", recent_disp["id"].tolist())
-        if del_ids and st.button("Delete Entries", type="primary"):
-            for d_id in del_ids:
+        recent_disp = food_df.head(30).copy()
+        # Format display string for each entry
+        recent_disp["display"] = recent_disp.apply(
+            lambda r: f"{pd.to_datetime(r['date']).strftime('%d %b')} - {r['food_item']} ({r['calories']} kcal)", axis=1
+        )
+        
+        # Mapping from display string back to ID
+        display_to_id = dict(zip(recent_disp["display"], recent_disp["id"]))
+        
+        del_labels = st.multiselect("Select meals to delete:", recent_disp["display"].tolist())
+        
+        if del_labels and st.button("Delete Entries", type="primary"):
+            for label in del_labels:
+                d_id = display_to_id[label]
                 database.delete_food_log(d_id)
-            st.success("Deleted!")
+            st.success(f"Successfully deleted {len(del_labels)} entries!")
             st.rerun()
+    else:
+        st.info("No food logs yet.")

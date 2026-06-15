@@ -1,185 +1,107 @@
-import sqlite3
-import pandas as pd
+import json
 from datetime import datetime
-from contextlib import contextmanager
+import pandas as pd
 import streamlit as st
+from supabase_client import OWNER_USER_ID, supabase_client
 
-DB_NAME = "fitness.db"
+DB_NAME = "fitness.db" # Left for legacy compatibility checks if any
+PAGE_SIZE = 1000
 
-@contextmanager
-def _db(db_path=None):
-    """Context manager: opens connection, commits on success, always closes."""
-    conn = sqlite3.connect(db_path or DB_NAME)
-    try:
-        yield conn
-        conn.commit()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        conn.close()
+
+def _report_error(context: str, exc: Exception) -> None:
+    st.error(f"{context} failed: {exc}")
+
+
+def _with_user(data: dict) -> dict:
+    return {"user_id": OWNER_USER_ID, **data} if OWNER_USER_ID else data
+
+
+def _apply_owner_filter(query):
+    return query.eq("user_id", OWNER_USER_ID) if OWNER_USER_ID else query
+
+
+def _fetch_all_rows(table_name: str, columns: str = "*", order_by: str | None = None, desc: bool = False, query_fn=None):
+    rows = []
+    start = 0
+
+    while True:
+        query = supabase_client.table(table_name).select(columns)
+        if OWNER_USER_ID:
+            query = query.eq("user_id", OWNER_USER_ID)
+        if query_fn is not None:
+            query = query_fn(query)
+        if order_by:
+            query = query.order(order_by, desc=desc)
+
+        response = query.range(start, start + PAGE_SIZE - 1).execute()
+        batch = response.data or []
+        rows.extend(batch)
+        if len(batch) < PAGE_SIZE:
+            break
+        start += PAGE_SIZE
+
+    return rows
 
 def init_db():
-    """Initialize the database with the workouts table."""
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    
-    # Create table if it doesn't exist
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS workouts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            date TEXT NOT NULL,
-            split TEXT NOT NULL,
-            exercise TEXT NOT NULL,
-            sets INTEGER NOT NULL,
-            reps INTEGER NOT NULL,
-            weight REAL,
-            rpe REAL,
-            fatigue TEXT,
-            duration INTEGER DEFAULT 0
-        )
-    ''')
-    
-    # Migration: Check for 'duration' and 'set_data' columns
-    c.execute("PRAGMA table_info(workouts)")
-    columns = [info[1] for info in c.fetchall()]
-    
-    if 'duration' not in columns:
-        try:
-            c.execute("ALTER TABLE workouts ADD COLUMN duration INTEGER DEFAULT 0")
-        except Exception:
-            pass
-            
-    if 'set_data' not in columns:
-        try:
-            c.execute("ALTER TABLE workouts ADD COLUMN set_data TEXT")
-        except Exception:
-            pass
+    """No-op for Supabase."""
+    pass
 
-    # Create steps table
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS steps (
-            date TEXT PRIMARY KEY,
-            steps INTEGER NOT NULL,
-            distance REAL,
-            active_minutes INTEGER
-        )
-    ''')
-
-    # Migration: Ensure 'steps' table has a primary key on 'date'
-    c.execute("PRAGMA table_info(steps)")
-    steps_cols = c.fetchall()
-    if steps_cols:
-        # Check if the 'date' column (index 1) has pk flag (index 5)
-        date_pk = any(col[1] == 'date' and col[5] > 0 for col in steps_cols)
-        if not date_pk:
-            try:
-                c.execute("ALTER TABLE steps RENAME TO steps_old")
-                c.execute('''
-                    CREATE TABLE steps (
-                        date TEXT PRIMARY KEY,
-                        steps INTEGER NOT NULL,
-                        distance REAL,
-                        active_minutes INTEGER
-                    )
-                ''')
-                # Copy data, handle potential duplicates just in case
-                c.execute('''
-                    INSERT INTO steps (date, steps, distance, active_minutes)
-                    SELECT date, MAX(steps), MAX(distance), MAX(active_minutes)
-                    FROM steps_old
-                    GROUP BY date
-                ''')
-                c.execute("DROP TABLE steps_old")
-            except Exception:
-                pass
-
-    # Create food_logs table
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS food_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            date TEXT NOT NULL,
-            food_item TEXT NOT NULL,
-            calories INTEGER DEFAULT 0,
-            protein INTEGER DEFAULT 0,
-            carbs INTEGER DEFAULT 0,
-            fats INTEGER DEFAULT 0,
-            fiber INTEGER DEFAULT 0,
-            meal_type TEXT DEFAULT 'Snack'
-        )
-    ''')
-    
-    # Migration: Add meal_type if missing
-    c.execute("PRAGMA table_info(food_logs)")
-    cols = [info[1] for info in c.fetchall()]
-    if 'meal_type' not in cols:
-        try: c.execute("ALTER TABLE food_logs ADD COLUMN meal_type TEXT DEFAULT 'Snack'")
-        except: pass
-        
-    if 'fiber' not in cols:
-        try: c.execute("ALTER TABLE food_logs ADD COLUMN fiber INTEGER DEFAULT 0")
-        except: pass
-        
-    # Create water_logs table
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS water_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            date TEXT NOT NULL,
-            cups INTEGER DEFAULT 1
-        )
-    ''')
-    
-    # Create draft_food_logs table for the Meal Builder
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS draft_food_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            food_item TEXT NOT NULL,
-            calories INTEGER DEFAULT 0,
-            protein INTEGER DEFAULT 0,
-            carbs INTEGER DEFAULT 0,
-            fats INTEGER DEFAULT 0,
-            fiber INTEGER DEFAULT 0
-        )
-    ''')
-    
-    # Create measurements table to replace Excel
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS measurements (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            date TEXT NOT NULL,
-            weight REAL,
-            waist REAL,
-            hips REAL,
-            thigh REAL,
-            chest REAL,
-            arms REAL
-        )
-    ''')
-
-    # Daily notes/check-ins for context around the numbers.
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS checkins (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            date TEXT NOT NULL,
-            mood INTEGER DEFAULT 3,
-            energy INTEGER DEFAULT 3,
-            sleep_hours REAL,
-            note TEXT
-        )
-    ''')
-
-    conn.commit()
-    conn.close()
+# ================================================================
+# WORKOUTS
+# ================================================================
 
 def add_workout(date, split, exercise, sets, reps, weight, rpe, fatigue, duration=0, set_data=None):
-    """Add a new workout log to the database."""
-    with _db() as conn:
-        conn.execute('''
-            INSERT INTO workouts (date, split, exercise, sets, reps, weight, rpe, fatigue, duration, set_data)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (date, split, exercise, sets, reps, weight, rpe, fatigue, duration, set_data))
+    """Add a workout log (legacy single-set format)."""
+    data = {
+        "date": str(date),
+        "split": split,
+        "exercise": exercise,
+        "sets": int(float(sets or 0)),
+        "reps": int(float(reps or 0)),
+        "weight": float(weight or 0),
+        "rpe": float(rpe or 0),
+        "fatigue": fatigue,
+        "duration": int(float(duration or 0)),
+        "set_data": set_data
+    }
+    try:
+        supabase_client.table("workouts").insert(_with_user(data)).execute()
+    except Exception as exc:
+        _report_error("Saving workout", exc)
+        return
+    get_all_workouts.clear()
+    get_unique_exercises.clear()
+    get_best_lifts.clear()
+    get_exercise_history.clear()
+
+def add_workout_with_sets(log_date, split: str, exercise: str, sets_data: list) -> None:
+    """Save a workout with full per-set detail stored as JSON in set_data."""
+    if not sets_data:
+        return
+    weights    = [float(s.get("weight", 0)) for s in sets_data]
+    reps_list  = [int(s.get("reps", 0))     for s in sets_data]
+    rpe_list   = [float(s.get("rpe", 7))    for s in sets_data]
+    max_weight = max(weights)  if weights   else 0.0
+    total_reps = sum(reps_list)
+    avg_rpe    = sum(rpe_list) / len(rpe_list) if rpe_list else 7.0
     
-    # Invalidate caches so the UI reflects the new workout immediately
+    data = {
+        "date": str(log_date),
+        "split": split,
+        "exercise": exercise,
+        "sets": len(sets_data),
+        "reps": total_reps,
+        "weight": max_weight,
+        "rpe": avg_rpe,
+        "fatigue": "Medium",
+        "duration": 0,
+        "set_data": sets_data
+    }
+    try:
+        supabase_client.table("workouts").insert(_with_user(data)).execute()
+    except Exception as exc:
+        _report_error("Saving workout session", exc)
+        return
     get_all_workouts.clear()
     get_unique_exercises.clear()
     get_best_lifts.clear()
@@ -187,44 +109,31 @@ def add_workout(date, split, exercise, sets, reps, weight, rpe, fatigue, duratio
 
 @st.cache_data(ttl=300)
 def get_all_workouts():
-    """
-    Fetch all workout logs as a Pandas DataFrame.
-    
-    Why ORDER BY date DESC? 
-    It ensures the most recent workouts are loaded first, which makes
-    building the history table and streak calculators in Python much faster.
-    """
-    with _db() as conn:
-        try:
-            df = pd.read_sql_query("SELECT * FROM workouts ORDER BY date DESC", conn)
-            return df
-        except sqlite3.Error as e:
-            st.error(f"Database error loading workouts: {e}")
-            return pd.DataFrame()
+    try:
+        return pd.DataFrame(_fetch_all_rows("workouts", order_by="date", desc=True))
+    except Exception as e:
+        _report_error("Loading workouts", e)
+        return pd.DataFrame()
 
 @st.cache_data(ttl=300)
 def get_unique_exercises():
-    """Fetch all unique exercise names ordered by usage count."""
-    with _db() as conn:
-        try:
-            c = conn.cursor()
-            c.execute('''
-                SELECT exercise, COUNT(*) as count 
-                FROM workouts 
-                GROUP BY exercise 
-                ORDER BY count DESC
-            ''')
-            return [row[0] for row in c.fetchall()]
-        except sqlite3.Error as e:
-            st.error(f"Database error loading unique exercises: {e}")
-            return []
+    try:
+        df = pd.DataFrame(_fetch_all_rows("workouts", columns="exercise"))
+        if df.empty: return []
+        return df["exercise"].dropna().astype(str).value_counts().index.tolist()
+    except Exception as e:
+        _report_error("Loading exercise library", e)
+        return []
 
 def delete_workout_by_id(workout_id):
-    """Delete a specific workout log by ID."""
-    with _db() as conn:
-        conn.execute("DELETE FROM workouts WHERE id=?", (workout_id,))
-    
-    # Invalidate caches
+    try:
+        query = supabase_client.table("workouts").delete().eq("id", workout_id)
+        if OWNER_USER_ID:
+            query = query.eq("user_id", OWNER_USER_ID)
+        query.execute()
+    except Exception as exc:
+        _report_error("Deleting workout", exc)
+        return
     get_all_workouts.clear()
     get_unique_exercises.clear()
     get_best_lifts.clear()
@@ -232,239 +141,288 @@ def delete_workout_by_id(workout_id):
 
 @st.cache_data(ttl=300)
 def get_best_lifts():
-    """Get the personal best (max weight) for each exercise."""
-    with _db() as conn:
-        try:
-            df = pd.read_sql_query("""
-                SELECT exercise, MAX(weight) as best_weight, MAX(reps) as best_reps, COUNT(*) as sessions
-                FROM workouts
-                WHERE exercise != 'Session Duration'
-                GROUP BY exercise
-                ORDER BY best_weight DESC
-            """, conn)
-            return df
-        except sqlite3.Error as e:
-            st.error(f"Database error loading best lifts: {e}")
-            return pd.DataFrame()
-
+    try:
+        df = pd.DataFrame(
+            _fetch_all_rows(
+                "workouts",
+                columns="exercise, weight, reps",
+                query_fn=lambda q: q.neq("exercise", "Session Duration"),
+            )
+        )
+        if df.empty: return df
+        df["weight"] = pd.to_numeric(df["weight"], errors="coerce").fillna(0.0)
+        df["reps"] = pd.to_numeric(df["reps"], errors="coerce").fillna(0).astype(int)
+        df = df.sort_values(["exercise", "weight", "reps"], ascending=[True, False, False])
+        best_rows = df.groupby("exercise", as_index=False).first()
+        sessions = df.groupby("exercise").size().rename("sessions").reset_index()
+        merged = best_rows.merge(sessions, on="exercise", how="left")
+        merged = merged.rename(columns={"weight": "best_weight", "reps": "best_reps"})
+        return merged.sort_values("best_weight", ascending=False)
+    except Exception as e:
+        _report_error("Loading personal records", e)
+        return pd.DataFrame()
 
 @st.cache_data(ttl=300)
 def get_exercise_history(exercise_name, limit=5):
-    """Returns the last N sessions for a specific exercise."""
-    with _db() as conn:
-        try:
-            df = pd.read_sql_query(
-                """
-                SELECT date, sets, reps, weight, rpe, set_data
-                FROM workouts
-                WHERE exercise = ?
-                  AND exercise != 'Session Duration'
-                ORDER BY date DESC
-                LIMIT ?
-                """,
-                conn,
-                params=(exercise_name, limit)
-            )
-            return df
-        except sqlite3.Error as e:
-            st.error(f"Database error loading exercise history: {e}")
-            return pd.DataFrame()
+    try:
+        query = supabase_client.table("workouts").select("date, sets, reps, weight, rpe, set_data").eq("exercise", exercise_name).neq("exercise", "Session Duration")
+        if OWNER_USER_ID:
+            query = query.eq("user_id", OWNER_USER_ID)
+        response = query.order("date", desc=True).limit(limit).execute()
+        return pd.DataFrame(response.data)
+    except Exception as exc:
+        _report_error(f"Loading exercise history for {exercise_name}", exc)
+        return pd.DataFrame()
 
+def get_last_session_for_exercise(exercise_name: str) -> list:
+    try:
+        query = supabase_client.table("workouts").select("sets, reps, weight, rpe, set_data").eq("exercise", exercise_name).neq("exercise", "Session Duration")
+        if OWNER_USER_ID:
+            query = query.eq("user_id", OWNER_USER_ID)
+        response = query.order("date", desc=True).limit(1).execute()
+        if not response.data:
+            return []
+        row = response.data[0]
+        if row.get("set_data"):
+            if isinstance(row["set_data"], list):
+                return row["set_data"]
+            elif isinstance(row["set_data"], str):
+                return json.loads(row["set_data"])
+                
+        n = max(int(row["sets"]), 1)
+        per_set_reps = max(int(row["reps"] / n), 1)
+        return [{"weight": float(row["weight"]),
+                 "reps": per_set_reps,
+                 "rpe": float(row["rpe"] or 7),
+                 "note": ""}] * n
+    except Exception as exc:
+        _report_error(f"Loading last session for {exercise_name}", exc)
+        return []
+
+def get_personal_best(exercise_name: str):
+    try:
+        query = supabase_client.table("workouts").select("weight").eq("exercise", exercise_name).neq("exercise", "Session Duration")
+        if OWNER_USER_ID:
+            query = query.eq("user_id", OWNER_USER_ID)
+        response = query.execute()
+        weights = [r["weight"] for r in response.data if r["weight"] is not None]
+        return max(weights) if weights else None
+    except Exception as exc:
+        _report_error(f"Loading personal best for {exercise_name}", exc)
+        return None
 
 def get_weekly_volume_by_split(weeks=4):
-    """Calculates total volume per split per week. weeks param is an int — safe."""
-    days = weeks * 7  # pre-calculate so we pass a plain int, not an expression
-    with _db() as conn:
-        try:
-            df = pd.read_sql_query(
-                """
-                SELECT
-                    strftime('%Y-W%W', date) as week,
-                    split,
-                    SUM(weight * reps) as total_volume,
-                    COUNT(DISTINCT date) as session_count
-                FROM workouts
-                WHERE exercise != 'Session Duration'
-                  AND date >= date('now', ? || ' days')
-                GROUP BY week, split
-                ORDER BY week DESC
-                """,
-                conn,
-                params=(f"-{days}",)
+    try:
+        days = weeks * 7
+        cutoff = (datetime.now() - pd.Timedelta(days=days)).strftime('%Y-%m-%d')
+        df = pd.DataFrame(
+            _fetch_all_rows(
+                "workouts",
+                columns="date, split, weight, reps",
+                query_fn=lambda q: q.neq("exercise", "Session Duration").gte("date", cutoff),
             )
-            return df
-        except Exception:
-            return pd.DataFrame()
+        )
+        if df.empty: return df
+        df["date"] = pd.to_datetime(df["date"])
+        df["week"] = df["date"].dt.strftime('%Y-W%V')
+        df["volume"] = df["weight"] * df["reps"]
+        
+        grouped = df.groupby(["week", "split"]).agg(
+            total_volume=("volume", "sum"),
+            session_count=("date", "nunique")
+        ).reset_index().sort_values("week", ascending=False)
+        return grouped
+    except Exception as exc:
+        _report_error("Loading weekly volume", exc)
+        return pd.DataFrame()
 
-
-# ========================================================
-# STEPS DATABASE FUNCTIONS
-# ========================================================
+# ================================================================
+# STEPS
+# ================================================================
 
 def add_steps(date, steps, distance=0, active_minutes=0):
-    """Add or update steps for a specific date."""
-    with _db() as conn:
-        conn.execute('''
-            INSERT INTO steps (date, steps, distance, active_minutes)
-            VALUES (?, ?, ?, ?)
-            ON CONFLICT(date) DO UPDATE SET
-                steps=excluded.steps,
-                distance=excluded.distance,
-                active_minutes=excluded.active_minutes
-        ''', (date, steps, distance, active_minutes))
+    try:
+        steps_int = int(float(steps))
+    except (ValueError, TypeError):
+        steps_int = 0
+    try:
+        active_mins_int = int(float(active_minutes))
+    except (ValueError, TypeError):
+        active_mins_int = 0
+    try:
+        distance_float = float(distance)
+    except (ValueError, TypeError):
+        distance_float = 0.0
+
+    data = {"date": str(date), "steps": steps_int, "distance": distance_float, "active_minutes": active_mins_int}
+    try:
+        supabase_client.table("steps").upsert(_with_user(data), on_conflict="user_id,date" if OWNER_USER_ID else "date").execute()
+    except Exception as exc:
+        _report_error("Saving steps", exc)
+        return
+    get_steps_data.clear()
 
 @st.cache_data(ttl=300)
 def get_steps_data(start_date=None, end_date=None):
-    """Fetch steps data, optionally filtered by date range."""
-    with _db() as conn:
-        try:
-            query = "SELECT * FROM steps"
-            params = []
-            if start_date and end_date:
-                query += " WHERE date BETWEEN ? AND ?"
-                params = [str(start_date), str(end_date)]
-            elif start_date:
-                query += " WHERE date >= ?"
-                params = [str(start_date)]
-            
-            query += " ORDER BY date ASC"
-            df = pd.read_sql_query(query, conn, params=params)
-            return df
-        except sqlite3.Error as e:
-            st.error(f"Database error loading steps: {e}")
-            return pd.DataFrame()
+    try:
+        def apply_filters(query):
+            if start_date:
+                query = query.gte("date", str(start_date))
+            if end_date:
+                query = query.lte("date", str(end_date))
+            return query
+
+        return pd.DataFrame(
+            _fetch_all_rows(
+                "steps",
+                order_by="date",
+                query_fn=apply_filters,
+            )
+        )
+    except Exception as exc:
+        _report_error("Loading steps", exc)
+        return pd.DataFrame()
 
 def delete_steps_by_date(date):
-    """Delete steps for a specific date."""
-    with _db() as conn:
-        conn.execute("DELETE FROM steps WHERE date=?", (date,))
+    try:
+        query = supabase_client.table("steps").delete().eq("date", str(date))
+        if OWNER_USER_ID:
+            query = query.eq("user_id", OWNER_USER_ID)
+        query.execute()
+    except Exception as exc:
+        _report_error("Deleting steps", exc)
+        return
     get_steps_data.clear()
 
-# ========================================================
-# NUTRITION DATABASE
-# ========================================================
+# ================================================================
+# NUTRITION
+# ================================================================
 
 def add_food_log(date, food_item, calories, protein=0, carbs=0, fats=0, fiber=0, meal_type="Snack"):
-    """Add a food log entry."""
-    with _db() as conn:
-        conn.execute('''
-            INSERT INTO food_logs (date, food_item, calories, protein, carbs, fats, fiber, meal_type)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (date, food_item, calories, protein, carbs, fats, fiber, meal_type))
+    data = {
+        "date": str(date), "food_item": food_item, 
+        "calories": int(float(calories or 0)), 
+        "protein": int(float(protein or 0)), 
+        "carbs": int(float(carbs or 0)), 
+        "fats": int(float(fats or 0)), 
+        "fiber": int(float(fiber or 0)), 
+        "meal_type": meal_type
+    }
+    try:
+        supabase_client.table("food_logs").insert(_with_user(data)).execute()
+    except Exception as exc:
+        _report_error("Saving food log", exc)
+        return
     get_food_logs.clear()
 
 def add_draft_food(food_item, calories, protein=0, carbs=0, fats=0, fiber=0):
-    """Add a temporary food item to the Meal Builder cart."""
-    with _db() as conn:
-        conn.execute('''
-            INSERT INTO draft_food_logs (food_item, calories, protein, carbs, fats, fiber)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ''', (food_item, calories, protein, carbs, fats, fiber))
-    get_draft_foods.clear()
+    if "draft_foods" not in st.session_state:
+        st.session_state.draft_foods = []
+    st.session_state.draft_foods.append({
+        "food_item": food_item, "calories": calories, "protein": protein, 
+        "carbs": carbs, "fats": fats, "fiber": fiber
+    })
 
-@st.cache_data(ttl=300)
 def get_draft_foods():
-    """Fetch all temporary food items currently in the Meal Builder cart."""
-    with _db() as conn:
-        try:
-            df = pd.read_sql_query("SELECT * FROM draft_food_logs", conn)
-            return df
-        except sqlite3.Error as e:
-            st.error(f"Database error loading draft foods: {e}")
-            return pd.DataFrame()
+    if "draft_foods" not in st.session_state:
+        return pd.DataFrame(columns=["food_item", "calories", "protein", "carbs", "fats", "fiber"])
+    return pd.DataFrame(st.session_state.draft_foods)
 
 def clear_draft_foods():
-    """Clear the entire Meal Builder cart."""
-    with _db() as conn:
-        conn.execute("DELETE FROM draft_food_logs")
-    get_draft_foods.clear()
+    if "draft_foods" in st.session_state:
+        st.session_state.draft_foods = []
 
 @st.cache_data(ttl=300)
 def get_food_logs():
-    """Fetch all food logs."""
-    with _db() as conn:
-        try:
-            df = pd.read_sql_query("SELECT * FROM food_logs ORDER BY date DESC", conn)
-            return df
-        except sqlite3.Error as e:
-            st.error(f"Database error loading food logs: {e}")
-            return pd.DataFrame()
+    try:
+        df = pd.DataFrame(_fetch_all_rows("food_logs", order_by="date", desc=True))
+        num_cols = ["calories", "protein", "carbs", "fats", "fiber"]
+        for col in num_cols:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
+        return df
+    except Exception as exc:
+        _report_error("Loading food logs", exc)
+        return pd.DataFrame()
 
 def log_water(date, cups=1):
-    """Log water intake."""
-    with _db() as conn:
-        conn.execute("INSERT INTO water_logs (date, cups) VALUES (?, ?)", (date, cups))
+    try:
+        supabase_client.table("water_logs").insert(_with_user({"date": str(date), "cups": cups})).execute()
+    except Exception as exc:
+        _report_error("Saving water log", exc)
+        return
     get_water_history.clear()
 
 @st.cache_data(ttl=300)
 def get_water_history():
-    """Get all water logs."""
-    with _db() as conn:
-        try:
-            return pd.read_sql_query("SELECT * FROM water_logs", conn)
-        except sqlite3.Error as e:
-            st.error(f"Database error loading water logs: {e}")
-            return pd.DataFrame()
+    try:
+        return pd.DataFrame(_fetch_all_rows("water_logs", order_by="date", desc=True))
+    except Exception as exc:
+        _report_error("Loading water logs", exc)
+        return pd.DataFrame()
 
 def delete_food_log(log_id):
-    """Delete a specific food log by ID."""
-    with _db() as conn:
-        conn.execute("DELETE FROM food_logs WHERE id=?", (log_id,))
+    try:
+        query = supabase_client.table("food_logs").delete().eq("id", log_id)
+        if OWNER_USER_ID:
+            query = query.eq("user_id", OWNER_USER_ID)
+        query.execute()
+    except Exception as exc:
+        _report_error("Deleting food log", exc)
+        return
     get_food_logs.clear()
 
-# ── MEASUREMENTS (Phase 4 SQLite Migration) ──
+# ================================================================
+# MEASUREMENTS
+# ================================================================
+
 def add_measurement(date, weight, waist=None, hips=None, thigh=None, chest=None, arms=None):
-    """Save body measurements to SQLite (Replaces Excel)."""
-    with _db() as conn:
-        conn.execute('''
-            INSERT INTO measurements (date, weight, waist, hips, thigh, chest, arms)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        ''', (date, weight, waist, hips, thigh, chest, arms))
+    data = {
+        "date": str(date), "weight": weight, "waist": waist, 
+        "hips": hips, "thigh": thigh, "chest": chest, "arms": arms
+    }
+    try:
+        supabase_client.table("measurements").insert(_with_user(data)).execute()
+    except Exception as exc:
+        _report_error("Saving measurement", exc)
+        return
     get_measurements.clear()
 
 @st.cache_data(ttl=300)
 def get_measurements():
-    """Retrieve all body measurements as a DataFrame."""
-    with _db() as conn:
-        try:
-            df = pd.read_sql("SELECT * FROM measurements", conn)
-            if not df.empty:
-                df["date"] = pd.to_datetime(df["date"])
-                # Rename columns to match old capitalized format to maintain compatibility with charts
-                df = df.rename(columns={
-                    "date": "Date", "weight": "Weight", "waist": "Waist",
-                    "hips": "Hips", "thigh": "Thigh", "chest": "Chest", "arms": "Arms"
-                })
-            return df
-        except sqlite3.Error as e:
-            st.error(f"Database error loading measurements: {e}")
-            return pd.DataFrame()
+    try:
+        df = pd.DataFrame(_fetch_all_rows("measurements", order_by="date", desc=False))
+        if not df.empty:
+            df["date"] = pd.to_datetime(df["date"])
+            df = df.rename(columns={
+                "date": "Date", "weight": "Weight", "waist": "Waist",
+                "hips": "Hips", "thigh": "Thigh", "chest": "Chest", "arms": "Arms",
+            })
+        return df
+    except Exception as exc:
+        _report_error("Loading measurements", exc)
+        return pd.DataFrame()
 
-
-# ========================================================
+# ================================================================
 # DAILY CHECK-INS
-# ========================================================
+# ================================================================
 
 def add_checkin(date, mood=3, energy=3, sleep_hours=None, note=""):
-    """Save a daily subjective check-in."""
-    with _db() as conn:
-        conn.execute(
-            '''
-            INSERT INTO checkins (date, mood, energy, sleep_hours, note)
-            VALUES (?, ?, ?, ?, ?)
-            ''',
-            (date, mood, energy, sleep_hours, note),
-        )
+    data = {
+        "date": str(date), "mood": mood, "energy": energy, 
+        "sleep_hours": sleep_hours, "note": note
+    }
+    try:
+        supabase_client.table("checkins").insert(_with_user(data)).execute()
+    except Exception as exc:
+        _report_error("Saving check-in", exc)
+        return
     get_checkins.clear()
-
 
 @st.cache_data(ttl=300)
 def get_checkins():
-    """Fetch daily check-ins ordered newest first."""
-    with _db() as conn:
-        try:
-            return pd.read_sql_query("SELECT * FROM checkins ORDER BY date DESC", conn)
-        except sqlite3.Error as e:
-            st.error(f"Database error loading check-ins: {e}")
-            return pd.DataFrame()
-
+    try:
+        return pd.DataFrame(_fetch_all_rows("checkins", order_by="date", desc=True))
+    except Exception as exc:
+        _report_error("Loading check-ins", exc)
+        return pd.DataFrame()

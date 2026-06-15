@@ -1,135 +1,258 @@
 """
-# --------------------------------------------------------------------------------
-# MODULE: core/bca_engine.py
-# --------------------------------------------------------------------------------
-# // WHAT IT DOES: 
-# This file is the "Biological Engine". It takes your Body Composition Analysis (BCA)
-# data from last year and your *current* weight today, and calculates your 
-# highly-accurate daily Caloric needs, expected Body Fat %, and Lean Mass.
-#
-# // HOW IT WORKS:
-# Notice there is ZERO Streamlit (UI) code in here. This is a "Pure Python" module.
-# It defines a Class (an Object) that stores your stats. It has "methods" (functions
-# attached to the object) that run math formulas.
-#
-# // WHY WE DO IT THIS WAY:
-# Separation of Concerns. By keeping the math trapped in this file, we can test it 
-# instantly without having to load the whole web app. If the math is wrong, we only
-# fix it here.
-# --------------------------------------------------------------------------------
+core/bca_engine.py — Biological Composition Analysis Engine
+============================================================
+Stateless, pure-Python calculation module.  Zero Streamlit dependencies.
+
+Usage
+-----
+engine = BCA_Engine(
+    current_weight_kg=82.0,
+    base_weight=89.3,
+    base_bf_mass=33.5,
+    base_smm=30.9,
+    base_bmr=1575,
+    base_pbf=37.6,
+    base_ffm=55.8,
+    age=25,
+    sex="male",          # "male" | "female"
+    height_cm=178.0,
+    activity_level="moderate",  # sedentary | light | moderate | active | very_active
+)
+metrics  = engine.estimate_current_metrics()
+bmr      = engine.get_dynamic_bmr()
+targets  = engine.get_macro_targets(goal="cut", target_weight_kg=72.0)
 """
+from __future__ import annotations
+
+# ── TDEE activity multipliers (PAL factors) ───────────────────────────────────
+ACTIVITY_MULTIPLIERS: dict[str, float] = {
+    "sedentary":   1.20,   # desk job, little or no exercise
+    "light":       1.375,  # light exercise 1–3 days/week
+    "moderate":    1.55,   # moderate exercise 3–5 days/week  ← gym default
+    "active":      1.725,  # hard exercise 6–7 days/week
+    "very_active": 1.90,   # physical job + hard training
+}
+
 
 class BCA_Engine:
-    def __init__(self, current_weight_kg: float, 
-                 base_weight=89.3, base_bf_mass=33.5, 
-                 base_smm=30.9, base_bmr=1575, base_pbf=37.6, base_ffm=55.8):
-        """
-        // WHAT IT DOES: Initializes the data using provided baseline metrics.
-        // Defaults to the 2025.08.13 report if no baseline is provided from DB.
-        """
-        self.base_weight = base_weight        # kg
-        self.base_bf_mass = base_bf_mass       # kg (Body Fat Mass)
-        self.base_smm = base_smm           # kg (Skeletal Muscle Mass)
-        self.base_bmr = base_bmr           # kcal/day
-        self.base_pbf = base_pbf           # % (Percent Body Fat)
-        self.base_ffm = base_ffm           # kg (Fat Free Mass)
-        
-        # --- CURRENT STATS ---
-        self.current_weight = current_weight_kg
-        
-        # Calculate the delta (how much weight lost or gained)
-        self.weight_delta = self.current_weight - self.base_weight
+    """
+    Body Composition Analysis engine.
 
-    def estimate_current_metrics(self):
+    Uses the Katch-McArdle formula (BMR from lean mass) for maximum accuracy.
+    Falls back to the Mifflin-St Jeor formula when age / sex / height are
+    provided but a baseline scan is unavailable.
+
+    Parameters
+    ----------
+    current_weight_kg : float
+        Today's bodyweight in kilograms.
+    base_weight : float
+        Bodyweight at the time of the BCA scan (kg). Default: 89.3 kg.
+    base_bf_mass : float
+        Body-fat mass at scan time (kg). Default: 33.5 kg.
+    base_smm : float
+        Skeletal muscle mass at scan time (kg). Default: 30.9 kg.
+    base_bmr : float
+        BMR recorded at scan time (kcal/day). Default: 1 575 kcal.
+    base_pbf : float
+        Percent body fat at scan time (%). Default: 37.6 %.
+    base_ffm : float
+        Fat-free mass at scan time (kg). Default: 55.8 kg.
+    age : int | None
+        Age in years — used for Mifflin-St Jeor fallback.
+    sex : str
+        ``"male"`` or ``"female"``.
+    height_cm : float | None
+        Height in centimetres — used for Mifflin-St Jeor fallback.
+    activity_level : str
+        One of ``sedentary | light | moderate | active | very_active``.
+    """
+
+    def __init__(
+        self,
+        current_weight_kg: float,
+        base_weight: float = 89.3,
+        base_bf_mass: float = 33.5,
+        base_smm: float = 30.9,
+        base_bmr: float = 1_575,
+        base_pbf: float = 37.6,
+        base_ffm: float = 55.8,
+        age: int | None = None,
+        sex: str = "male",
+        height_cm: float | None = None,
+        activity_level: str = "moderate",
+    ) -> None:
+        # Baseline BCA scan values
+        self.base_weight   = base_weight
+        self.base_bf_mass  = base_bf_mass
+        self.base_smm      = base_smm
+        self.base_bmr      = base_bmr
+        self.base_pbf      = base_pbf
+        self.base_ffm      = base_ffm
+
+        # Current biometrics
+        self.current_weight    = current_weight_kg
+        self.weight_delta      = current_weight_kg - base_weight
+
+        # User profile
+        self.age            = age
+        self.sex            = sex.lower()
+        self.height_cm      = height_cm
+        self.activity_level = activity_level.lower()
+
+    # ── Body composition estimation ──────────────────────────────────────────
+
+    def estimate_current_metrics(self) -> dict:
         """
-        // WHAT IT DOES: Estimates your current Body Fat % and Muscle Mass.
-        // HOW IT WORKS: If you are lifting weights + eating protein, we assume
-        // ~80% of weight lost is fat, and ~20% is water/glycogen/trace muscle. 
-        // This is a standard sports science heuristic for novice lifters.
+        Estimate today's body fat mass, skeletal muscle mass, and PBF% by
+        extrapolating from the baseline BCA scan.
+
+        Assumptions (sports-science heuristics for trained natural lifters):
+        - Weight loss: 80 % fat lost, 20 % other (glycogen / water / trace LBM).
+        - Weight gain: 60 % fat, 40 % muscle (beginner-to-intermediate gains).
         """
-        # If weight went down (negative delta)
-        if self.weight_delta < 0:
-            fat_lost = abs(self.weight_delta) * 0.80
-            other_lost = abs(self.weight_delta) * 0.20
-            
-            new_bf_mass = self.base_bf_mass - fat_lost
-            # SMM (Skeletal Muscle Mass) usually stays mostly intact if training
-            new_smm = self.base_smm - (other_lost * 0.5) 
+        delta = self.weight_delta
+
+        if delta < 0:
+            fat_lost      = abs(delta) * 0.80
+            other_lost    = abs(delta) * 0.20
+            new_bf_mass   = self.base_bf_mass - fat_lost
+            new_smm       = self.base_smm - (other_lost * 0.50)
         else:
-            # If weight went up, assume 60% fat / 40% muscle gain (newbie gains)
-            fat_gained = self.weight_delta * 0.60
-            muscle_gained = self.weight_delta * 0.40
-            
-            new_bf_mass = self.base_bf_mass + fat_gained
-            new_smm = self.base_smm + muscle_gained
+            new_bf_mass   = self.base_bf_mass + delta * 0.60
+            new_smm       = self.base_smm     + delta * 0.40
 
-        # Calculate new percentages based on your *current* weight
+        # Clamp BF mass to a physiological floor (~5 % essential fat)
+        min_bf = self.current_weight * 0.05
+        new_bf_mass = max(new_bf_mass, min_bf)
+
         new_pbf = (new_bf_mass / self.current_weight) * 100
-        
+
         return {
-            "estimated_bf_mass_kg": round(new_bf_mass, 1),
-            "estimated_smm_kg": round(new_smm, 1),
-            "estimated_pbf_percent": round(new_pbf, 1)
+            "estimated_bf_mass_kg":  round(new_bf_mass, 1),
+            "estimated_smm_kg":      round(new_smm,     1),
+            "estimated_pbf_percent": round(new_pbf,     1),
+            "estimated_lbm_kg":      round(self.current_weight - new_bf_mass, 1),
         }
 
-    def get_dynamic_bmr(self):
+    # ── BMR calculation ──────────────────────────────────────────────────────
+
+    def get_dynamic_bmr(self) -> int:
         """
-        // WHAT IT DOES: Calculates your new Basal Metabolic Rate (BMR).
-        // HOW IT WORKS: We use the Katch-McArdle formula, which is considered the 
-        // most accurate formula in the world because it uses Lean Mass, not just 
-        // total weight. (Standard formulas penalize heavy muscular people).
-        // Formula: BMR = 370 + (21.6 * Lean Body Mass in kg)
+        Calculate Basal Metabolic Rate.
+
+        Primary formula — Katch-McArdle (lean-mass based, most accurate for
+        athletes and body-composition-tracked individuals):
+            BMR = 370 + 21.6 × LBM (kg)
+
+        Fallback — Mifflin-St Jeor (when age, sex, height are provided but a
+        baseline scan is unavailable or the BF estimate seems unreliable):
+            Male:   BMR = 10W + 6.25H − 5A + 5
+            Female: BMR = 10W + 6.25H − 5A − 161
         """
         metrics = self.estimate_current_metrics()
-        
-        # Lean Body Mass = Current Weight - Fat Mass
-        lbm = self.current_weight - metrics["estimated_bf_mass_kg"]
-        
-        # The Katch-McArdle Formula
-        current_bmr = 370 + (21.6 * lbm)
-        return int(current_bmr)
+        lbm     = metrics["estimated_lbm_kg"]
 
-    def get_macro_targets(self, goal="cut"):
-        """
-        // WHAT IT DOES: Generates your exact macro needs in grams.
-        // HOW IT WORKS: Returns a dictionary of Protein, Fat, and Carbs based
-        // on whether you want to "cut" (lose fat) or "bulk" (gain muscle).
-        """
-        bmr = self.get_dynamic_bmr()
-        
-        # Total Daily Energy Expenditure (TDEE)
-        # Assuming light/moderate activity (lifting 3-4x a week) = BMR * 1.375
-        tdee = int(bmr * 1.375)
-        
-        if goal == "cut":
-            target_cals = tdee - 500  # 500 cal deficit for ~0.5kg loss per week
-        elif goal == "bulk":
-            target_cals = tdee + 300  # 300 cal surplus for lean mass gain
+        # Katch-McArdle
+        bmr_ka = 370 + 21.6 * lbm
+
+        # Mifflin-St Jeor (only if profile data exists)
+        bmr_mfp: float | None = None
+        if self.age and self.height_cm:
+            w, h, a = self.current_weight, self.height_cm, self.age
+            if self.sex == "female":
+                bmr_mfp = 10 * w + 6.25 * h - 5 * a - 161
+            else:
+                bmr_mfp = 10 * w + 6.25 * h - 5 * a + 5
+
+        # Blend when both are available (Katch-McArdle is more reliable here)
+        if bmr_mfp is not None:
+            bmr = 0.70 * bmr_ka + 0.30 * bmr_mfp
         else:
-            target_cals = tdee        # Maintenance
-            
-        # ----------------------------------------------------
-        # THE MACRO SPLIT (SPORTS SCIENCE)
-        # ----------------------------------------------------
-        # Protein (4 kcals/g): Highly protective of muscle in a deficit. 
-        #   Rule: ~2.2g per kg of LEAN body mass (not total weight).
-        lbm = self.current_weight - self.estimate_current_metrics()["estimated_bf_mass_kg"]
-        protein_g = int(lbm * 2.2)
+            bmr = bmr_ka
+
+        return int(bmr)
+
+    # ── TDEE & macro targets ─────────────────────────────────────────────────
+
+    def get_tdee(self) -> int:
+        """Return Total Daily Energy Expenditure (TDEE) in kcal."""
+        multiplier = ACTIVITY_MULTIPLIERS.get(self.activity_level, 1.55)
+        return int(self.get_dynamic_bmr() * multiplier)
+
+    def get_macro_targets(
+        self,
+        goal: str = "cut",
+        target_weight_kg: float | None = None,
+    ) -> dict:
+        """
+        Generate precise macro targets in grams.
+
+        Parameters
+        ----------
+        goal : str
+            ``"cut"`` (−500 kcal deficit, ~0.5 kg/week loss),
+            ``"maintenance"`` (TDEE), or
+            ``"bulk"`` (+300 kcal surplus, lean gaining).
+        target_weight_kg : float | None
+            Used only for projection calculations returned alongside macros.
+
+        Returns
+        -------
+        dict
+            target_calories, protein_g, fat_g, carbs_g, tdee, bmr,
+            weeks_to_goal (None if target_weight_kg not set),
+            target_date (isoformat string or None).
+        """
+        import datetime
+
+        bmr  = self.get_dynamic_bmr()
+        tdee = self.get_tdee()
+        lbm  = self.estimate_current_metrics()["estimated_lbm_kg"]
+
+        goal_clean = goal.lower()
+        if goal_clean == "cut":
+            target_cals = tdee - 500
+            weekly_change_kg = -0.50        # projected loss
+        elif goal_clean == "bulk":
+            target_cals = tdee + 300
+            weekly_change_kg = +0.25        # projected lean gain
+        else:
+            target_cals = tdee
+            weekly_change_kg = 0.0
+
+        # Protein: 2.2 g per kg LBM (muscle-sparing in deficit)
+        protein_g    = int(lbm * 2.2)
         protein_cals = protein_g * 4
-        
-        # Fats (9 kcals/g): Needed for hormone regulation (testosterone).
-        #   Rule: ~25% of your total calories.
-        fat_cals = target_cals * 0.25
-        fat_g = int(fat_cals / 9)
-        
-        # Carbs (4 kcals/g): Whatever calories are left over after Protein + Fat.
-        #   Needed to fuel your workouts.
-        remaining_cals = target_cals - (protein_cals + fat_cals)
-        carb_g = int(remaining_cals / 4)
-        
+
+        # Fats: 25 % of target calories (hormone regulation)
+        fat_g        = int(target_cals * 0.25 / 9)
+        fat_cals     = fat_g * 9
+
+        # Carbs: remaining calories
+        carb_g       = max(0, int((target_cals - protein_cals - fat_cals) / 4))
+
+        # Projection to target weight
+        weeks_to_goal = target_date = None
+        if target_weight_kg is not None and weekly_change_kg != 0:
+            kg_to_go = target_weight_kg - self.current_weight
+            # Only project if direction matches goal
+            if (goal_clean == "cut" and kg_to_go < 0) or \
+               (goal_clean == "bulk" and kg_to_go > 0):
+                weeks_to_goal = abs(round(kg_to_go / weekly_change_kg))
+                target_date = (
+                    datetime.date.today()
+                    + datetime.timedelta(weeks=weeks_to_goal)
+                ).isoformat()
+
         return {
+            "bmr":             bmr,
+            "tdee":            tdee,
             "target_calories": target_cals,
-            "protein_g": protein_g,
-            "fat_g": fat_g,
-            "carbs_g": carb_g
+            "protein_g":       protein_g,
+            "fat_g":           fat_g,
+            "carbs_g":         carb_g,
+            "weeks_to_goal":   weeks_to_goal,
+            "target_date":     target_date,
+            "weekly_change_kg": weekly_change_kg,
         }

@@ -1,51 +1,76 @@
 # ============================================================
-# CHART THEME CONFIGURATION (SaaS Minimalist)
+# PHI chart theme
 # ============================================================
 import copy
 
+PHI_COLORS = {
+    "blue": "#197f96",
+    "green": "#2f9f68",
+    "amber": "#c98a18",
+    "rose": "#d95f5f",
+    "violet": "#7469c9",
+    "olive": "#6f8f3f",
+    "orange": "#cf7240",
+    "muted": "#68766f",
+    "ink": "#17201c",
+    "grid": "rgba(35, 49, 43, 0.12)",
+}
+
 CHART_CONFIG = {
     'displayModeBar': False,
-    'responsive': True
+    'displaylogo': False,
+    'responsive': True,
+    'scrollZoom': False,
 }
 
 CHART_LAYOUT = dict(
     paper_bgcolor='rgba(0,0,0,0)',
     plot_bgcolor='rgba(0,0,0,0)',
-    font=dict(family='Inter, sans-serif', color='#888888', size=12),
-    margin=dict(l=0, r=0, t=30, b=0),
+    font=dict(family='Plus Jakarta Sans, Inter, sans-serif', color=PHI_COLORS["muted"], size=12),
+    margin=dict(l=22, r=22, t=48, b=38),
     xaxis=dict(
         showgrid=False, 
         zeroline=False, 
         showline=False, 
-        tickcolor='#222222',
-        title_font=dict(size=13, color='#888888'),
-        tickfont=dict(size=11, color='#666666')
+        tickcolor='rgba(35, 49, 43, 0.20)',
+        title_font=dict(size=12, color=PHI_COLORS["muted"]),
+        tickfont=dict(size=11, color=PHI_COLORS["muted"])
     ),
     yaxis=dict(
         showgrid=True, 
-        gridcolor='#111111', 
+        gridcolor=PHI_COLORS["grid"], 
         zeroline=False, 
         showline=False, 
-        tickcolor='#222222',
-        title_font=dict(size=13, color='#888888'),
-        tickfont=dict(size=11, color='#666666')
+        tickcolor='rgba(35, 49, 43, 0.20)',
+        title_font=dict(size=12, color=PHI_COLORS["muted"]),
+        tickfont=dict(size=11, color=PHI_COLORS["muted"])
     ),
     hovermode='x unified',
     hoverlabel=dict(
-        bgcolor='#0A0A0A', 
-        bordercolor='#222222',
+        bgcolor='#ffffff',
+        bordercolor='rgba(35,49,43,0.18)',
         font_size=13, 
-        font_family='Inter, sans-serif',
-        font_color='#FFFFFF'
+        font_family='Plus Jakarta Sans, Inter, sans-serif',
+        font_color=PHI_COLORS["ink"]
     ),
-    colorway=['#FFFFFF', '#888888', '#444444', '#222222'], # Minimalist monochrome colorway
+    colorway=[
+        PHI_COLORS["blue"],
+        PHI_COLORS["green"],
+        PHI_COLORS["amber"],
+        PHI_COLORS["orange"],
+        PHI_COLORS["violet"],
+        PHI_COLORS["rose"],
+        PHI_COLORS["olive"],
+    ],
     legend=dict(
         orientation="h",
         yanchor="bottom",
         y=1.02,
         xanchor="right",
         x=1,
-        font=dict(size=12, color='#888888')
+        bgcolor="rgba(255,255,255,0.82)",
+        bordercolor="rgba(35,49,43,0.12)",
+        font=dict(size=11, color=PHI_COLORS["muted"])
     )
 )
 
@@ -61,9 +86,8 @@ def chart_layout(**overrides):
             layout[k] = v
     return layout
 
-# Monochrome compatibility colors
-CYAN = "#FFFFFF"
-PURPLE = "#888888"
-PINK = "#444444"
-SURFACE = "#0A0A0A"
-RED = "#FF453A" # Keep red for alerts/over-limit
+CYAN = PHI_COLORS["blue"]
+PURPLE = PHI_COLORS["violet"]
+PINK = PHI_COLORS["rose"]
+SURFACE = "#11161d"
+RED = PHI_COLORS["rose"]

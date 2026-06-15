@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitCore — Biomechanics & Fitness Dashboard</title>
+  <meta name="description" content="Interactive fitness dashboard with real-time biomechanics physics simulation, posture analysis, and muscle strain telemetry.">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     SIDEBAR
+══════════════════════════════════════════════════════ -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-icon">F</div>
+    <div>
+      <div class="brand-name">FITCORE</div>
+      <div class="brand-sub">Biomechanics Suite</div>
+    </div>
+  </div>
+
+  <div class="nav-section-label">Analytics</div>
+  <button class="nav-btn" data-page="page-overview">
+    <span class="nav-icon">⚡</span> Overview
+  </button>
+
+  <div class="nav-section-label">Simulation</div>
+  <button class="nav-btn" data-page="page-biomech">
+    <span class="nav-icon">🦴</span> Biomechanics
+  </button>
+  <button class="nav-btn" data-page="page-about">
+    <span class="nav-icon">📖</span> How It Works
+  </button>
+
+  <div class="sidebar-footer">
+    FitCore v2.0<br>Physics Engine · Verlet Integration
+  </div>
+</aside>
+
+<!-- ══════════════════════════════════════════════════════
+     CONTENT
+══════════════════════════════════════════════════════ -->
+<div class="content">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div>
+      <div class="topbar-title" id="pageTitle">Overview</div>
+      <div class="topbar-sub">Real-time biomechanical telemetry</div>
+    </div>
+    <div class="topbar-right">
+      <span class="status-badge ok" id="balanceBadge">BALANCED</span>
+    </div>
+  </header>
+
+  <!-- ════════════════════════════════════════════════
+       PAGE: OVERVIEW
+  ════════════════════════════════════════════════ -->
+  <main class="page active" id="page-overview">
+    <div class="ov-wrapper">
+
+      <!-- Hero -->
+      <div class="ov-hero">
+        <div>
+          <h1>Biomechanics Dashboard</h1>
+          <p>Simulate posture, muscle strain, and spinal load in real time using a 2D Verlet physics engine. Drag joints, switch postures, and see live telemetry.</p>
+        </div>
+        <button class="ov-hero-btn" onclick="document.querySelector('[data-page=page-biomech]').click()">
+          Open Simulator →
+        </button>
+      </div>
+
+      <!-- Stat cards -->
+      <div class="ov-cards">
+        <div class="ov-card">
+          <div class="ov-card-label">Posture Score</div>
+          <div class="ov-card-value" id="ovScore">—</div>
+          <div class="ov-card-unit">out of 100</div>
+          <div class="ov-card-bar"><div class="ov-card-bar-fill" id="ovScoreBar" style="width:0%"></div></div>
+        </div>
+        <div class="ov-card">
+          <div class="ov-card-label">Lumbar Torque</div>
+          <div class="ov-card-value" id="ovTorque">—</div>
+          <div class="ov-card-unit">Newton·metres</div>
+          <div class="ov-card-bar"><div class="ov-card-bar-fill" style="width:30%;background:linear-gradient(90deg,#fbbf24,#f59e0b)"></div></div>
+        </div>
+        <div class="ov-card">
+          <div class="ov-card-label">Balance</div>
+          <div class="ov-card-value" id="ovBalance" style="color:var(--success)">—</div>
+          <div class="ov-card-unit">CoM status</div>
+          <div class="ov-card-bar"><div class="ov-card-bar-fill" style="width:100%;background:linear-gradient(90deg,#34d399,#6ee7b7)"></div></div>
+        </div>
+        <div class="ov-card">
+          <div class="ov-card-label">Cervical Angle</div>
+          <div class="ov-card-value" id="ovNeck">—</div>
+          <div class="ov-card-unit">degrees forward</div>
+          <div class="ov-card-bar"><div class="ov-card-bar-fill" style="width:15%"></div></div>
+        </div>
+      </div>
+
+      <!-- Info panels -->
+      <div class="ov-info">
+        <div class="info-card">
+          <h3>Posture Tips</h3>
+          <ul class="tip-list">
+            <li>Keep ears aligned over shoulders — each inch forward adds ~10 lbs of neck load.</li>
+            <li>Engage your core slightly to protect the lumbar spine during lifting.</li>
+            <li>When lifting, squat — not bend. Keep the load close to your centre of mass.</li>
+            <li>Switch seated positions every 30 minutes to reduce disc compression.</li>
+            <li>A balanced CoM directly over both feet reduces fall risk to near zero.</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h3>Preset Risk Summary</h3>
+          <div class="risk-grid">
+            <div class="risk-item">
+              <div class="risk-label">Balanced Standing</div>
+              <div class="risk-val green">LOW RISK</div>
+            </div>
+            <div class="risk-item">
+              <div class="risk-label">Desk Slouch</div>
+              <div class="risk-val yellow">MODERATE</div>
+            </div>
+            <div class="risk-item">
+              <div class="risk-label">Incorrect Lift</div>
+              <div class="risk-val red">HIGH RISK</div>
+            </div>
+            <div class="risk-item">
+              <div class="risk-label">Squat Lift</div>
+              <div class="risk-val green">SAFE</div>
+            </div>
+            <div class="risk-item">
+              <div class="risk-label">Heavy Backpack</div>
+              <div class="risk-val yellow">COMPENSATORY</div>
+            </div>
+            <div class="risk-item">
+              <div class="risk-label">Custom Drag</div>
+              <div class="risk-val" style="color:var(--primary)">INTERACTIVE</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ════════════════════════════════════════════════
+       PAGE: BIOMECHANICS SIMULATOR
+  ════════════════════════════════════════════════ -->
+  <main class="page" id="page-biomech">
+    <div class="bio-layout">
+
+      <!-- ── LEFT: CONTROLS ─────────────────────────── -->
+      <aside class="ctrl-panel">
+
+        <!-- Presets -->
+        <div class="ctrl-section">
+          <h3>Posture Presets</h3>
+          <div class="preset-list">
+            <button class="btn-preset active" id="presetStanding" data-preset="standing">
+              <span>Balanced Standing</span>
+              <span class="preset-tag green">Optimal</span>
+            </button>
+            <button class="btn-preset" id="presetSlouch" data-preset="slouch">
+              <span>Desk Slouch</span>
+              <span class="preset-tag yellow">Strain</span>
+            </button>
+            <button class="btn-preset" id="presetBadLift" data-preset="badlift">
+              <span>Incorrect Lift</span>
+              <span class="preset-tag red">High Risk</span>
+            </button>
+            <button class="btn-preset" id="presetSquat" data-preset="squat">
+              <span>Squat Lift</span>
+              <span class="preset-tag green">Safe</span>
+            </button>
+            <button class="btn-preset" id="presetBackpack" data-preset="backpack">
+              <span>Heavy Backpack</span>
+              <span class="preset-tag yellow">Comp.</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- External Loads -->
+        <div class="ctrl-section">
+          <h3>External Loads</h3>
+          <div class="slider-group">
+            <div class="slider-row">
+              <div class="slider-label">
+                <span>Dumbbell (Hand)</span>
+                <span class="slider-val" id="valDumbbell">0 kg</span>
+              </div>
+              <input type="range" id="loadDumbbell" min="0" max="40" value="0" step="5">
+            </div>
+            <div class="slider-row">
+              <div class="slider-label">
+                <span>Backpack Load</span>
+                <span class="slider-val" id="valBackpack">0 kg</span>
+              </div>
+              <input type="range" id="loadBackpack" min="0" max="30" value="0" step="5">
+            </div>
+          </div>
+        </div>
+
+        <!-- Muscle Activators -->
+        <div class="ctrl-section">
+          <h3>Muscle Activators</h3>
+          <div class="slider-group">
+            <div class="slider-row">
+              <div class="slider-label">
+                <span>Neck Extensors</span>
+                <span class="slider-val" id="valActNeck">0%</span>
+              </div>
+              <input type="range" class="muscle" id="actNeck" min="0" max="100" value="0" step="5">
+            </div>
+            <div class="slider-row">
+              <div class="slider-label">
+                <span>Erector Spinae</span>
+                <span class="slider-val" id="valActBack">0%</span>
+              </div>
+              <input type="range" class="muscle" id="actBack" min="0" max="100" value="0" step="5">
+            </div>
+            <div class="slider-row">
+              <div class="slider-label">
+                <span>Abdominals (Core)</span>
+                <span class="slider-val" id="valActCore">0%</span>
+              </div>
+              <input type="range" class="muscle" id="actCore" min="0" max="100" value="0" step="5">
+            </div>
+            <div class="slider-row">
+              <div class="slider-label">
+                <span>Quadriceps</span>
+                <span class="slider-val" id="valActQuads">0%</span>
+              </div>
+              <input type="range" class="muscle" id="actQuads" min="0" max="100" value="0" step="5">
+            </div>
+          </div>
+        </div>
+
+        <!-- Physics -->
+        <div class="ctrl-section">
+          <h3>Physics Parameters</h3>
+          <div class="slider-group">
+            <div class="slider-row">
+              <div class="slider-label">
+                <span>Gravity</span>
+                <span class="slider-val" id="valGravity">15 m/s²</span>
+              </div>
+              <input type="range" id="paramGravity" min="0" max="40" value="15" step="1">
+            </div>
+            <div class="slider-row">
+              <div class="slider-label">
+                <span>Damping</span>
+                <span class="slider-val" id="valDamping">0.98</span>
+              </div>
+              <input type="range" id="paramDamping" min="90" max="100" value="98" step="1">
+            </div>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- ── CENTER: CANVAS ─────────────────────────── -->
+      <div class="canvas-panel">
+        <div class="canvas-wrap">
+          <div class="drag-hint">🖱 Drag any joint to test loads</div>
+          <canvas id="simCanvas" width="580" height="560"></canvas>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="canvas-toolbar">
+          <div class="layer-toggles">
+            <button class="btn-toggle active" id="toggle_bones">Bones</button>
+            <button class="btn-toggle active" id="toggle_muscles">Muscles</button>
+            <button class="btn-toggle active" id="toggle_angles">Angles</button>
+            <button class="btn-toggle active" id="toggle_com">CoM</button>
+            <button class="btn-toggle active" id="toggle_vectors">Vectors</button>
+            <div style="width:1px; height:16px; background:var(--border-soft); margin:0 4px;"></div>
+            <button class="btn-toggle" id="toggle_ideal" style="color:var(--accent); border-color:rgba(167,139,250,0.3);">Ghost Guide</button>
+          </div>
+          <div class="playbar">
+            <button class="btn-action primary-btn" id="btnPlayPause">
+              <span id="playIcon">⏸</span> <span id="playText">Pause</span>
+            </button>
+            <button class="btn-action" id="btnReset">🔄 Reset</button>
+            <select class="speed-select" id="simSpeed">
+              <option value="0.25">0.25×</option>
+              <option value="0.5">0.5×</option>
+              <option value="1.0" selected>1×</option>
+              <option value="2.0">2×</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── RIGHT: TELEMETRY ────────────────────────── -->
+      <aside class="tel-panel">
+
+        <!-- Posture score -->
+        <div class="tel-section">
+          <h3>Posture Score</h3>
+          <div class="score-box">
+            <div class="score-label">Alignment Index</div>
+            <div class="score-value excellent" id="postureScore">100</div>
+            <div class="score-comment" id="postureComment">Optimal spinal alignment — keep it up!</div>
+          </div>
+        </div>
+
+        <!-- Telemetry rows -->
+        <div class="tel-section">
+          <h3>Mechanical Telemetry</h3>
+          <div class="tel-rows">
+            <div class="tel-row">
+              <span class="tel-lbl">Cervical Flexion</span>
+              <span class="tel-val ok" id="telNeck">—</span>
+            </div>
+            <div class="tel-row">
+              <span class="tel-lbl">Lumbar Curve</span>
+              <span class="tel-val ok" id="telSpine">—</span>
+            </div>
+            <div class="tel-row">
+              <span class="tel-lbl">CoM Offset</span>
+              <span class="tel-val ok" id="telCom">—</span>
+            </div>
+            <div class="tel-row">
+              <span class="tel-lbl">Lumbar Torque</span>
+              <span class="tel-val ok" id="telTorque">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Strain bars -->
+        <div class="tel-section">
+          <h3>Muscle Group Strain</h3>
+          <div class="strain-list">
+            <div class="strain-row">
+              <div class="strain-head">
+                <span class="strain-name">Neck Extensors</span>
+                <span class="strain-pct" id="lblNeck">0%</span>
+              </div>
+              <div class="bar-bg"><div class="bar-fill ok" id="barNeck"></div></div>
+            </div>
+            <div class="strain-row">
+              <div class="strain-head">
+                <span class="strain-name">Erector Spinae</span>
+                <span class="strain-pct" id="lblBack">0%</span>
+              </div>
+              <div class="bar-bg"><div class="bar-fill ok" id="barBack"></div></div>
+            </div>
+            <div class="strain-row">
+              <div class="strain-head">
+                <span class="strain-name">Abdominals (Core)</span>
+                <span class="strain-pct" id="lblCore">0%</span>
+              </div>
+              <div class="bar-bg"><div class="bar-fill ok" id="barCore"></div></div>
+            </div>
+            <div class="strain-row">
+              <div class="strain-head">
+                <span class="strain-name">Quadriceps</span>
+                <span class="strain-pct" id="lblQuads">0%</span>
+              </div>
+              <div class="bar-bg"><div class="bar-fill ok" id="barQuads"></div></div>
+            </div>
+            <div class="strain-row">
+              <div class="strain-head">
+                <span class="strain-name">Glutes / Hamstrings</span>
+                <span class="strain-pct" id="lblGlutes">0%</span>
+              </div>
+              <div class="bar-bg"><div class="bar-fill ok" id="barGlutes"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EMG -->
+        <div class="tel-section">
+          <h3>Real-Time EMG</h3>
+          <div class="emg-box">
+            <div class="emg-canvas-wrap">
+              <canvas id="emgCanvas"></canvas>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+    </div>
+  </main>
+
+  <!-- ════════════════════════════════════════════════
+       PAGE: HOW IT WORKS
+  ════════════════════════════════════════════════ -->
+  <main class="page" id="page-about">
+    <div class="ov-wrapper">
+      <div class="ov-hero" style="flex-direction:column;align-items:flex-start">
+        <h1 style="font-size:1.3rem">How the Physics Engine Works</h1>
+        <p>FitCore uses a custom 2D Verlet Integration engine — the same approach used in game physics and biomechanical research software.</p>
+      </div>
+      <div class="ov-info" style="grid-template-columns:1fr 1fr 1fr">
+        <div class="info-card">
+          <h3>Verlet Integration</h3>
+          <ul class="tip-list">
+            <li>Each joint is a <strong>Point</strong> with position, previous position, and mass.</li>
+            <li>Velocity is implicit: v = (x − x_prev) × damping.</li>
+            <li>Acceleration from gravity + external forces is added each frame.</li>
+            <li>Energy is conserved naturally — no explicit velocity accumulation.</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h3>Constraint Solving</h3>
+          <ul class="tip-list">
+            <li><strong>Bones</strong> are rigid distance constraints — maintain segment length.</li>
+            <li><strong>Angle constraints</strong> limit joint range of motion (e.g. knees can't hyperextend).</li>
+            <li><strong>Muscles</strong> are spring actuators — they can only pull, not push.</li>
+            <li>12 iterations per frame ensures stability without explosion.</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h3>Telemetry & Strain</h3>
+          <ul class="tip-list">
+            <li>Cervical angle = head forward displacement relative to neck axis.</li>
+            <li>Lumbar torque = Σ(mass × 9.81 × horizontal moment arm) at L4/L5.</li>
+            <li>CoM projected onto ground — if outside foot base, balance is lost.</li>
+            <li>Muscle strain = spring tension ÷ max isometric force capacity.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </main>
+
+</div><!-- /content -->
+
+<script src="physics.js"></script>
+<script src="simulation.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -25,25 +25,4 @@ JUNK_FILTER = [
     "n/a", "N/A", "test", "Trial", "Warm up", "Yoga"
 ]
 
-# The "Playbook" — Grouped exercises to make logging faster.
-EXERCISE_LIBRARY = {
-    "UPPER A (Chest + Shoulders + Arms)": [
-        "Machine Shoulder Press", "Incline Dumbbell/Chest Machine",
-        "Chest Supported Row (Seated)", "Lat Pulldown",
-        "Wide Grip Cable Row (Machine)", "Seated Bicep Curl",
-        "Bicep Hammer Curls", "Tricep Rope Pushdowns"
-    ],
-    "LOWER A (Quads + Base)": [
-        "Leg Press", "Smith Machine Squats", "Goblet Squat",
-        "Seated Hamstring Leg Curl", "Seated Leg Extension", "Calf Raises"
-    ],
-    "UPPER B (Back + Shoulders + Arms)": [
-        "Machine Shoulder Press", "Wide Grip Cable Row (Machine)",
-        "Lat Pulldown", "Flat Chest Press Machine", "Seated Bicep Curl",
-        "Over Head Tricep Extension DB", "Face Pulls", "Lateral Raises"
-    ],
-    "LOWER B (Posterior + Control)": [
-        "Leg Press", "Goblet Squat", "Seated Hamstring Leg Curl",
-        "Seated Leg Extension", "Calf Raises", "Cable Crunch"
-    ],
-}
+# EXERCISE_LIBRARY has been moved to exercise_library.json

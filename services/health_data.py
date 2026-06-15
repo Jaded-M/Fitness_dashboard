@@ -4,8 +4,10 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 
 import pandas as pd
+import streamlit as st
 
 import database
+from core.readiness_engine import ReadinessInputs, calculate_readiness
 
 
 @dataclass
@@ -76,7 +78,8 @@ def today_totals(snapshot: HealthSnapshot) -> dict:
     }
 
 
-def kpi_summary(snapshot: HealthSnapshot, calorie_goal: int = 2300, step_goal: int = 8000) -> dict:
+@st.cache_data(ttl=120, show_spinner=False, hash_funcs={HealthSnapshot: id})
+def kpi_summary(snapshot: HealthSnapshot, calorie_goal: int = 2300, step_goal: int = 8000, target_weight: float = 72.1) -> dict:
     workouts = snapshot.workouts
     food = snapshot.food
     steps = snapshot.steps
@@ -87,9 +90,9 @@ def kpi_summary(snapshot: HealthSnapshot, calorie_goal: int = 2300, step_goal: i
     last_7 = pd.Timestamp(date.today() - timedelta(days=6))
 
     if not real_workouts.empty:
-        week_workouts = real_workouts[real_workouts["Date"] >= last_7]
+        week_workouts = real_workouts[real_workouts["Date"] >= last_7].copy()
         sessions_7d = week_workouts["Date"].dt.date.nunique()
-        week_workouts["Volume"] = week_workouts["Weight"] * week_workouts["Reps"]
+        week_workouts.loc[:, "Volume"] = week_workouts["Weight"] * week_workouts["Reps"]
         weekly_volume = int(week_workouts["Volume"].sum())
     else:
         sessions_7d = 0
@@ -113,6 +116,9 @@ def kpi_summary(snapshot: HealthSnapshot, calorie_goal: int = 2300, step_goal: i
 
     latest_weight = None
     weight_delta = None
+    weekly_weight_change = None
+    weight_trend_direction = "No trend"
+    goal_eta = "Need more data"
     if not measurements.empty and "Weight" in measurements.columns:
         weights = measurements.sort_values("Date")
         valid = weights[weights["Weight"].notna() & (weights["Weight"] > 0)]
@@ -120,35 +126,31 @@ def kpi_summary(snapshot: HealthSnapshot, calorie_goal: int = 2300, step_goal: i
             latest_weight = float(valid["Weight"].iloc[-1])
             if len(valid) > 1:
                 weight_delta = latest_weight - float(valid["Weight"].iloc[0])
+                trend = valid[["Date", "Weight"]].copy()
+                trend["Trend"] = trend["Weight"].rolling(window=7, min_periods=1).mean()
+                if len(trend) >= 2:
+                    days_between = max((trend["Date"].iloc[-1] - trend["Date"].iloc[0]).days, 1)
+                    weekly_weight_change = ((trend["Trend"].iloc[-1] - trend["Trend"].iloc[0]) / days_between) * 7
+                    if weekly_weight_change <= -0.15:
+                        weight_trend_direction = "Trending down"
+                    elif weekly_weight_change >= 0.15:
+                        weight_trend_direction = "Trending up"
+                    else:
+                        weight_trend_direction = "Stable"
+                    if latest_weight > target_weight and weekly_weight_change < -0.05:
+                        weeks_left = int((latest_weight - target_weight) / abs(weekly_weight_change))
+                        goal_eta = f"{weeks_left} week(s)"
+                    elif latest_weight <= target_weight:
+                        goal_eta = "Goal reached"
 
-    readiness = 0
-    readiness_parts = []
-    if sessions_7d >= 2:
-        readiness += 30
-        readiness_parts.append("training rhythm")
-    if calorie_adherence >= 50:
-        readiness += 25
-        readiness_parts.append("nutrition consistency")
-    if activity_score >= 50:
-        readiness += 25
-        readiness_parts.append("movement base")
-
-    if not snapshot.checkins.empty:
-        recent_checkin = snapshot.checkins.sort_values("date").tail(1).iloc[0]
-        energy = float(recent_checkin.get("energy", 0) or 0)
-        mood = float(recent_checkin.get("mood", 0) or 0)
-        sleep = float(recent_checkin.get("sleep_hours", 0) or 0)
-        subjective = min(((energy + mood) / 10) * 12 + min(sleep / 8, 1) * 8, 20)
-        readiness += int(subjective)
-        readiness_parts.append("daily check-in")
-
-    readiness = min(readiness, 100)
-    if readiness >= 75:
-        readiness_label = "Primed"
-    elif readiness >= 45:
-        readiness_label = "Steady"
-    else:
-        readiness_label = "Needs input"
+    readiness_report = readiness_summary(snapshot, calorie_goal, step_goal)
+    readiness = readiness_report["score"]
+    readiness_label = readiness_report["label"]
+    readiness_parts = [
+        f"recovery {readiness_report['recovery_score']}%",
+        f"load {readiness_report['training_load_score']}%",
+        f"fuel {readiness_report['nutrition_score']}%",
+    ]
 
     return {
         "today_calories": totals["calories"],
@@ -161,22 +163,90 @@ def kpi_summary(snapshot: HealthSnapshot, calorie_goal: int = 2300, step_goal: i
         "activity_score": activity_score,
         "latest_weight": latest_weight,
         "weight_delta": weight_delta,
+        "weekly_weight_change": weekly_weight_change,
+        "weight_trend_direction": weight_trend_direction,
+        "goal_eta": goal_eta,
         "readiness": readiness,
         "readiness_label": readiness_label,
         "readiness_parts": readiness_parts,
+        "readiness_report": readiness_report,
     }
 
 
-def weekly_report(snapshot: HealthSnapshot, calorie_goal: int = 2300, step_goal: int = 8000) -> dict:
-    summary = kpi_summary(snapshot, calorie_goal, step_goal)
+@st.cache_data(ttl=120, show_spinner=False, hash_funcs={HealthSnapshot: id})
+def readiness_summary(snapshot: HealthSnapshot, calorie_goal: int = 2300, step_goal: int = 8000) -> dict:
+    return calculate_readiness(
+        ReadinessInputs(
+            workouts=snapshot.workouts,
+            food=snapshot.food,
+            steps=snapshot.steps,
+            checkins=snapshot.checkins,
+            calorie_goal=calorie_goal,
+            step_goal=step_goal,
+        )
+    )
+
+
+def weekly_report(snapshot: HealthSnapshot, calorie_goal: int = 2300, step_goal: int = 8000, target_weight: float = 72.1) -> dict:
+    summary = kpi_summary(snapshot, calorie_goal, step_goal, target_weight)
+    readiness = summary["readiness_report"]
     return {
         "headline": f"{summary['readiness_label']} week at {summary['readiness']} readiness",
         "training": f"{summary['sessions_7d']} training day(s), {summary['weekly_volume']:,} kg x reps",
-        "nutrition": f"{summary['calorie_adherence']}% calorie adherence",
+        "nutrition": f"{readiness['recovery_score']}% recovery, {summary['calorie_adherence']}% calorie adherence",
         "activity": f"{summary['avg_steps']:,} average steps, {summary['activity_score']}% target hit rate",
     }
 
 
+@st.cache_data(ttl=120, show_spinner=False, hash_funcs={HealthSnapshot: id})
+def habit_consistency(snapshot: HealthSnapshot, calorie_goal: int = 2300, step_goal: int = 8000, target_weight: float = 72.1) -> dict:
+    summary = kpi_summary(snapshot, calorie_goal, step_goal, target_weight)
+    logged_food_days = 0 if snapshot.food.empty else snapshot.food["date"].dt.date.nunique()
+    logged_step_days = 0 if snapshot.steps.empty else snapshot.steps["date"].dt.date.nunique()
+    logged_checkin_days = 0 if snapshot.checkins.empty else snapshot.checkins["date"].dt.date.nunique()
+
+    return {
+        "nutrition": summary["calorie_adherence"],
+        "activity": summary["activity_score"],
+        "training_days": summary["sessions_7d"],
+        "logged_food_days": min(logged_food_days, 7),
+        "logged_step_days": min(logged_step_days, 7),
+        "logged_checkin_days": min(logged_checkin_days, 7),
+    }
+
+
+@st.cache_data(ttl=120, show_spinner=False, hash_funcs={HealthSnapshot: id})
+def workout_highlights(snapshot: HealthSnapshot) -> dict:
+    workouts = snapshot.workouts
+    if workouts.empty:
+        return {
+            "best_lift": "No workouts yet",
+            "top_exercise": "No pattern yet",
+            "volume_note": "Log workouts to unlock progression.",
+        }
+
+    real = workouts[workouts["Workout"] != "Session Duration"].copy()
+    if real.empty:
+        return {
+            "best_lift": "No exercises yet",
+            "top_exercise": "No pattern yet",
+            "volume_note": "Log exercises to unlock progression.",
+        }
+
+    real["Volume"] = real["Weight"] * real["Reps"]
+    best_row = real.loc[real["Weight"].idxmax()]
+    top_exercise = real["Workout"].value_counts().idxmax()
+    last_14 = real[real["Date"] >= pd.Timestamp(date.today() - timedelta(days=13))]
+    volume_note = f"{int(last_14['Volume'].sum()):,} kg x reps in the last 14 days"
+
+    return {
+        "best_lift": f"{best_row['Workout']} at {float(best_row['Weight']):.1f} kg",
+        "top_exercise": str(top_exercise),
+        "volume_note": volume_note,
+    }
+
+
+@st.cache_data(ttl=120, show_spinner=False, hash_funcs={HealthSnapshot: id})
 def daily_nutrition(snapshot: HealthSnapshot, days: int = 30) -> pd.DataFrame:
     if snapshot.food.empty:
         return pd.DataFrame(columns=["Date", "Calories", "Protein"])
@@ -191,6 +261,7 @@ def daily_nutrition(snapshot: HealthSnapshot, days: int = 30) -> pd.DataFrame:
     return daily[["Date", "Calories", "Protein"]].sort_values("Date")
 
 
+@st.cache_data(ttl=120, show_spinner=False, hash_funcs={HealthSnapshot: id})
 def daily_steps(snapshot: HealthSnapshot, days: int = 30) -> pd.DataFrame:
     if snapshot.steps.empty:
         return pd.DataFrame(columns=["Date", "Steps"])
@@ -203,6 +274,7 @@ def daily_steps(snapshot: HealthSnapshot, days: int = 30) -> pd.DataFrame:
     return daily.sort_values("Date")
 
 
+@st.cache_data(ttl=120, show_spinner=False, hash_funcs={HealthSnapshot: id})
 def weight_trend(snapshot: HealthSnapshot) -> pd.DataFrame:
     if snapshot.measurements.empty or "Weight" not in snapshot.measurements.columns:
         return pd.DataFrame(columns=["Date", "Weight", "Trend"])

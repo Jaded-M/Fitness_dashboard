@@ -16,6 +16,9 @@ __pycache__/
 *$py.class
 .venv/
 .cache
+.env
+.env.*
+!.env.example
 
 # Streamlit local settings
 .streamlit/secrets.toml

@@ -22,17 +22,19 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
+from core.muscle_mapping import canonical_exercise_name, exercise_muscle_profile, normalize_group
+from ui import theme as chart_theme
+from ui.theme import PHI_COLORS
+
 # ==========================================
 # ELITE v2 — DESIGN TOKENS
 # ==========================================
-ACCENT_BLUE    = "#38BDF8"  # Frost Blue
-ACCENT_STEEL   = "#94A3B8"  # Slate / Steel
-ACCENT_SURFACE = "#1E293B"  # Card / Surface
-ACCENT_GREEN   = "#10B981"  # Success
-ACCENT_ROSE    = "#F43F5E"  # Alert / Error
-ACCENT_PURPLE  = "#8B5CF6"  # Secondary Logic
-
-CHART_CONFIG = dict(scrollZoom=True, displayModeBar=False, displaylogo=False)
+ACCENT_BLUE = PHI_COLORS["blue"]
+ACCENT_STEEL = PHI_COLORS["muted"]
+ACCENT_SURFACE = "#11161d"
+ACCENT_GREEN = PHI_COLORS["green"]
+ACCENT_ROSE = PHI_COLORS["rose"]
+ACCENT_PURPLE = PHI_COLORS["violet"]
 
 # Clean, professional layout for Elite v2
 CHART_LAYOUT = dict(
@@ -41,6 +43,7 @@ CHART_LAYOUT = dict(
     margin=dict(t=40, b=40, l=40, r=40),
     font=dict(color="#94A3B8", family="Inter, sans-serif"),
     xaxis=dict(
+        showgrid=True,
         gridcolor="rgba(31, 41, 55, 0.5)", 
         zeroline=False, 
         tickfont=dict(size=10),
@@ -53,7 +56,7 @@ CHART_LAYOUT = dict(
         title_font=dict(size=11, color="#64748B")
     ),
     hoverlabel=dict(
-        bgcolor="#111827",
+        bgcolor="#ffffff",
         font_size=13,
         font_family="Inter, sans-serif"
     ),
@@ -64,13 +67,21 @@ CHART_LAYOUT = dict(
     )
 )
 
-def render_consistency_heatmap(workout_df):
+CHART_CONFIG = chart_theme.CHART_CONFIG
+CHART_LAYOUT = chart_theme.CHART_LAYOUT
+
+
+
+def render_consistency_heatmap(workout_df, key: str = "consistency_heatmap"):
     """
     // WHAT IT DOES: Custom plots a GitHub-style heatmap of workout activity.
-    // HOW IT WORKS: Maps dates -> week strings and days of week -> integers.
-    //               Then places them onto a Plotly Heatmap grid.
     """
-    st.markdown("##### 🟩 Consistency Heatmap")
+    st.markdown(
+        """<div class="phi-section-title">Consistency</div>
+           <div class="phi-caption" style="margin-bottom:1rem;">Training frequency over the last 90 days</div>
+        """,
+        unsafe_allow_html=True
+    )
     
     if workout_df is None or workout_df.empty:
         st.info("Log workouts to build your heatmap.")
@@ -92,28 +103,33 @@ def render_consistency_heatmap(workout_df):
     # Calculate grid coords
     df["Week"] = df["Date"].dt.isocalendar().week
     df["Day"] = df["Date"].dt.dayofweek # 0=Monday, 6=Sunday
-    # Adjust for crossing years to keep linear X axis
     df["Week_Rank"] = df.groupby("Week").ngroup()
     
-    # Create the matrix for Plotly (7 rows x N cols)
-    # Z-value: 0=None, 1=Light, 2=Heavy
-    # Re-pivot
     matrix = df.pivot(index="Day", columns="Week_Rank", values="counts").fillna(0)
     text_matrix = df.pivot(index="Day", columns="Week_Rank", values="Date").astype(str).replace("NaT", "")
+    
+    # Custom colorscale: 0 is faint, then gradient up to bright cyan
+    colors = [
+        [0.0, "rgba(255, 255, 255, 0.03)"],
+        [0.01, "rgba(86, 199, 216, 0.15)"],
+        [0.5, "rgba(86, 199, 216, 0.6)"],
+        [1.0, "rgba(86, 199, 216, 1.0)"]
+    ]
     
     fig = go.Figure(data=go.Heatmap(
         z=matrix.values,
         text=text_matrix.values,
-        hovertemplate="Date: %{text}<br>Exercises: %{z}<extra></extra>",
-        colorscale=[[0, ACCENT_STEEL], [0.3, ACCENT_BLUE], [1.0, ACCENT_PURPLE]], # Elite v2 Gradient
+        hovertemplate="Date: %{text}<br>Exercises logged: %{z}<extra></extra>",
+        colorscale=colors,
         showscale=False,
         xgap=4,
-        ygap=4
+        ygap=4,
+        hoverlabel=dict(bgcolor="rgba(17, 22, 29, 0.95)", bordercolor="rgba(86,199,216,0.3)", font=dict(color="#f5f1e8"))
     ))
     
     fig.update_layout(
-        height=180,
-        margin=dict(t=10, b=20, l=40, r=10),
+        height=160,
+        margin=dict(t=0, b=0, l=40, r=0),
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         yaxis=dict(
@@ -122,94 +138,15 @@ def render_consistency_heatmap(workout_df):
             ticktext=["Mon", "Wed", "Fri", "Sun"],
             autorange="reversed",
             showgrid=False,
-            zeroline=False
+            zeroline=False,
+            tickfont=dict(color="#a7b0ae", size=10)
         ),
         xaxis=dict(showgrid=False, zeroline=False, showticklabels=False)
     )
     
-    st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+    st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False}, key=key)
 
-def render_recovery_radar(workout_df, muscle_map_data):
-    """
-    // WHAT IT DOES: Renders a Muscular Status Radar indicating which muscle groups are recovered.
-    """
-    st.markdown("##### 🧬 Muscle Recovery Radar")
-    if workout_df is None or workout_df.empty:
-        st.info("Log workouts to build your recovery profile.")
-        return
-
-    # Find the last time each primary group was trained
-    last_trained = {}
-    for _, row in workout_df.iterrows():
-        # Get base exercise name to match JSON
-        ex_base = str(row["Workout"]).split(" (")[0]
-        group = muscle_map_data.get(ex_base, {}).get("primary_group")
-        if group:
-            date = pd.to_datetime(row["Date"])
-            if group not in last_trained or date > pd.to_datetime(last_trained[group]):
-                last_trained[group] = date
-
-    if not last_trained:
-        st.info("Log mapped exercises to track recovery.")
-        return
-
-    now = datetime.now()
-    groups = sorted(list(set(d.get("primary_group") for d in muscle_map_data.values() if d.get("primary_group"))))
-    
-    # Calculate recovery scores (0 = fully fatigued, 100 = fully recovered 48h)
-    scores = []
-    colors = []
-    labels = []
-    
-    for g in groups:
-        if g in last_trained:
-            hours_since = (now - pd.to_datetime(last_trained[g])).total_seconds() / 3600.0
-            score = min(hours_since / 48.0 * 100, 100) # 48h = 100% recovered
-            scores.append(score)
-            
-            # Label with hours
-            if hours_since < 24:
-                labels.append(f"{g} ({int(hours_since)}h)")
-                colors.append(ACCENT_ROSE) # Rose Elite Accent
-            elif hours_since < 48:
-                labels.append(f"{g} ({int(hours_since)}h)")
-                colors.append("#ffb86c") # Legacy Amber replaced with warmer Orange
-            else:
-                labels.append(f"{g} (Ready)")
-                colors.append("#50fa7b") # Legacy Green replaced with mint Green
-        else:
-            scores.append(100)
-            labels.append(f"{g} (Ready)")
-            colors.append("#50fa7b")
-
-    # Close the radar loop
-    scores.append(scores[0])
-    labels.append(labels[0])
-    
-    fig = go.Figure(data=go.Scatterpolar(
-        r=scores,
-        theta=labels,
-        fill='toself',
-        fillcolor="rgba(0, 210, 255, 0.15)",
-        line=dict(color=ACCENT_BLUE),
-        hoverinfo="text",
-        text=[f"Score: {int(s)}/100" for s in scores]
-    ))
-    
-    fig.update_layout(
-        polar=dict(
-            radialaxis=dict(visible=False, range=[0, 100]),
-            angularaxis=dict(tickfont=dict(color="#d1d5db", size=10))
-        ),
-        showlegend=False,
-        height=280,
-        margin=dict(t=20, b=20, l=40, r=40),
-        plot_bgcolor="rgba(0,0,0,0)",
-        paper_bgcolor="rgba(0,0,0,0)"
-    )
-    
-    st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
-def render_progression_tab(real_df, all_exercises):
+def render_progression_tab(real_df, all_exercises, key: str = "prog_ex", chart_key: str = "progression_chart"):
     """
     // WHAT IT DOES:
     //   Renders the COMBINED Strength + Volume progression chart.
@@ -234,7 +171,7 @@ def render_progression_tab(real_df, all_exercises):
         st.info("No exercise data yet.")
         return
 
-    chosen = st.selectbox("Select Exercise to Analyse:", all_exercises, key="prog_ex")
+    chosen = st.selectbox("Select Exercise to Analyse:", all_exercises, key=key)
     ex_df  = real_df[real_df["Workout"] == chosen].sort_values("Date").copy()
 
     if ex_df.empty:
@@ -276,7 +213,8 @@ def render_progression_tab(real_df, all_exercises):
         name="Volume (kg·reps)",
         marker=dict(
             color=daily["Volume"], colorscale="Plasma", showscale=False,
-            line=dict(color="rgba(255,255,255,0.05)", width=0.5),
+            line=dict(width=0),
+            cornerradius=4,
             opacity=0.4,
         ),
         yaxis="y2",
@@ -326,141 +264,130 @@ def render_progression_tab(real_df, all_exercises):
             bgcolor="rgba(255,255,255,0.04)", bordercolor="rgba(255,255,255,0.08)"
         ),
         barmode="overlay",   # Bars render behind the lines
+        hovermode="closest",
     )
     
     fig.update_layout(**layout)
 
-    st.plotly_chart(fig, use_container_width=True, config=CHART_CONFIG)
+    st.plotly_chart(fig, use_container_width=True, config=CHART_CONFIG, key=chart_key)
 
 
-def render_split_volume_tab(real_df):
-    """Renders the Pie Chart and Weekly Volume Bar Chart (Tab 2)."""
-    split_counts = real_df["Split"].value_counts().reset_index()
-    split_counts.columns = ["Split", "Sessions"]
+def render_split_volume_tab(real_df, key_prefix: str = "split_volume"):
+    """
+    Split volume analytics panel.
 
-    fig_donut = go.Figure(go.Pie(
-        labels=split_counts["Split"], values=split_counts["Sessions"],
-        hole=0.5, textinfo="label+percent",
-        hovertemplate="<b>%{label}</b><br>%{value} sessions (%{percent})<extra></extra>",
+    Shows two charts built entirely from logged data:
+      1. Horizontal bar chart — sessions per split, ranked by frequency.
+      2. Grouped weekly volume bar chart — last 8 weeks, one bar per split.
+
+    No hardcoded split names or colours — everything is derived at runtime.
+    """
+    # ── Palette: enough distinct colours for up to 8 splits ──────────────────
+    _PALETTE = [
+        "#197f96", "#7469c9", "#2f9f68", "#c98a18",
+        "#ef7f82", "#b7cc7a", "#f9a87b", "#a8d8ea",
+    ]
+
+    # ── 1. Session frequency per split ───────────────────────────────────────
+    split_sessions = (
+        real_df.drop_duplicates(subset=["Date", "Split"])
+        .groupby("Split").size()
+        .rename("Sessions")
+        .sort_values(ascending=True)
+        .reset_index()
+    )
+
+    if split_sessions.empty:
+        st.info("Log workouts to see split frequency.")
+        return
+
+    colours = [_PALETTE[i % len(_PALETTE)] for i in range(len(split_sessions))]
+    total_sessions = split_sessions["Sessions"].sum()
+
+    fig_freq = go.Figure(go.Bar(
+        x=split_sessions["Sessions"],
+        y=split_sessions["Split"],
+        orientation="h",
         marker=dict(
-            colors=["#00d2ff", "#ff79c6", "#8B4FEC", "#50fa7b", "#f1fa8c"],
-            line=dict(color="rgba(255,255,255,0.15)", width=1.5)
-        )
-    ))
-    layout_donut = CHART_LAYOUT.copy()
-    layout_donut.update(dict(
-        title=dict(text="🥧 Training Split Distribution", font=dict(size=16, color="#f1fa8c")),
-        annotations=[dict(
-            text=f"<b>{split_counts['Sessions'].sum()}</b><br>total",
-            x=0.5, y=0.5, font_size=16, showarrow=False, font=dict(color="white")
-        )]
-    ))
-    fig_donut.update_layout(layout_donut)
-    st.plotly_chart(fig_donut, use_container_width=True, config=CHART_CONFIG)
-
-    real_copy = real_df.copy()
-    real_copy["Week"] = real_copy["Date"].dt.to_period("W").astype(str)
-    weekly_vol = real_copy.groupby("Week").apply(lambda x: (x["Reps"] * x["Weight"]).sum()).reset_index()
-    weekly_vol.columns = ["Week", "Volume"]
-    weekly_vol = weekly_vol.tail(8)
-
-    fig_weekly = go.Figure(go.Bar(
-        x=weekly_vol["Week"], y=weekly_vol["Volume"],
-        marker=dict(
-            color=weekly_vol["Volume"], colorscale="Viridis", showscale=False,
-            line=dict(color="rgba(255,255,255,0.1)", width=0.5)
+            color=colours,
+            line=dict(width=0),
+            cornerradius=4,
         ),
-        hovertemplate="<b>%{x}</b><br>Volume: %{y:,.0f} kg·reps<extra></extra>"
+        text=split_sessions["Sessions"].apply(lambda v: f"{v} session{'s' if v != 1 else ''}"),
+        textposition="outside",
+        textfont=dict(color="#68766f", size=11),
+        hovertemplate="<b>%{y}</b><br>%{x} sessions<extra></extra>",
     ))
+    layout_freq = CHART_LAYOUT.copy()
+    layout_freq.update(
+        title=dict(
+            text=f"Training Split Frequency — {total_sessions} total sessions",
+            font=dict(size=15, color="#f5f1e8"),
+        ),
+        xaxis=dict(title="Sessions", showgrid=False, zeroline=False),
+        yaxis=dict(showgrid=False, zeroline=False),
+        showlegend=False,
+        height=max(180, len(split_sessions) * 54 + 80),
+        margin=dict(l=10, r=80, t=55, b=30),
+    )
+    fig_freq.update_layout(layout_freq)
+    st.plotly_chart(fig_freq, use_container_width=True, config=CHART_CONFIG, key=f"{key_prefix}_freq")
+
+    # ── 2. Weekly volume grouped by split — last 8 weeks ─────────────────────
+    df_vol = real_df.copy()
+    df_vol["Volume"] = df_vol["Reps"] * df_vol["Weight"]
+    df_vol["Week"] = df_vol["Date"].dt.to_period("W").dt.start_time.dt.strftime("%d %b")
+
+    weekly = (
+        df_vol.groupby(["Week", "Split"])["Volume"]
+        .sum()
+        .reset_index()
+    )
+    # Keep only the 8 most recent weeks
+    recent_weeks = sorted(weekly["Week"].unique())[-8:]
+    weekly = weekly[weekly["Week"].isin(recent_weeks)]
+
+    splits_ordered = (
+        weekly.groupby("Split")["Volume"].sum()
+        .sort_values(ascending=False).index.tolist()
+    )
+
+    fig_weekly = go.Figure()
+    for idx, split in enumerate(splits_ordered):
+        data = weekly[weekly["Split"] == split]
+        fig_weekly.add_trace(go.Bar(
+            x=data["Week"],
+            y=data["Volume"],
+            name=split,
+            marker=dict(
+                color=_PALETTE[idx % len(_PALETTE)],
+                line=dict(width=0),
+                cornerradius=4,
+            ),
+            hovertemplate=f"<b>{split}</b><br>Week of %{{x}}<br>Volume: %{{y:,.0f}} kg·reps<extra></extra>",
+        ))
+
     layout_weekly = CHART_LAYOUT.copy()
-    layout_weekly.update(dict(
-        title=dict(text="📅 Weekly Volume — Last 8 Weeks", font=dict(size=16, color="#8B4FEC")),
-        yaxis_title="Volume (kg·reps)", xaxis_tickangle=-30
-    ))
+    layout_weekly.update(
+        title=dict(
+            text="Weekly Volume by Split — Last 8 Weeks",
+            font=dict(size=15, color="#f5f1e8"),
+        ),
+        barmode="group",
+        yaxis=dict(title="Volume (kg·reps)", gridcolor="rgba(148,163,184,0.12)", zeroline=False),
+        xaxis=dict(tickangle=-20, showgrid=False, zeroline=False),
+        legend=dict(
+            orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1,
+            bgcolor="rgba(255,255,255,0.03)", bordercolor="rgba(255,255,255,0.08)",
+        ),
+        height=380,
+        margin=dict(l=10, r=10, t=72, b=50),
+    )
     fig_weekly.update_layout(layout_weekly)
-    st.plotly_chart(fig_weekly, use_container_width=True, config=CHART_CONFIG)
+    st.plotly_chart(fig_weekly, use_container_width=True, config=CHART_CONFIG, key=f"{key_prefix}_weekly")
 
 
-def render_steps_tab(steps_df):
-    """Renders Daily Steps + Distance + Intensity (Tab 3)."""
-    if steps_df is not None and not steps_df.empty:
-        steps_copy = steps_df.copy()
-        steps_copy["date"] = pd.to_datetime(steps_copy["date"])
-        
-        # Calculate Intensity (Cadence)
-        steps_copy["cadence"] = (steps_copy["steps"] / steps_copy["active_minutes"]).fillna(0)
-        
-        # KPI Row
-        k1, k2, k3 = st.columns(3)
-        total_steps = steps_copy["steps"].sum()
-        total_dist = steps_copy["distance"].sum()
-        avg_cadence = steps_copy["cadence"].mean()
-        
-        k1.metric("👣 Total Steps (Period)", f"{total_steps:,}")
-        k2.metric("📍 Total Distance", f"{total_dist:,.1f} km")
-        k3.metric("⚡ Avg Intensity", f"{int(avg_cadence)} steps/min")
-
-        st.markdown("---")
-        
-        # 1. Step Count Chart
-        steps_copy["Color"] = steps_copy["steps"].apply(
-            lambda s: "#50fa7b" if s >= 10000 else ACCENT_BLUE if s >= 7000 else "#ff5555"
-        )
-        steps_copy["Label"] = steps_copy["steps"].apply(
-            lambda s: "10k+ 🔥" if s >= 10000 else "7k+ ✅" if s >= 7000 else "< 7k 💤"
-        )
-
-        fig_steps = go.Figure(go.Bar(
-            x=steps_copy["date"], y=steps_copy["steps"],
-            marker=dict(color=steps_copy["Color"], line=dict(color="rgba(255,255,255,0.05)", width=0.5)),
-            text=steps_copy["Label"], textposition="outside",
-            hovertemplate="<b>%{x|%d %b}</b><br>Steps: %{y:,}<extra></extra>"
-        ))
-        fig_steps.add_hline(
-            y=7000, line_dash="dot", line_color=ACCENT_BLUE,
-            annotation_text="7,000 Step Target", annotation_font_color=ACCENT_BLUE
-        )
-        layout_steps = CHART_LAYOUT.copy()
-        layout_steps.update(dict(
-            yaxis_title="Steps", showlegend=False
-        ))
-        fig_steps.update_layout(layout_steps)
-        st.plotly_chart(fig_steps, use_container_width=True, config=CHART_CONFIG)
-        st.caption(f"Daily average: **{int(steps_df['steps'].mean()):,} steps**")
-
-        # 2. Intensity (Cadence) Chart
-        # Calculate Rolling Cadence
-        steps_copy["rolling_cadence"] = steps_copy["cadence"].rolling(window=7, min_periods=1).mean()
-        
-        fig_intensity = go.Figure()
-        # Raw Cadence (Dots)
-        fig_intensity.add_trace(go.Scatter(
-            x=steps_copy["date"], y=steps_copy["cadence"],
-            mode="markers", name="Daily Cadence",
-            marker=dict(color="rgba(177, 79, 255, 0.4)", size=7),
-            hovertemplate="Cadence: %{y:.0f} step/min<extra></extra>"
-        ))
-        # Rolling Cadence (Line)
-        fig_intensity.add_trace(go.Scatter(
-            x=steps_copy["date"], y=steps_copy["rolling_cadence"],
-            mode="lines", name="7-Day Avg Intensity",
-            line=dict(color=ACCENT_PURPLE, width=3),
-            hovertemplate="Avg Intensity: %{y:.0f} step/min<extra></extra>"
-        ))
-        # Robust Layout Handling (Avoids Multiple Value Errors)
-        step_intensity_layout = CHART_LAYOUT.copy()
-        step_intensity_layout.update(dict(
-            title=dict(text="⚡ Activity Intensity (Steps per Minute)", font=dict(size=14, color=ACCENT_PURPLE)),
-            yaxis_title="Steps / Min",
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
-        ))
-        fig_intensity.update_layout(step_intensity_layout)
-        st.plotly_chart(fig_intensity, use_container_width=True, config=CHART_CONFIG)
-    else:
-        st.info("Head over to **'⚙️ Settings'** (Tab 6) to Sync Google Fit or manually log your steps!")
-
-
-def render_rpg_tab(real_df, best_df):
+def render_rpg_tab(real_df, best_df, key_prefix: str = "pr"):
     """Renders gamification badges, levels, and PRs (Tab 4)."""
     total_volume = (real_df["Reps"] * real_df["Weight"]).sum()
     level        = int(total_volume / 5000) + 1
@@ -506,187 +433,6 @@ def render_rpg_tab(real_df, best_df):
             yaxis=dict(categoryorder="total ascending")
         ))
         fig_pr.update_layout(layout_pr)
-        st.plotly_chart(fig_pr, use_container_width=True, config=CHART_CONFIG)
+        st.plotly_chart(fig_pr, use_container_width=True, config=CHART_CONFIG, key=f"{key_prefix}_chart")
 
 
-def render_stimulus_tab(real_df, muscle_map_data):
-    """Renders the Systemic Fatigue / Muscle Stimulus logic (Tab 5)."""
-    st.markdown("##### 🎯 7-Day Muscle Stimulus & Fatigue")
-    last_7_days = datetime.now() - timedelta(days=7)
-    recent_df = real_df[real_df["Date"] >= last_7_days]
-
-    muscle_points = {}
-    for _, row in recent_df.iterrows():
-        ex   = row["Workout"]
-        sets = row["Sets"]
-        # .get() safely returns a default dict if the exercise isn't mapped yet
-        mapping = muscle_map_data.get(ex, {})
-
-        # Use 'primary_group' (e.g., Chest, Back) for the main chart label
-        prim = mapping.get("primary_group", "Other")
-        if prim:
-            muscle_points[prim] = muscle_points.get(prim, 0) + sets
-
-        # Secondary muscles are stored as a list in our JSON
-        sec_list = mapping.get("secondary_muscles", [])
-        if isinstance(sec_list, list):
-            for s in sec_list:
-                # We give secondary muscles 0.5 points per set (half stimulus)
-                muscle_points[s] = muscle_points.get(s, 0) + (sets * 0.5)
-
-    if muscle_points:
-        stim_df = pd.DataFrame(list(muscle_points.items()), columns=["Muscle", "Stimulus Points"])
-        stim_df = stim_df.sort_values("Stimulus Points", ascending=True)
-
-        fig_stim = go.Figure(go.Bar(
-            x=stim_df["Stimulus Points"], y=stim_df["Muscle"], orientation="h",
-            marker=dict(
-                color=stim_df["Stimulus Points"], colorscale="Inferno", showscale=False,
-                line=dict(color="rgba(255,255,255,0.1)", width=0.5)
-            ),
-            hovertemplate="<b>%{y}</b><br>Stimulus: %{x} points<extra></extra>",
-            text=stim_df["Stimulus Points"].apply(lambda v: f"{v:.1f} pts"),
-            textposition="inside", textfont=dict(color="white")
-        ))
-        layout_stim = CHART_LAYOUT.copy()
-        layout_stim.update(dict(
-            title=dict(text="🔥 Systemic Fatigue by Muscle Group", font=dict(size=16, color="#ff5555")),
-            xaxis_title="Stimulus Points (Sets)",
-            yaxis=dict(categoryorder="total ascending")
-        ))
-        fig_stim.update_layout(layout_stim)
-        st.plotly_chart(fig_stim, use_container_width=True, config=CHART_CONFIG)
-        st.info("💡 **Tip:** High points = high fatigue. Make sure those muscles recover!")
-    else:
-        st.info("No exercises logged in the past 7 days.")
-
-import numpy as np
-
-def render_insights_tab(real_df, session_df, food_df, steps_df, weight_df):
-    """Renders the Data Science and Correlation Scatter plots (Tab 4)."""
-    
-    # 1. Gym Intensity Panel
-    st.markdown("#### ⚡ Gym Intensity (Volume Rate)")
-    if session_df is not None and not session_df.empty:
-        # Group session duration and volume by date
-        daily_vol = real_df.copy()
-        daily_vol["Volume"] = daily_vol["Weight"] * daily_vol["Reps"]
-        daily_v = daily_vol.groupby(daily_vol["Date"].dt.date)["Volume"].sum().reset_index()
-        
-        daily_s = session_df.groupby(session_df["Date"].dt.date)["Sets"].sum().reset_index(name="DurationMins")
-        
-        merged_intensity = pd.merge(daily_v, daily_s, on="Date")
-        if not merged_intensity.empty:
-            merged_intensity["Vol_Per_Min"] = merged_intensity["Volume"] / merged_intensity["DurationMins"]
-            avg_intensity = merged_intensity["Vol_Per_Min"].mean()
-            
-            st.metric("Avg Training Intensity", f"{avg_intensity:.1f} kg/min", help="Total kg moved divided by your session duration.")
-            
-            # Line chart for intensity over time
-            fig_i = go.Figure(go.Scatter(
-                x=merged_intensity["Date"], y=merged_intensity["Vol_Per_Min"], 
-                mode="lines+markers", line=dict(color="#00d2ff", width=3),
-                marker=dict(size=8, color="#b14fff")
-            ))
-            layout_i = CHART_LAYOUT.copy()
-            layout_i.update(dict(
-                title=dict(text="Intensity Over Time", font=dict(color="#d1d5db")),
-                yaxis_title="kg per minute",
-                height=250
-            ))
-            fig_i.update_layout(layout_i)
-            st.plotly_chart(fig_i, use_container_width=True, config=CHART_CONFIG)
-    else:
-        st.info("Log a 'Session Duration' (in minutes) to unlock Gym Intensity metrics.")
-
-    # 2. 4D Correlation Plot
-    st.markdown("---")
-    st.markdown("#### 🔭 4D Correlation Engine")
-    st.caption("Does high activity and low calories actually equal weight loss? Let's check the data.")
-    
-    if weight_df.empty or food_df.empty:
-        st.warning("Needs both Weight logs (from Nutrition table) and Calorie logs to build the 4D model.")
-        return
-
-    # Build joined dataset
-    # Daily Training Vol
-    d_train = real_df.copy()
-    d_train["Date"] = d_train["Date"].dt.date
-    d_train["Volume"] = d_train["Weight"] * d_train["Reps"]
-    d_train = d_train.groupby("Date")["Volume"].sum().reset_index()
-    
-    # Daily Food
-    d_food = food_df.copy()
-    d_food["Date"] = pd.to_datetime(d_food["date"]).dt.date
-    d_food = d_food.groupby("Date")["calories"].sum().reset_index()
-    
-    # Daily Weight
-    d_weight = weight_df.copy()
-    d_weight["Date"] = pd.to_datetime(d_weight["Date"]).dt.date
-    d_weight = d_weight.groupby("Date")["Weight"].mean().reset_index()
-    
-    # Daily Steps
-    if steps_df is not None and not steps_df.empty:
-        d_steps = steps_df.copy()
-        d_steps["Date"] = pd.to_datetime(d_steps["date"]).dt.date
-        d_steps = d_steps.groupby("Date")["steps"].sum().reset_index()
-    else:
-        d_steps = pd.DataFrame(columns=["Date", "steps"])
-    
-    # Merge all
-    df_merged = d_weight.merge(d_food, on="Date", how="inner")
-    
-    # Left join volume/steps (since we might not train/walk every day)
-    df_merged = df_merged.merge(d_train, on="Date", how="left").fillna({"Volume": 0})
-    
-    if not d_steps.empty:
-        df_merged = df_merged.merge(d_steps, on="Date", how="left").fillna({"steps": 0})
-    else:
-        df_merged["steps"] = 0
-        
-    if df_merged.empty or len(df_merged) < 3:
-        st.info("Not enough overlapping days of Weight + Calories to build correlation. Log more data!")
-        return
-        
-    # Calculated Rolling Averages
-    df_merged["roll_cal"] = df_merged["calories"].rolling(window=7, min_periods=1).mean()
-    df_merged["roll_weight"] = df_merged["Weight"].rolling(window=7, min_periods=1).mean()
-    
-    
-    fig_4d = make_subplots(specs=[[{"secondary_y": True}]])
-    
-    # 1. Calories (Raw Bars - Faded)
-    fig_4d.add_trace(
-        go.Bar(x=df_merged["Date"], y=df_merged["calories"], name="Daily Calories (Raw)", marker_color="rgba(0, 210, 255, 0.2)", hoverinfo="skip"),
-        secondary_y=False,
-    )
-    # 2. Calories (7-Day Avg - Solid Line)
-    fig_4d.add_trace(
-        go.Scatter(x=df_merged["Date"], y=df_merged["roll_cal"], name="7-Day Avg kcal", mode="lines", line=dict(color="#00d2ff", width=4)),
-        secondary_y=False,
-    )
-    
-    # 3. Weight (Raw Points - Faded)
-    fig_4d.add_trace(
-        go.Scatter(x=df_merged["Date"], y=df_merged["Weight"], name="Daily Weight (Raw)", mode="markers", marker=dict(color="rgba(245, 158, 11, 0.3)", size=6), hoverinfo="skip"),
-        secondary_y=True,
-    )
-    # 4. Weight (7-Day Avg - Solid Line)
-    fig_4d.add_trace(
-        go.Scatter(x=df_merged["Date"], y=df_merged["roll_weight"], name="7-Day Avg Weight", mode="lines", line=dict(color="#f59e0b", width=4)),
-        secondary_y=True,
-    )
-    
-    # Robust Layout Handling (Avoids Multiple Value Errors)
-    insight_layout = CHART_LAYOUT.copy()
-    insight_layout.update(dict(
-        title="🧬 Diet vs Weight Signal (7-Day Rolling)",
-        height=400,
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
-    ))
-    
-    fig_4d.update_layout(insight_layout)
-    fig_4d.update_yaxes(title_text="Calories (kcal)", secondary_y=False, showgrid=False)
-    fig_4d.update_yaxes(title_text="Weight (kg)", secondary_y=True, showgrid=False)
-    
-    st.plotly_chart(fig_4d, use_container_width=True, config=CHART_CONFIG)

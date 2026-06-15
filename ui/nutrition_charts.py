@@ -20,7 +20,7 @@ import pandas as pd
 import datetime
 import plotly.graph_objects as go
 from core.bca_engine import BCA_Engine
-from ui.theme import CHART_CONFIG, chart_layout as cl_fn
+from ui.theme import CHART_CONFIG, PHI_COLORS, chart_layout as cl_fn
 from utils import get_day_stats
 
 # Keep the cl() helper signature that this file already uses
@@ -43,7 +43,7 @@ def render_weekly_trends(food_df, tf_days, cal_goal):
     daily_cal["Date"] = pd.to_datetime(daily_cal["Date"])
 
     bar_colors = [
-        "#00ff88" if c <= cal_goal else "#ff5555"
+        PHI_COLORS["green"] if c <= cal_goal else PHI_COLORS["rose"]
         for c in daily_cal["Calories"]
     ]
 
@@ -54,19 +54,19 @@ def render_weekly_trends(food_df, tf_days, cal_goal):
     ))
     
     fig_cal.add_hline(
-        y=cal_goal, line_dash="dot", line_color="orange",
-        annotation_text="Daily Goal", annotation_font_color="orange"
+        y=cal_goal, line_dash="dot", line_color=PHI_COLORS["amber"],
+        annotation_text="Daily goal", annotation_font_color=PHI_COLORS["amber"]
     )
     
     if len(daily_cal) > 0:
         avg_cal = daily_cal["Calories"].mean()
         fig_cal.add_hline(
-            y=avg_cal, line_dash="dash", line_color="cyan",
-            annotation_text=f"Avg: {int(avg_cal)}", annotation_font_color="cyan"
+            y=avg_cal, line_dash="dash", line_color=PHI_COLORS["blue"],
+            annotation_text=f"Average {int(avg_cal)}", annotation_font_color=PHI_COLORS["blue"]
         )
     
-    chart_title = f"📅 Calorie Intake — Last {tf_days} Days" if tf_days < 9999 else "📅 Calorie Intake — All Time"
-    fig_cal.update_layout(**cl(title=dict(text=chart_title, font=dict(size=16, color="#00d2ff")), yaxis_title="Calories (kcal)"))
+    chart_title = f"Calorie intake - last {tf_days} days" if tf_days < 9999 else "Calorie intake - all time"
+    fig_cal.update_layout(**cl(title=dict(text=chart_title, font=dict(size=16, color=PHI_COLORS["blue"])), yaxis_title="Calories (kcal)"))
     st.plotly_chart(fig_cal, use_container_width=True, config=CHART_CONFIG)
 
     # ── Protein Trend ──
@@ -78,13 +78,13 @@ def render_weekly_trends(food_df, tf_days, cal_goal):
     fig_prot.add_trace(go.Scatter(
         x=daily_p["Date"], y=daily_p["Protein"],
         mode="lines+markers", name="Protein",
-        line=dict(color="#ff79c6", width=3),
-        marker=dict(size=8, color="#ff79c6", line=dict(color="white", width=1.5)),
-        fill="tozeroy", fillcolor="rgba(255,121,198,0.08)",
+        line=dict(color=PHI_COLORS["green"], width=3),
+        marker=dict(size=8, color=PHI_COLORS["green"], line=dict(color="rgba(23,32,28,0.20)", width=1.2)),
+        fill="tozeroy", fillcolor="rgba(47,159,104,0.10)",
         hovertemplate="<b>%{x|%d %b}</b><br>Protein: %{y}g<extra></extra>"
     ))
-    chart_title_prot = f"🥩 Protein Intake — Last {tf_days} Days" if tf_days < 9999 else "🥩 Protein Intake — All Time"
-    fig_prot.update_layout(**cl(title=dict(text=chart_title_prot, font=dict(size=16, color="#ff79c6")), yaxis_title="Protein (g)"))
+    chart_title_prot = f"Protein intake - last {tf_days} days" if tf_days < 9999 else "Protein intake - all time"
+    fig_prot.update_layout(**cl(title=dict(text=chart_title_prot, font=dict(size=16, color=PHI_COLORS["green"])), yaxis_title="Protein (g)"))
     st.plotly_chart(fig_prot, use_container_width=True, config=CHART_CONFIG)
 
 
@@ -94,7 +94,7 @@ def render_day_breakdown(food_df, cal_goal, MACRO_SPLIT_PROTEIN, MACRO_SPLIT_CAR
         return
 
     today_date = datetime.date.today()
-    selected_day = st.date_input("📆 View metrics for:", today_date, key="day_picker")
+    selected_day = st.date_input("View metrics for", today_date, key="day_picker")
     
     ts = pd.Timestamp(selected_day)
     day_df = food_df[food_df["date"].dt.normalize() == ts]
@@ -110,12 +110,12 @@ def render_day_breakdown(food_df, cal_goal, MACRO_SPLIT_PROTEIN, MACRO_SPLIT_CAR
     tgt_fat  = int((tgt_cal * MACRO_SPLIT_FATS) / 9)
 
     d1, d2, d3, d4 = st.columns(4)
-    d1.metric("🔥 Calories",  s_cal, f"{tgt_cal - s_cal:+} kcal remaining", delta_color="inverse")
-    d2.metric("🥩 Protein",   s_prot, f"{tgt_prot - s_prot:+} g remaining", delta_color="inverse")
-    d3.metric("🍞 Carbs",     s_carb, f"{tgt_carb - s_carb:+} g remaining", delta_color="inverse")
-    d4.metric("🥑 Fats",      s_fat, f"{tgt_fat - s_fat:+} g remaining", delta_color="inverse")
+    d1.metric("Calories",  s_cal, f"{tgt_cal - s_cal:+} kcal remaining", delta_color="inverse")
+    d2.metric("Protein",   s_prot, f"{tgt_prot - s_prot:+} g remaining", delta_color="inverse")
+    d3.metric("Carbs",     s_carb, f"{tgt_carb - s_carb:+} g remaining", delta_color="inverse")
+    d4.metric("Fats",      s_fat, f"{tgt_fat - s_fat:+} g remaining", delta_color="inverse")
 
-    st.markdown("##### 📊 Macro Progress")
+    st.markdown("##### Macro Progress")
     
     def get_prog(current, tgt):
         return min(current / tgt, 1.0) * 100 if tgt > 0 else 0
@@ -153,19 +153,19 @@ def render_day_breakdown(food_df, cal_goal, MACRO_SPLIT_PROTEIN, MACRO_SPLIT_CAR
     fig_gauge = go.Figure(go.Indicator(
         mode="gauge+number+delta",
         value=s_cal,
-        delta={"reference": cal_goal, "decreasing": {"color": "#00ff88"}, "increasing": {"color": "#ff5555"}},
-        title={"text": f"Calories — {selected_day.strftime('%d %b %Y')}", "font": {"color": "white"}},
+        delta={"reference": cal_goal, "decreasing": {"color": PHI_COLORS["green"]}, "increasing": {"color": PHI_COLORS["rose"]}},
+        title={"text": f"Calories - {selected_day.strftime('%d %b %Y')}", "font": {"color": PHI_COLORS["ink"]}},
         gauge={
-            "axis": {"range": [0, cal_goal * 1.5], "tickcolor": "white"},
-            "bar":  {"color": "#00d2ff"},
+            "axis": {"range": [0, cal_goal * 1.5], "tickcolor": "#94a3b8"},
+            "bar":  {"color": PHI_COLORS["blue"]},
             "steps": [
-                {"range": [0, cal_goal * 0.75], "color": "rgba(0,255,136,0.15)"},
-                {"range": [cal_goal * 0.75, cal_goal], "color": "rgba(0,210,255,0.15)"},
-                {"range": [cal_goal, cal_goal * 1.5], "color": "rgba(255,85,85,0.15)"},
+                {"range": [0, cal_goal * 0.75], "color": "rgba(94,226,160,0.15)"},
+                {"range": [cal_goal * 0.75, cal_goal], "color": "rgba(86,199,216,0.15)"},
+                {"range": [cal_goal, cal_goal * 1.5], "color": "rgba(255,107,122,0.15)"},
             ],
-            "threshold": {"line": {"color": "orange", "width": 3}, "value": cal_goal}
+            "threshold": {"line": {"color": PHI_COLORS["amber"], "width": 3}, "value": cal_goal}
         },
-        number={"suffix": " kcal", "font": {"color": "white"}}
+        number={"suffix": " kcal", "font": {"color": PHI_COLORS["ink"]}}
     ))
     fig_gauge.update_layout(**cl(height=400, margin=dict(t=30, b=15, l=40, r=35), hovermode=False))
     st.plotly_chart(fig_gauge, use_container_width=True, config=CHART_CONFIG)
@@ -176,12 +176,12 @@ def render_day_breakdown(food_df, cal_goal, MACRO_SPLIT_PROTEIN, MACRO_SPLIT_CAR
             labels=["Protein", "Carbs", "Fats"],
             values=[s_prot, s_carb, s_fat],
             hole=0.5,
-            marker=dict(colors=["#ff79c6", "#8B4FEC", "#f1fa8c"], line=dict(color="rgba(255,255,255,0.15)", width=2)),
+            marker=dict(colors=[PHI_COLORS["green"], PHI_COLORS["blue"], PHI_COLORS["amber"]], line=dict(color="rgba(23,32,28,0.10)", width=2)),
             hovertemplate="<b>%{label}</b>: %{value}g (%{percent})<extra></extra>", textinfo="label+percent"
         ))
         fig_donut.update_layout(**cl(height=280, margin=dict(t=40, b=10, l=10, r=10), hovermode=False,
-            title=dict(text="Consumed Macro Split", font=dict(size=14, color="#f1fa8c")),
-            annotations=[dict(text=f"<b>{s_cal}</b><br>kcal", x=0.5, y=0.5, font_size=13, showarrow=False, font=dict(color="white"))]
+            title=dict(text="Consumed macro split", font=dict(size=14, color=PHI_COLORS["amber"])),
+            annotations=[dict(text=f"<b>{s_cal}</b><br>kcal", x=0.5, y=0.5, font_size=13, showarrow=False, font=dict(color=PHI_COLORS["ink"]))]
         ))
         st.plotly_chart(fig_donut, use_container_width=True, config=CHART_CONFIG)
         
@@ -190,13 +190,13 @@ def render_day_breakdown(food_df, cal_goal, MACRO_SPLIT_PROTEIN, MACRO_SPLIT_CAR
         meal_split.columns = ["Meal", "Calories"]
         fig_meal = go.Figure(go.Bar(
             x=meal_split["Calories"], y=meal_split["Meal"], orientation="h",
-            marker=dict(color=meal_split["Calories"], colorscale="Plasma", showscale=False, line=dict(color="rgba(255,255,255,0.1)", width=0.5)),
-            text=meal_split["Calories"].apply(lambda v: f"{v} kcal"), textposition="inside", textfont=dict(color="white")
+            marker=dict(color=PHI_COLORS["blue"], line=dict(color="rgba(23,32,28,0.1)", width=0.5)),
+            text=meal_split["Calories"].apply(lambda v: f"{v} kcal"), textposition="inside", textfont=dict(color="#ffffff")
         ))
-        fig_meal.update_layout(**cl(height=280, margin=dict(t=40, b=10, l=10, r=10), hovermode="y unified", title=dict(text="By Meal", font=dict(size=14, color="#8B4FEC")), xaxis_title="kcal"))
+        fig_meal.update_layout(**cl(height=280, margin=dict(t=40, b=10, l=10, r=10), hovermode="y unified", title=dict(text="By meal", font=dict(size=14, color=PHI_COLORS["blue"])), xaxis_title="kcal"))
         st.plotly_chart(fig_meal, use_container_width=True, config=CHART_CONFIG)
 
-    st.markdown("##### 📋 Food Log")
+    st.markdown("##### Food Log")
     show_cols = ["food_item", "calories", "protein", "carbs", "fats", "fiber", "meal_type"]
     day_table = day_df[show_cols].copy()
     day_table.columns = ["Food", "Calories", "Protein", "Carbs", "Fats", "Fiber", "Meal"]
@@ -216,9 +216,9 @@ def render_body_progress(physical_df, tf_days):
     fig_w.add_trace(go.Scatter(
         x=phys["Date"], y=phys["Weight"],
         mode="lines+markers", name="Weight (kg)",
-        line=dict(color="#00d2ff", width=3),
-        marker=dict(size=9, color="#00d2ff", line=dict(color="white", width=1.5)),
-        fill="tozeroy", fillcolor="rgba(0,210,255,0.07)",
+        line=dict(color=PHI_COLORS["blue"], width=3),
+        marker=dict(size=9, color=PHI_COLORS["blue"], line=dict(color="rgba(23,32,28,0.20)", width=1.2)),
+        fill="tozeroy", fillcolor="rgba(25,127,150,0.09)",
         hovertemplate="<b>%{x|%d %b %Y}</b><br>%{y:.1f} kg<extra></extra>"
     ))
     
@@ -226,13 +226,13 @@ def render_body_progress(physical_df, tf_days):
         delta = phys["Weight"].iloc[-1] - phys["Weight"].iloc[0]
         fig_w.add_annotation(
             x=phys["Date"].iloc[-1], y=phys["Weight"].iloc[-1],
-            text=(f"{'▼' if delta <= 0 else '▲'} {abs(delta):.1f} kg {'lost' if delta <= 0 else 'gained'}"),
+            text=(f"{'down' if delta <= 0 else 'up'} {abs(delta):.1f} kg {'lost' if delta <= 0 else 'gained'}"),
             showarrow=True, arrowhead=2,
-            font=dict(color="#00ff88" if delta <= 0 else "#ff5555", size=12),
-            bgcolor="rgba(0,0,0,0.5)", borderpad=4
+            font=dict(color=PHI_COLORS["green"] if delta <= 0 else PHI_COLORS["rose"], size=12),
+            bgcolor="rgba(255,255,255,0.92)", borderpad=4
         )
         
-    fig_w.update_layout(**cl(title=dict(text="⚖️ Weight Trend", font=dict(size=16, color="#00d2ff")), yaxis_title="Weight (kg)"))
+    fig_w.update_layout(**cl(title=dict(text="Weight trend", font=dict(size=16, color=PHI_COLORS["blue"])), yaxis_title="Weight (kg)"))
     st.plotly_chart(fig_w, use_container_width=True, config=CHART_CONFIG)
 
     def render_measurement_chart(measurement, color, emoji):
@@ -244,20 +244,20 @@ def render_body_progress(physical_df, tf_days):
                 x=m_data["Date"], y=m_data[measurement],
                 mode="lines+markers", name=f"{measurement} (in)",
                 line=dict(color=color, width=3),
-                marker=dict(size=9, color=color, line=dict(color="white", width=1.5)),
+                marker=dict(size=9, color=color, line=dict(color="rgba(255,255,255,0.55)", width=1.2)),
                 fill="tozeroy", fillcolor=color.replace(")", ",0.07)").replace("rgb", "rgba"),
                 hovertemplate="<b>%{x|%d %b %Y}</b><br>%{y:.1f} in<extra></extra>"
             ))
-            fig.update_layout(**cl(title=dict(text=f"{emoji} {measurement} Trend", font=dict(size=16, color=color)), yaxis_title=f"{measurement} (inches)"))
+            fig.update_layout(**cl(title=dict(text=f"{measurement} trend", font=dict(size=16, color=color)), yaxis_title=f"{measurement} (inches)"))
             st.plotly_chart(fig, use_container_width=True, config=CHART_CONFIG)
 
-    render_measurement_chart("Waist", "#ff79c6", "📏")
-    render_measurement_chart("Hips", "#8B4FEC", "🍑")
-    render_measurement_chart("Thigh", "#f1fa8c", "🦵")
-    render_measurement_chart("Chest", "#50fa7b", "🫁")
-    render_measurement_chart("Arms", "#ffb86c", "💪")
+    render_measurement_chart("Waist", PHI_COLORS["rose"], "")
+    render_measurement_chart("Hips", "#b9a7ff", "")
+    render_measurement_chart("Thigh", PHI_COLORS["amber"], "")
+    render_measurement_chart("Chest", PHI_COLORS["green"], "")
+    render_measurement_chart("Arms", PHI_COLORS["blue"], "")
 
-    st.markdown("##### 📋 All Measurements")
+    st.markdown("##### All Measurements")
     disp = phys.copy()
     disp["Date"] = disp["Date"].dt.strftime("%d %b %Y")
     st.dataframe(disp, use_container_width=True, hide_index=True)
@@ -272,14 +272,14 @@ def render_macro_history(food_df, water_df_raw, tf_days, water_goal):
         m_daily["Date"] = pd.to_datetime(m_daily["Date"])
 
         fig_stack = go.Figure()
-        macro_colors = {"Protein": "#ff79c6", "Carbs": "#8B4FEC", "Fats": "#f1fa8c", "Fiber": "#50fa7b"}
+        macro_colors = {"Protein": PHI_COLORS["green"], "Carbs": PHI_COLORS["blue"], "Fats": PHI_COLORS["amber"], "Fiber": PHI_COLORS["violet"]}
         for macro, color in macro_colors.items():
             fig_stack.add_trace(go.Bar(
                 x=m_daily["Date"], y=m_daily[macro], name=macro, marker_color=color,
                 hovertemplate=f"<b>%{{x|%d %b}}</b><br>{macro}: %{{y}}g<extra></extra>"
             ))
-        chart_title_stack = f"📊 Daily Macros — Last {tf_days} Days" if tf_days < 9999 else "📊 Daily Macros — All Time"
-        fig_stack.update_layout(**cl(barmode="stack", title=dict(text=chart_title_stack, font=dict(size=16, color="#f1fa8c")), yaxis_title="Grams (g)"))
+        chart_title_stack = f"Daily macros - last {tf_days} days" if tf_days < 9999 else "Daily macros - all time"
+        fig_stack.update_layout(**cl(barmode="stack", title=dict(text=chart_title_stack, font=dict(size=16, color=PHI_COLORS["amber"])), yaxis_title="Grams (g)"))
         st.plotly_chart(fig_stack, use_container_width=True, config=CHART_CONFIG)
 
     # Hydration history
@@ -294,66 +294,226 @@ def render_macro_history(food_df, water_df_raw, tf_days, water_goal):
 
         fig_water = go.Figure(go.Bar(
             x=wh_7["Date"], y=wh_7["Cups"],
-            marker=dict(color=wh_7["Cups"], colorscale="Blues", showscale=False, line=dict(color="rgba(255,255,255,0.1)", width=0.5)),
+            marker=dict(color=PHI_COLORS["blue"], line=dict(color="rgba(23,32,28,0.1)", width=0.5)),
             hovertemplate="<b>%{x|%d %b}</b><br>Cups: %{y}<extra></extra>"
         ))
-        fig_water.add_hline(y=water_goal, line_dash="dot", line_color="cyan", annotation_text="Daily Goal", annotation_font_color="cyan")
-        chart_title_water = f"💧 Hydration — Last {tf_days} Days" if tf_days < 9999 else "💧 Hydration — All Time"
-        fig_water.update_layout(**cl(title=dict(text=chart_title_water, font=dict(size=16, color="#00d2ff")), yaxis_title="Cups"))
+        fig_water.add_hline(y=water_goal, line_dash="dot", line_color=PHI_COLORS["blue"], annotation_text="Daily goal", annotation_font_color=PHI_COLORS["blue"])
+        chart_title_water = f"Hydration - last {tf_days} days" if tf_days < 9999 else "Hydration - all time"
+        fig_water.update_layout(**cl(title=dict(text=chart_title_water, font=dict(size=16, color=PHI_COLORS["blue"])), yaxis_title="Cups"))
         st.plotly_chart(fig_water, use_container_width=True, config=CHART_CONFIG)
     elif food_df.empty and water_df_raw.empty:
         st.info("Log food and water to see history charts.")
 
 
-def render_bca_engine(latest_weight):
-    st.markdown("##### 🧬 Biological Engine")
-    st.markdown("Using your Body Composition Analysis (BCA) to calculate exact metabolic needs.")
-    
-    current_wt = latest_weight if latest_weight else 89.3
-    engine = BCA_Engine(current_wt)
-    
+def render_bca_engine(latest_weight: float) -> None:
+    """
+    Dynamic Biological Composition Analysis panel.
+
+    All inputs are editable by the user at runtime — no hardcoded personal
+    values.  The engine recalculates BMR, TDEE, macros, and a weight-
+    projection chart whenever any input changes.
+    """
+    import datetime
+    from core.bca_engine import BCA_Engine, ACTIVITY_MULTIPLIERS
+
+    st.markdown(
+        """
+        <div style="margin-bottom:1.1rem;">
+            <div style="color:var(--muted);font-size:0.72rem;font-weight:700;
+                        letter-spacing:0.08em;text-transform:uppercase;
+                        margin-bottom:0.3rem;">Biological Engine</div>
+            <div style="color:#f5f1e8;font-size:1.05rem;font-weight:700;
+                        margin-bottom:0.25rem;">Precision Metabolic Calculator</div>
+            <div style="color:var(--muted);font-size:0.85rem;">
+                Katch-McArdle BMR blended with Mifflin-St Jeor when profile data
+                is provided. All figures update in real time.
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # ── Input panel ───────────────────────────────────────────────────────────
+    with st.expander("Configure your biometric profile", expanded=True):
+        col_a, col_b = st.columns(2)
+        with col_a:
+            current_wt = st.number_input(
+                "Current weight (kg)", min_value=40.0, max_value=200.0,
+                value=float(latest_weight) if latest_weight else 80.0,
+                step=0.1, key="bca_wt",
+            )
+            age = st.number_input(
+                "Age (years)", min_value=15, max_value=80,
+                value=25, step=1, key="bca_age",
+            )
+            sex = st.selectbox(
+                "Biological sex", ["Male", "Female"], key="bca_sex",
+            )
+        with col_b:
+            height_cm = st.number_input(
+                "Height (cm)", min_value=140.0, max_value=220.0,
+                value=175.0, step=0.5, key="bca_height",
+            )
+            activity_label = st.selectbox(
+                "Activity level",
+                options=list(ACTIVITY_MULTIPLIERS.keys()),
+                index=2,  # "moderate" default
+                format_func=lambda k: {
+                    "sedentary":   "Sedentary (desk job, no gym)",
+                    "light":       "Light (1-3 workouts/week)",
+                    "moderate":    "Moderate (3-5 workouts/week)",
+                    "active":      "Active (6-7 workouts/week)",
+                    "very_active": "Very active (physical job + gym)",
+                }[k],
+                key="bca_activity",
+            )
+            goal = st.selectbox(
+                "Goal", ["cut", "maintenance", "bulk"], index=0, key="bca_goal",
+                format_func=lambda g: {
+                    "cut":         "Cut - lose fat (~0.5 kg/week)",
+                    "maintenance": "Maintenance - hold weight",
+                    "bulk":        "Bulk - lean gain (~0.25 kg/week)",
+                }[g],
+            )
+
+        st.markdown("**Baseline BCA scan values** (from your last InBody / DEXA report)")
+        bc1, bc2, bc3 = st.columns(3)
+        with bc1:
+            base_weight  = st.number_input("Scan weight (kg)",   40.0, 200.0, 89.3, 0.1, key="bca_bw")
+            base_bf_mass = st.number_input("Body fat mass (kg)",  0.0, 100.0, 33.5, 0.1, key="bca_bf")
+        with bc2:
+            base_smm = st.number_input("Skeletal muscle (kg)", 0.0, 80.0, 30.9, 0.1, key="bca_smm")
+            base_ffm = st.number_input("Fat-free mass (kg)",   0.0, 150.0, 55.8, 0.1, key="bca_ffm")
+        with bc3:
+            base_pbf = st.number_input("Body fat %",            0.0, 70.0,  37.6, 0.1, key="bca_pbf")
+            base_bmr = st.number_input("Scan BMR (kcal)",       800, 4000, 1575, 10,  key="bca_bmr")
+
+        target_wt = st.number_input(
+            "Target weight (kg) - projection target",
+            min_value=40.0, max_value=200.0,
+            value=max(40.0, current_wt - 10.0),
+            step=0.5, key="bca_target",
+        )
+
+    # ── Build engine ─────────────────────────────────────────────────────────
+    engine = BCA_Engine(
+        current_weight_kg=current_wt,
+        base_weight=base_weight,
+        base_bf_mass=base_bf_mass,
+        base_smm=base_smm,
+        base_bmr=base_bmr,
+        base_pbf=base_pbf,
+        base_ffm=base_ffm,
+        age=int(age),
+        sex=sex.lower(),
+        height_cm=float(height_cm),
+        activity_level=activity_label,
+    )
+
     metrics = engine.estimate_current_metrics()
-    bmr = engine.get_dynamic_bmr()
-    macros = engine.get_macro_targets(goal="cut")
-    
-    st.markdown(f"**Current Weight:** {current_wt} kg")
-    c1, c2, c3 = st.columns(3)
-    c1.metric("🔥 Precise BMR", f"{bmr} kcal", help="Katch-McArdle Formula")
-    c2.metric("🥩 Lean Mass", f"{metrics['estimated_smm_kg']} kg", help="Skeletal Muscle Mass")
-    c3.metric("🧈 Body Fat", f"{metrics['estimated_pbf_percent']}%", help="Estimated based on weight loss")
-    
-    st.markdown("---")
-    st.markdown("###### 📊 Precision Macro Targets (Cutting Phase)")
-    st.info(f"Target Calories: **{macros['target_calories']} kcal/day**")
-    
-    mc1, mc2, mc3 = st.columns(3)
-    mc1.metric("Protein", f"{macros['protein_g']}g", "Preserve Muscle")
-    mc2.metric("Fats", f"{macros['fat_g']}g", "Hormones")
-    mc3.metric("Carbs", f"{macros['carbs_g']}g", "Workout Energy")
-    st.caption("Note: These macros are dynamically calculated against your live Lean Body Mass via `core/bca_engine.py`.")
-    
-    st.markdown("---")
-    st.markdown("##### 🚀 Road to 72.1 kg (Weight Projection)")
-    
-    if current_wt > 72.1:
-        kg_to_lose = current_wt - 72.1
-        weeks_needed = int(kg_to_lose / 0.5)
-        target_date = datetime.date.today() + datetime.timedelta(weeks=weeks_needed)
-        
-        st.success(f"🎯 **Target:** Based on your current BMR/Macros, you are on track to hit **72.1 kg** in approximately **{weeks_needed} weeks** ({target_date.strftime('%B %Y')}).")
-        
-        dates = [datetime.date.today() + datetime.timedelta(weeks=i) for i in range(weeks_needed + 1)]
-        weights = [current_wt - (0.5 * i) for i in range(weeks_needed + 1)]
-        
+    targets = engine.get_macro_targets(goal=goal, target_weight_kg=target_wt)
+
+    # ── KPI row 1: composition ────────────────────────────────────────────────
+    st.markdown("")
+    k1, k2, k3, k4 = st.columns(4)
+    k1.metric("BMR",       f"{targets['bmr']:,} kcal",  help="Katch-McArdle (lean-mass weighted)")
+    k2.metric("TDEE",      f"{targets['tdee']:,} kcal", help="Total Daily Energy Expenditure")
+    k3.metric("Lean mass", f"{metrics['estimated_lbm_kg']} kg")
+    k4.metric("Body fat",  f"{metrics['estimated_pbf_percent']}%")
+
+    # ── KPI row 2: macro targets ──────────────────────────────────────────────
+    st.markdown(
+        f"""
+        <div style="background:var(--panel);border:1px solid var(--line);
+                    border-radius:10px;padding:1rem;margin:0.75rem 0;">
+            <div style="color:var(--muted);font-size:0.72rem;font-weight:700;
+                        letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.6rem;">
+                Precision macro targets - {goal.capitalize()} phase
+                &nbsp;/&nbsp; {targets['target_calories']:,} kcal/day
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;">
+                <div>
+                    <div style="color:var(--muted);font-size:0.72rem;font-weight:700;
+                                letter-spacing:0.06em;text-transform:uppercase;">Protein</div>
+                    <div style="color:var(--green);font-size:1.6rem;font-weight:800;
+                                margin:0.3rem 0 0.1rem;">{targets['protein_g']}g</div>
+                    <div style="color:var(--muted);font-size:0.8rem;">Preserve muscle</div>
+                </div>
+                <div>
+                    <div style="color:var(--muted);font-size:0.72rem;font-weight:700;
+                                letter-spacing:0.06em;text-transform:uppercase;">Fats</div>
+                    <div style="color:var(--amber);font-size:1.6rem;font-weight:800;
+                                margin:0.3rem 0 0.1rem;">{targets['fat_g']}g</div>
+                    <div style="color:var(--muted);font-size:0.8rem;">Hormone health</div>
+                </div>
+                <div>
+                    <div style="color:var(--muted);font-size:0.72rem;font-weight:700;
+                                letter-spacing:0.06em;text-transform:uppercase;">Carbs</div>
+                    <div style="color:var(--blue);font-size:1.6rem;font-weight:800;
+                                margin:0.3rem 0 0.1rem;">{targets['carbs_g']}g</div>
+                    <div style="color:var(--muted);font-size:0.8rem;">Workout fuel</div>
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # ── Projection chart ──────────────────────────────────────────────────────
+    st.markdown("##### Weight Projection")
+
+    weeks = targets.get("weeks_to_goal")
+    target_date_str = targets.get("target_date")
+
+    if weeks and target_date_str:
+        target_date = datetime.date.fromisoformat(target_date_str)
+        wkly = targets["weekly_change_kg"]
+
+        st.success(
+            f"Target **{target_wt} kg** reachable in approximately **{weeks} weeks** "
+            f"({target_date.strftime('%B %Y')}) at {wkly:+.2f} kg/week."
+        )
+
+        projection_dates   = [datetime.date.today() + datetime.timedelta(weeks=i) for i in range(weeks + 1)]
+        projection_weights = [current_wt + (wkly * i) for i in range(weeks + 1)]
+
+        # Optional: smooth to target exactly
+        if projection_weights:
+            projection_weights[-1] = target_wt
+
         fig_proj = go.Figure()
         fig_proj.add_trace(go.Scatter(
-            x=dates, y=weights, mode='lines', name='Estimated Path',
-            line=dict(color='#f59e0b', width=3, dash='dash'),
-            fill='tozeroy', fillcolor='rgba(245, 158, 11, 0.05)'
+            x=projection_dates,
+            y=projection_weights,
+            mode="lines",
+            name="Projection",
+            line=dict(color="#e5b35d", width=3, dash="dash"),
+            fill="tozeroy",
+            fillcolor="rgba(229,179,93,0.05)",
+            hovertemplate="<b>%{x|%d %b %Y}</b><br>Est. weight: %{y:.1f} kg<extra></extra>",
         ))
-        fig_proj.add_hline(y=72.1, line_dash="dot", line_color="#00d2ff", annotation_text="Goal: 72.1kg")
-        fig_proj.update_layout(**cl(title="📈 Scientific Weight Projection", yaxis_title="Weight (kg)", height=350, margin=dict(t=30, b=20, l=10, r=10)))
+        fig_proj.add_hline(
+            y=target_wt,
+            line_dash="dot", line_color=PHI_COLORS["blue"], line_width=1.5,
+            annotation_text=f"Target {target_wt} kg",
+            annotation_font_color=PHI_COLORS["blue"], annotation_font_size=11,
+        )
+        fig_proj.update_layout(**cl(
+            title=f"Scientific weight projection - {goal.capitalize()} phase",
+            yaxis_title="Weight (kg)",
+            height=320,
+            margin=dict(t=45, b=20, l=10, r=10),
+        ))
         st.plotly_chart(fig_proj, use_container_width=True, config=CHART_CONFIG)
+    elif goal == "maintenance":
+        st.info("Maintenance mode selected - no weight projection needed.")
     else:
-        st.balloons()
-        st.success("🎉 You've hit your target weight! Switching to Maintenance/Bulk mode.")
+        st.info(
+            "Set a target weight that's lower than current weight (cut) "
+            "or higher (bulk) to generate a projection."
+        )
+
+    st.caption(
+        "BMR blends Katch-McArdle (70 %) and Mifflin-St Jeor (30 %) when age, "
+        "sex, and height are provided.  All calculations update instantly."
+    )

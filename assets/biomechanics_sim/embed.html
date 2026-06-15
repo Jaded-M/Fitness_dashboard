@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Biomechanics Simulator Embed</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* For embed, remove sidebar, topbar, and force bio-layout to fill the screen */
+    html, body {
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: transparent;
+    }
+    .content {
+      height: 100vh;
+      display: flex;
+    }
+    #page-biomech {
+      display: flex !important;
+      height: 100vh;
+    }
+    .bio-layout {
+      height: 100vh;
+    }
+  </style>
+</head>
+<body>
+
+<div class="content">
+  <main class="page active" id="page-biomech">
+    <div class="bio-layout">
+
+      <!-- ── LEFT: CONTROLS ─────────────────────────── -->
+      <aside class="ctrl-panel">
+
+        <!-- Presets -->
+        <div class="ctrl-section">
+          <h3>Posture Presets</h3>
+          <div class="preset-list">
+            <button class="btn-preset active" id="presetStanding" data-preset="standing">
+              <span>Balanced Standing</span>
+              <span class="preset-tag green">Optimal</span>
+            </button>
+            <button class="btn-preset" id="presetSlouch" data-preset="slouch">
+              <span>Desk Slouch</span>
+              <span class="preset-tag yellow">Strain</span>
+            </button>
+            <button class="btn-preset" id="presetBadLift" data-preset="badlift">
+              <span>Incorrect Lift</span>
+              <span class="preset-tag red">High Risk</span>
+            </button>
+            <button class="btn-preset" id="presetSquat" data-preset="squat">
+              <span>Squat Lift</span>
+              <span class="preset-tag green">Safe</span>
+            </button>
+            <button class="btn-preset" id="presetBackpack" data-preset="backpack">
+              <span>Heavy Backpack</span>
+              <span class="preset-tag yellow">Comp.</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- External Loads -->
+        <div class="ctrl-section">
+          <h3>External Loads</h3>
+          <div class="slider-group">
+            <div class="slider-row">
+              <div class="slider-label">
+                <span>Dumbbell (Hand)</span>
+                <span class="slider-val" id="valDumbbell">0 kg</span>
+              </div>
+              <input type="range" id="loadDumbbell" min="0" max="40" value="0" step="5">
+            </div>
+            <div class="slider-row">
+              <div class="slider-label">
+                <span>Backpack Load</span>
+                <span class="slider-val" id="valBackpack">0 kg</span>
+              </div>
+              <input type="range" id="loadBackpack" min="0" max="30" value="0" step="5">
+            </div>
+          </div>
+        </div>
+
+        <!-- Muscle Activators -->
+        <div class="ctrl-section">
+          <h3>Muscle Activators</h3>
+          <div class="slider-group">
+            <div class="slider-row">
+              <div class="slider-label">
+                <span>Neck Extensors</span>
+                <span class="slider-val" id="valActNeck">0%</span>
+              </div>
+              <input type="range" class="muscle" id="actNeck" min="0" max="100" value="0" step="5">
+            </div>
+            <div class="slider-row">
+              <div class="slider-label">
+                <span>Erector Spinae</span>
+                <span class="slider-val" id="valActBack">0%</span>
+              </div>
+              <input type="range" class="muscle" id="actBack" min="0" max="100" value="0" step="5">
+            </div>
+            <div class="slider-row">
+              <div class="slider-label">
+                <span>Abdominals (Core)</span>
+                <span class="slider-val" id="valActCore">0%</span>
+              </div>
+              <input type="range" class="muscle" id="actCore" min="0" max="100" value="0" step="5">
+            </div>
+            <div class="slider-row">
+              <div class="slider-label">
+                <span>Quadriceps</span>
+                <span class="slider-val" id="valActQuads">0%</span>
+              </div>
+              <input type="range" class="muscle" id="actQuads" min="0" max="100" value="0" step="5">
+            </div>
+          </div>
+        </div>
+
+        <!-- Physics -->
+        <div class="ctrl-section">
+          <h3>Physics Parameters</h3>
+          <div class="slider-group">
+            <div class="slider-row">
+              <div class="slider-label">
+                <span>Gravity</span>
+                <span class="slider-val" id="valGravity">15 m/s²</span>
+              </div>
+              <input type="range" id="paramGravity" min="0" max="40" value="15" step="1">
+            </div>
+            <div class="slider-row">
+              <div class="slider-label">
+                <span>Damping</span>
+                <span class="slider-val" id="valDamping">0.98</span>
+              </div>
+              <input type="range" id="paramDamping" min="90" max="100" value="98" step="1">
+            </div>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- ── CENTER: CANVAS ─────────────────────────── -->
+      <div class="canvas-panel">
+        <div class="canvas-wrap">
+          <div class="drag-hint">🖱 Drag any joint to test loads</div>
+          <canvas id="simCanvas" width="580" height="560"></canvas>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="canvas-toolbar">
+          <div class="layer-toggles">
+            <button class="btn-toggle active" id="toggle_bones">Bones</button>
+            <button class="btn-toggle active" id="toggle_muscles">Muscles</button>
+            <button class="btn-toggle active" id="toggle_angles">Angles</button>
+            <button class="btn-toggle active" id="toggle_com">CoM</button>
+            <button class="btn-toggle active" id="toggle_vectors">Vectors</button>
+          </div>
+          <div class="playbar">
+            <button class="btn-action primary-btn" id="btnPlayPause">
+              <span id="playIcon">⏸</span> <span id="playText">Pause</span>
+            </button>
+            <button class="btn-action" id="btnReset">🔄 Reset</button>
+            <select class="speed-select" id="simSpeed">
+              <option value="0.25">0.25×</option>
+              <option value="0.5">0.5×</option>
+              <option value="1.0" selected>1×</option>
+              <option value="2.0">2×</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── RIGHT: TELEMETRY ────────────────────────── -->
+      <aside class="tel-panel">
+
+        <!-- Posture score -->
+        <div class="tel-section">
+          <h3>Posture Score</h3>
+          <div class="score-box">
+            <div class="score-label">Alignment Index</div>
+            <div class="score-value excellent" id="postureScore">100</div>
+            <div class="score-comment" id="postureComment">Optimal spinal alignment — keep it up!</div>
+          </div>
+        </div>
+
+        <!-- Telemetry rows -->
+        <div class="tel-section">
+          <h3>Mechanical Telemetry</h3>
+          <div class="tel-rows">
+            <div class="tel-row">
+              <span class="tel-lbl">Cervical Flexion</span>
+              <span class="tel-val ok" id="telNeck">—</span>
+            </div>
+            <div class="tel-row">
+              <span class="tel-lbl">Lumbar Curve</span>
+              <span class="tel-val ok" id="telSpine">—</span>
+            </div>
+            <div class="tel-row">
+              <span class="tel-lbl">CoM Offset</span>
+              <span class="tel-val ok" id="telCom">—</span>
+            </div>
+            <div class="tel-row">
+              <span class="tel-lbl">Lumbar Torque</span>
+              <span class="tel-val ok" id="telTorque">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Strain bars -->
+        <div class="tel-section">
+          <h3>Muscle Group Strain</h3>
+          <div class="strain-list">
+            <div class="strain-row">
+              <div class="strain-head">
+                <span class="strain-name">Neck Extensors</span>
+                <span class="strain-pct" id="lblNeck">0%</span>
+              </div>
+              <div class="bar-bg"><div class="bar-fill ok" id="barNeck"></div></div>
+            </div>
+            <div class="strain-row">
+              <div class="strain-head">
+                <span class="strain-name">Erector Spinae</span>
+                <span class="strain-pct" id="lblBack">0%</span>
+              </div>
+              <div class="bar-bg"><div class="bar-fill ok" id="barBack"></div></div>
+            </div>
+            <div class="strain-row">
+              <div class="strain-head">
+                <span class="strain-name">Abdominals (Core)</span>
+                <span class="strain-pct" id="lblCore">0%</span>
+              </div>
+              <div class="bar-bg"><div class="bar-fill ok" id="barCore"></div></div>
+            </div>
+            <div class="strain-row">
+              <div class="strain-head">
+                <span class="strain-name">Quadriceps</span>
+                <span class="strain-pct" id="lblQuads">0%</span>
+              </div>
+              <div class="bar-bg"><div class="bar-fill ok" id="barQuads"></div></div>
+            </div>
+            <div class="strain-row">
+              <div class="strain-head">
+                <span class="strain-name">Glutes / Hamstrings</span>
+                <span class="strain-pct" id="lblGlutes">0%</span>
+              </div>
+              <div class="bar-bg"><div class="bar-fill ok" id="barGlutes"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EMG -->
+        <div class="tel-section">
+          <h3>Real-Time EMG</h3>
+          <div class="emg-box">
+            <div class="emg-canvas-wrap">
+              <canvas id="emgCanvas"></canvas>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+    </div>
+  </main>
+</div>
+
+<script src="physics.js"></script>
+<script src="simulation.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
