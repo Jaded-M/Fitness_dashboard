@@ -2,6 +2,7 @@
 creds.json
 fitness_credentials.json
 token.pickle
+*.pickle
 G API key.txt
 
 # Data & DB
@@ -9,6 +10,8 @@ G API key.txt
 *.xlsx
 gym.db
 *.db
+*.txt
+!requirements.txt
 
 # Python
 __pycache__/
@@ -24,5 +27,8 @@ __pycache__/
 .streamlit/secrets.toml
 
 # Local scratch/export files
+scratch/
+streamlit_log.txt
+test_log.txt
 temp_context_dump.txt
 code_dump.txt
