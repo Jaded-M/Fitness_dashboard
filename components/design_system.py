@@ -1401,29 +1401,29 @@ def apply_platform_theme():
         }
 
         /* ==========================================
-         * 21. DAYLIGHT OPERATIONS THEME
+         * 21. SIGNAL OPS THEME
          * ==========================================
          */
         :root {
-            --bg:           #f3f6f2;
+            --bg:           #eef2f7;
             --panel:        #ffffff;
-            --panel-2:      #f8faf7;
-            --panel-3:      #eef3ee;
-            --ink:          #17201c;
-            --soft:         #39443f;
-            --muted:        #68766f;
-            --faint:        #8c9992;
-            --line:         rgba(35, 49, 43, 0.12);
-            --line-strong:  rgba(35, 49, 43, 0.22);
-            --blue:         #197f96;
-            --blue-2:       #315fbd;
-            --green:        #2f9f68;
-            --amber:        #c98a18;
-            --rose:         #d95f5f;
-            --violet:       #7469c9;
-            --orange:       #cf7240;
-            --shadow:       0 18px 46px rgba(25, 37, 31, 0.14);
-            --shadow-soft:  0 8px 22px rgba(25, 37, 31, 0.10);
+            --panel-2:      #f8fafc;
+            --panel-3:      #e8eef5;
+            --ink:          #15171c;
+            --soft:         #333a45;
+            --muted:        #667080;
+            --faint:        #97a1ae;
+            --line:         rgba(24, 31, 42, 0.12);
+            --line-strong:  rgba(24, 31, 42, 0.22);
+            --blue:         #008fb3;
+            --blue-2:       #2558d8;
+            --green:        #12a37f;
+            --amber:        #c48212;
+            --rose:         #d94b62;
+            --violet:       #6f6bd9;
+            --orange:       #e05f4f;
+            --shadow:       0 18px 46px rgba(17, 24, 34, 0.14);
+            --shadow-soft:  0 8px 22px rgba(17, 24, 34, 0.10);
             --radius:       8px;
             --radius-lg:    10px;
             --radius-sm:    6px;
@@ -1431,23 +1431,23 @@ def apply_platform_theme():
         .stApp {
             color: var(--ink);
             background:
-                linear-gradient(180deg, rgba(47,159,104,0.12) 0%, rgba(243,246,242,0) 34%),
-                linear-gradient(135deg, #f7f8f3 0%, #eef4f0 42%, #f6f1ea 100%) !important;
+                linear-gradient(180deg, rgba(0,143,179,0.11) 0%, rgba(238,242,247,0) 34%),
+                linear-gradient(135deg, #f8fafc 0%, #eef2f7 48%, #f6f0ee 100%) !important;
         }
         .stApp::before {
             background-image:
-                linear-gradient(rgba(44,63,54,0.055) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(44,63,54,0.042) 1px, transparent 1px);
+                linear-gradient(rgba(24,31,42,0.052) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(24,31,42,0.04) 1px, transparent 1px);
             background-size: 34px 34px;
             mask-image: linear-gradient(180deg, rgba(0,0,0,0.28), transparent 72%);
         }
         .stApp::after {
-            background: linear-gradient(90deg, #2f9f68 0%, #197f96 42%, #cf7240 100%);
+            background: linear-gradient(90deg, #008fb3 0%, #2558d8 48%, #e05f4f 100%);
             height: 3px;
         }
         header[data-testid="stHeader"] {
-            background: rgba(247,248,243,0.82) !important;
-            border-bottom: 1px solid rgba(35,49,43,0.08);
+            background: rgba(248,250,252,0.84) !important;
+            border-bottom: 1px solid rgba(24,31,42,0.08);
         }
         .block-container {
             max-width: 1480px;
@@ -1455,9 +1455,9 @@ def apply_platform_theme():
         }
         [data-testid="stSidebar"] {
             background:
-                linear-gradient(180deg, #17201c 0%, #111816 100%) !important;
+                linear-gradient(180deg, #15171c 0%, #0e1014 100%) !important;
             border-right: 1px solid rgba(255,255,255,0.10);
-            box-shadow: 18px 0 42px rgba(20,28,24,0.16);
+            box-shadow: 18px 0 42px rgba(17,24,34,0.16);
         }
         [data-testid="stSidebar"] * {
             color: #edf4ef;
@@ -1470,11 +1470,11 @@ def apply_platform_theme():
         .phi-sidebar-subtitle,
         .phi-sidebar-footer,
         .phi-nav-hint {
-            color: rgba(237,244,239,0.62) !important;
+            color: rgba(238,242,247,0.62) !important;
         }
         [data-testid="stSidebarNav"] a,
         [data-testid="stPageLink"] a {
-            color: rgba(237,244,239,0.84) !important;
+            color: rgba(238,242,247,0.84) !important;
             background: rgba(255,255,255,0.045) !important;
             border-color: rgba(255,255,255,0.09) !important;
             box-shadow: none !important;
@@ -1484,16 +1484,16 @@ def apply_platform_theme():
         [data-testid="stPageLink"] a[aria-current="page"],
         [data-testid="stSidebarNav"] a[aria-current="page"] {
             color: #ffffff !important;
-            background: rgba(47,159,104,0.18) !important;
-            border-color: rgba(111,209,143,0.34) !important;
+            background: rgba(0,143,179,0.18) !important;
+            border-color: rgba(94,210,232,0.34) !important;
         }
         .phi-page-head {
             grid-template-columns: minmax(0, 1fr) auto;
             padding: 1.35rem 1.45rem;
-            border: 1px solid rgba(35,49,43,0.10) !important;
+            border: 1px solid rgba(24,31,42,0.10) !important;
             background:
-                linear-gradient(135deg, rgba(255,255,255,0.96), rgba(247,250,247,0.96)),
-                linear-gradient(90deg, rgba(47,159,104,0.12), rgba(207,114,64,0.08)) !important;
+                linear-gradient(135deg, rgba(255,255,255,0.96), rgba(248,250,252,0.96)),
+                linear-gradient(90deg, rgba(0,143,179,0.12), rgba(224,95,79,0.08)) !important;
             box-shadow: var(--shadow-soft) !important;
         }
         .phi-page-head h1 {
@@ -1502,16 +1502,16 @@ def apply_platform_theme():
             font-size: clamp(2rem, 3.5vw, 3rem);
         }
         .phi-eyebrow {
-            color: var(--green);
+            color: var(--blue);
         }
         .phi-subtitle {
             color: var(--muted);
             font-size: 0.96rem;
         }
         .phi-status-chip {
-            color: #145c3a;
-            background: #e2f4e8;
-            border-color: rgba(47,159,104,0.26);
+            color: #07586b;
+            background: #e3f7fb;
+            border-color: rgba(0,143,179,0.26);
             box-shadow: none;
         }
         .phi-card,
@@ -1527,20 +1527,20 @@ def apply_platform_theme():
         [data-testid="stDataFrame"],
         [data-testid="stDataEditor"] {
             color: var(--ink) !important;
-            border: 1px solid rgba(35,49,43,0.11) !important;
+            border: 1px solid rgba(24,31,42,0.11) !important;
             background: #ffffff !important;
             box-shadow: var(--shadow-soft) !important;
         }
         .phi-command {
-            border: 1px solid rgba(35,49,43,0.11) !important;
-            border-left: 5px solid var(--green) !important;
+            border: 1px solid rgba(24,31,42,0.11) !important;
+            border-left: 5px solid var(--blue) !important;
             background:
-                linear-gradient(135deg, #ffffff 0%, #f8fbf7 62%, #fff8ef 100%) !important;
+                linear-gradient(135deg, #ffffff 0%, #f8fafc 62%, #fff4f1 100%) !important;
             box-shadow: var(--shadow) !important;
         }
-        .phi-command.good { border-left-color: var(--green) !important; border-top-color: rgba(35,49,43,0.11) !important; }
-        .phi-command.warn { border-left-color: var(--amber) !important; border-top-color: rgba(35,49,43,0.11) !important; }
-        .phi-command.risk { border-left-color: var(--rose) !important; border-top-color: rgba(35,49,43,0.11) !important; }
+        .phi-command.good { border-left-color: var(--green) !important; border-top-color: rgba(24,31,42,0.11) !important; }
+        .phi-command.warn { border-left-color: var(--amber) !important; border-top-color: rgba(24,31,42,0.11) !important; }
+        .phi-command.risk { border-left-color: var(--rose) !important; border-top-color: rgba(24,31,42,0.11) !important; }
         .phi-card.good,
         .phi-mini-widget.good,
         .phi-kpi-tile.good { border-top: 4px solid var(--green) !important; }
@@ -1586,7 +1586,7 @@ def apply_platform_theme():
         }
         .phi-section {
             padding-top: 0.9rem;
-            border-top: 1px solid rgba(35,49,43,0.08);
+            border-top: 1px solid rgba(24,31,42,0.08);
         }
         .phi-section-title {
             color: var(--ink);
@@ -1601,27 +1601,27 @@ def apply_platform_theme():
         [data-testid="stPopover"] button {
             color: var(--ink) !important;
             background: #ffffff !important;
-            border: 1px solid rgba(35,49,43,0.15) !important;
-            box-shadow: 0 3px 10px rgba(25,37,31,0.08) !important;
+            border: 1px solid rgba(24,31,42,0.15) !important;
+            box-shadow: 0 3px 10px rgba(17,24,34,0.08) !important;
         }
         .stButton > button:hover,
         [data-testid="stFormSubmitButton"] button:hover,
         [data-testid="stDownloadButton"] button:hover,
         [data-testid="stPopover"] button:hover {
-            background: #f4faf5 !important;
-            border-color: rgba(47,159,104,0.34) !important;
-            box-shadow: 0 8px 20px rgba(25,37,31,0.12) !important;
+            background: #f4fbfd !important;
+            border-color: rgba(0,143,179,0.34) !important;
+            box-shadow: 0 8px 20px rgba(17,24,34,0.12) !important;
         }
         .stButton > button[kind="primary"],
         [data-testid="stFormSubmitButton"] button[kind="primary"] {
             color: #ffffff !important;
-            background: linear-gradient(135deg, #2f9f68, #197f96) !important;
+            background: linear-gradient(135deg, #008fb3, #2558d8) !important;
             border-color: transparent !important;
         }
         .stTabs [data-baseweb="tab-list"],
         [data-testid="stRadio"] {
             background: rgba(255,255,255,0.74) !important;
-            border-color: rgba(35,49,43,0.12) !important;
+            border-color: rgba(24,31,42,0.12) !important;
             box-shadow: var(--shadow-soft) !important;
         }
         .stTabs [data-baseweb="tab"] {
@@ -1629,7 +1629,7 @@ def apply_platform_theme():
         }
         .stTabs [aria-selected="true"] {
             color: #ffffff !important;
-            background: #17201c !important;
+            background: #15171c !important;
             box-shadow: none !important;
         }
         .stTextInput input,
@@ -1640,20 +1640,20 @@ def apply_platform_theme():
         [data-baseweb="select"] {
             color: var(--ink) !important;
             background: #ffffff !important;
-            border-color: rgba(35,49,43,0.15) !important;
+            border-color: rgba(24,31,42,0.15) !important;
         }
         .stTextInput input:focus,
         .stNumberInput input:focus,
         .stDateInput input:focus,
         .stTextArea textarea:focus {
-            border-color: rgba(25,127,150,0.42) !important;
-            box-shadow: 0 0 0 3px rgba(25,127,150,0.10) !important;
+            border-color: rgba(0,143,179,0.42) !important;
+            box-shadow: 0 0 0 3px rgba(0,143,179,0.10) !important;
         }
         div[data-baseweb="popover"] ul,
         div[role="listbox"] {
             background: #ffffff !important;
-            border-color: rgba(35,49,43,0.12) !important;
-            box-shadow: 0 18px 42px rgba(25,37,31,0.18) !important;
+            border-color: rgba(24,31,42,0.12) !important;
+            box-shadow: 0 18px 42px rgba(17,24,34,0.18) !important;
         }
         div[data-baseweb="popover"] li,
         div[role="option"] {
@@ -1661,18 +1661,18 @@ def apply_platform_theme():
         }
         div[data-baseweb="popover"] li:hover,
         div[role="option"]:hover {
-            background: #edf7f0 !important;
+            background: #e9f8fb !important;
         }
         .custom-progress-track,
         .phi-sidebar-progress,
         .phi-bar {
-            background: #e4ebe5 !important;
-            border-color: rgba(35,49,43,0.08) !important;
+            background: #e0e7ef !important;
+            border-color: rgba(24,31,42,0.08) !important;
         }
         .custom-progress-fill,
         .phi-sidebar-progress span,
         .phi-bar > span {
-            background: linear-gradient(90deg, var(--green), var(--blue)) !important;
+            background: linear-gradient(90deg, var(--blue), var(--blue-2)) !important;
         }
         .custom-progress-fill.over,
         .phi-sidebar-progress.warn span {

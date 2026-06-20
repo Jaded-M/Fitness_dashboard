@@ -1,18 +1,15 @@
 from __future__ import annotations
 
 import datetime
-import re
+from pathlib import Path
 
 import pandas as pd
 import streamlit as st
 
 import database
-from components.design_system import apply_platform_theme, insight_card, page_header
+from components.design_system import apply_platform_theme, page_header
 from components.overview import (
     render_activity_sync_panel,
-    render_checkins,
-    render_nutrition_chart,
-    render_primary_layer,
     render_recovery_matrix,
     render_secondary_layer,
     render_steps_chart,
@@ -21,8 +18,6 @@ from components.overview import (
     render_workout_progression,
 )
 from components.quick_log import render_quick_actions
-from components.sidebar import render_sidebar_shell
-from components.widgets import compute_active_streak, render_kpi_strip
 from core.spotify import render_spotify_widget
 from services.google_fit import sync_google_fit_data
 from services.health_data import kpi_summary, load_snapshot
@@ -43,7 +38,7 @@ st.markdown(
     <link rel="manifest" href="/app/static/manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#2f9f68">
+    <meta name="theme-color" content="#008fb3">
     """,
     unsafe_allow_html=True
 )
@@ -93,8 +88,56 @@ def _auto_sync_steps():
         st.session_state["auto_synced"] = True
 
 
+def _page_path(pattern: str) -> str:
+    match = next(Path("pages").glob(pattern), None)
+    return match.as_posix() if match else pattern
+
+
+def render_landing_sidebar() -> None:
+    """Main-page navigation without experimental pages."""
+    st.sidebar.markdown(
+        """
+        <style>
+            [data-testid="stSidebarNav"] {
+                display: none !important;
+            }
+            .phi-main-nav-title {
+                color: var(--blue);
+                font-size: 0.65rem;
+                font-weight: 800;
+                letter-spacing: 0.14em;
+                margin: 0.9rem 0 0.4rem;
+                text-transform: uppercase;
+            }
+        </style>
+        <div class="phi-sidebar-brand">
+            <div class="phi-sidebar-logo">PHI</div>
+            <div>
+                <div class="phi-sidebar-title">Personal Health Intelligence</div>
+                <div class="phi-sidebar-subtitle">Training, nutrition, and recovery</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.sidebar.markdown('<div class="phi-main-nav-title">Navigation</div>', unsafe_allow_html=True)
+    nav_items = [
+        ("Fitness.py", "Command Center", "Today and training intelligence"),
+        (_page_path("1_*Nutrition.py"), "Nutrition", "Calories, macros, hydration"),
+        (_page_path("2_*Muscle_Atlas.py"), "Muscle Atlas", "Mapping and recovery"),
+        (_page_path("4_*PR_Tracker.py"), "PR Tracker", "Records and overload"),
+    ]
+    for path, label, caption in nav_items:
+        active_class = " active" if path == "Fitness.py" else ""
+        st.sidebar.markdown(
+            f'<div class="phi-nav-hint{active_class}"><span>{caption}</span></div>',
+            unsafe_allow_html=True,
+        )
+        st.sidebar.page_link(path, label=label)
+
+
 def sidebar_settings(snapshot=None):
-    render_sidebar_shell("Fitness.py")
+    render_landing_sidebar()
 
     st.sidebar.markdown('<div class="phi-sidebar-section">Goals</div>', unsafe_allow_html=True)
     with st.sidebar.expander("Configure goals & window", expanded=False):
@@ -141,8 +184,6 @@ def sidebar_settings(snapshot=None):
         else:
             st.caption("No exercises in this split yet.")
 
-    # Return defaults when inside the expander (Streamlit only returns values when widget is visible)
-    # We use session_state as fallback
     try:
         return calorie_goal, step_goal, target_weight, window
     except UnboundLocalError:
@@ -210,7 +251,142 @@ def render_sidebar_command(snapshot, summary, calorie_goal: int, step_goal: int)
             st.toast("Check-in saved.")
             st.rerun()
 
-    st.sidebar.markdown('<div class="phi-sidebar-footer">PHI / Streamlit OS</div>', unsafe_allow_html=True)
+def _workout_logged_today(snapshot) -> bool:
+    if snapshot.workouts.empty or "Date" not in snapshot.workouts.columns:
+        return False
+    real = snapshot.workouts
+    if "Workout" in real.columns:
+        real = real[real["Workout"] != "Session Duration"]
+    return bool((real["Date"].dt.date == datetime.date.today()).any())
+
+
+def render_hero(summary: dict, readiness: dict, workout_today: bool) -> None:
+    workout_label = "Yes" if workout_today else "No"
+    workout_caption = "Training logged today" if workout_today else "No workout logged yet"
+    readiness_tone = "good" if readiness["score"] >= 68 else "warn" if readiness["score"] >= 45 else "risk"
+    workout_tone = "good" if workout_today else ""
+    today_label = datetime.datetime.now().strftime("%A, %d %B")
+    st.markdown(
+        f"""
+        <section class="phi-home-hero">
+            <div class="phi-home-hero-copy">
+                <div>
+                    <div class="phi-home-kicker">{today_label}</div>
+                    <h2>Today's command center</h2>
+                </div>
+                <p>{readiness.get('key_action', 'Log today to keep training, nutrition, and recovery calibrated.')}</p>
+            </div>
+            <div class="phi-hero-grid">
+                <div class="phi-hero-card calories">
+                    <div class="phi-label">Calories logged</div>
+                    <div class="phi-hero-value">{summary['today_calories']:,}</div>
+                    <div class="phi-caption">{summary['today_protein']}g protein today</div>
+                </div>
+                <div class="phi-hero-card steps">
+                    <div class="phi-label">Steps</div>
+                    <div class="phi-hero-value">{summary['today_steps']:,}</div>
+                    <div class="phi-caption">Activity progress today</div>
+                </div>
+                <div class="phi-hero-card {readiness_tone}">
+                    <div class="phi-label">Readiness</div>
+                    <div class="phi-hero-value">{readiness['score']}%</div>
+                    <div class="phi-caption">{readiness.get('label', 'Status')}</div>
+                </div>
+                <div class="phi-hero-card {workout_tone}">
+                    <div class="phi-label">Workout today</div>
+                    <div class="phi-hero-value">{workout_label}</div>
+                    <div class="phi-caption">{workout_caption}</div>
+                </div>
+            </div>
+        </section>
+        <style>
+            .phi-home-hero {{
+                position: relative;
+                overflow: hidden;
+                margin: 0.25rem 0 1.2rem;
+                padding: 1.35rem;
+                border: 1px solid rgba(24,31,42,0.12);
+                border-radius: var(--radius);
+                background:
+                    linear-gradient(135deg, rgba(255,255,255,0.98), rgba(248,250,252,0.95)),
+                    linear-gradient(90deg, rgba(0,143,179,0.14), rgba(224,95,79,0.10));
+                box-shadow: var(--shadow-soft);
+            }}
+            .phi-home-hero::before {{
+                content: "";
+                position: absolute;
+                inset: 0;
+                border-top: 5px solid var(--blue);
+                pointer-events: none;
+            }}
+            .phi-home-hero-copy {{
+                position: relative;
+                display: flex;
+                align-items: end;
+                justify-content: space-between;
+                gap: 1rem;
+                margin-bottom: 1rem;
+            }}
+            .phi-home-kicker {{
+                color: var(--blue);
+                font-size: 0.72rem;
+                font-weight: 850;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+            }}
+            .phi-home-hero h2 {{
+                margin: 0.2rem 0 0;
+                color: var(--ink);
+                font-family: var(--font-display);
+                font-size: clamp(2rem, 4.5vw, 4rem);
+                font-weight: 900;
+                line-height: 0.96;
+            }}
+            .phi-home-hero p {{
+                max-width: 460px;
+                margin: 0;
+                color: var(--muted);
+                font-weight: 650;
+                line-height: 1.5;
+            }}
+            .phi-hero-grid {{
+                display: grid;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 0.85rem;
+            }}
+            .phi-hero-card {{
+                min-height: 150px;
+                padding: 1.25rem;
+                border: 1px solid rgba(24,31,42,0.11);
+                border-radius: var(--radius);
+                background: #ffffff;
+                box-shadow: 0 12px 26px rgba(17,24,34,0.08);
+            }}
+            .phi-hero-card.calories {{ border-top: 4px solid var(--orange); }}
+            .phi-hero-card.steps {{ border-top: 4px solid var(--blue); }}
+            .phi-hero-card.good {{ border-top: 4px solid var(--green); }}
+            .phi-hero-card.warn {{ border-top: 4px solid var(--amber); }}
+            .phi-hero-card.risk {{ border-top: 4px solid var(--rose); }}
+            .phi-hero-value {{
+                margin: 0.45rem 0 0.25rem;
+                color: var(--ink);
+                font-family: var(--font-display);
+                font-size: clamp(2rem, 4vw, 3.1rem);
+                font-weight: 850;
+                letter-spacing: -0.03em;
+                line-height: 1;
+            }}
+            @media (max-width: 980px) {{
+                .phi-hero-grid {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
+                .phi-home-hero-copy {{ align-items: start; flex-direction: column; }}
+            }}
+            @media (max-width: 640px) {{
+                .phi-hero-grid {{ grid-template-columns: 1fr; }}
+            }}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 # ── Load data once ────────────────────────────────────────────────────────────
@@ -221,33 +397,21 @@ with st.spinner("Loading your health data…"):
 
 summary = kpi_summary(snapshot, calorie_goal, step_goal, target_weight)
 readiness = summary["readiness_report"]
+workout_today = _workout_logged_today(snapshot)
 render_sidebar_command(snapshot, summary, calorie_goal, step_goal)
 
 # ── Page body ─────────────────────────────────────────────────────────────────
 page_header(
-    "Performance Intelligence",
-    "Readiness, recovery, training, nutrition, and activity in one focused command surface.",
+    "Personal Health Intelligence",
+    "A focused command center for today's training, nutrition, recovery, and activity.",
 )
 
-st.markdown("")
-
-# Render the new KPI strip
-streak_data = compute_active_streak(snapshot.workouts, snapshot.steps, step_goal)
-render_kpi_strip(
-    streak=streak_data["streak"],
-    water_cups=_today_water(),
-    steps=summary["today_steps"],
-    readiness_score=readiness["score"]
-)
-
-st.markdown("")
+render_hero(summary, readiness, workout_today)
 render_quick_actions()
-st.markdown("")
-render_primary_layer(snapshot, calorie_goal, step_goal)
 st.markdown("")
 
 overview, training, recovery, body_activity = st.tabs(
-    ["Command", "Training", "Recovery", "Body & Activity"]
+    ["Overview", "Training", "Recovery", "Body & Activity"]
 )
 
 with overview:

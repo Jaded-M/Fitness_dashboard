@@ -30,6 +30,7 @@ if "water_goal" not in st.session_state:
 
 # --- Load Data ---
 today_date = datetime.date.today()
+
 food_df = database.get_food_logs()
 water_df_raw = database.get_water_history()
 physical_df = database.get_measurements()

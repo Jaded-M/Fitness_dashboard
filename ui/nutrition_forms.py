@@ -64,6 +64,50 @@ def render_food_log_form(today_date):
     
     # ── Quick Log ──
     with tab_quick:
+        st.markdown("##### Search Food (Auto-fill)")
+        search_col1, search_col2 = st.columns([3, 1])
+        with search_col1:
+            search_query = st.text_input("Enter food to search", placeholder="e.g., Apple, 100g", key="food_search_query", label_visibility="collapsed")
+        with search_col2:
+            search_clicked = st.button("Search", key="btn_search_food", use_container_width=True)
+            
+        if search_clicked and search_query.strip():
+            from services.food_search import search_food_gemini
+            with st.spinner("Searching..."):
+                try:
+                    res = search_food_gemini(search_query)
+                    if res and isinstance(res, dict):
+                        # Failsafe: Parse any string responses containing text like 'g' into floats
+                        def safe_float(val):
+                            try:
+                                if isinstance(val, str):
+                                    val = ''.join(c for c in val if c.isdigit() or c == '.')
+                                return float(val) if val else 0.0
+                            except:
+                                return 0.0
+
+                        st.session_state["q_name"] = search_query
+                        st.session_state["q_cal"] = safe_float(res.get("calories", 0))
+                        st.session_state["q_prot"] = safe_float(res.get("protein_g", 0))
+                        st.session_state["q_carb"] = safe_float(res.get("carbs_g", 0))
+                        st.session_state["q_fat"] = safe_float(res.get("fat_g", 0))
+                        st.session_state["last_search_res"] = res
+                    else:
+                        st.session_state["last_search_res"] = None
+                except Exception as e:
+                    st.error(f"Search failed: {e}")
+                    st.session_state["last_search_res"] = None
+
+        if "last_search_res" in st.session_state:
+            res = st.session_state["last_search_res"]
+            if res:
+                serving = res.get('serving_size', '100g')
+                st.info(f"**Found ({serving}):** {res.get('calories')} kcal | {res.get('protein_g')}g P | {res.get('carbs_g')}g C | {res.get('fat_g')}g F. Verify below.")
+            else:
+                st.error("Food not found, enter manually")
+                
+        st.divider()
+
         q_name = st.text_input("Food Item", placeholder="e.g., Chicken & Rice", key="q_name")
         q_fc1, q_fc2 = st.columns(2)
         with q_fc1: q_cal  = st.number_input("Calories",    0.0, 5000.0, 0.0, step=10.0, key="q_cal")
