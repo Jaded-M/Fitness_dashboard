@@ -24,12 +24,17 @@ from services.google_fit import sync_google_fit_data
 from services.health_data import kpi_summary, load_snapshot
 
 
+from supabase_client import is_authenticated
+
 st.set_page_config(
     page_title="Personal Health Intelligence",
     page_icon="PHI",
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+if not is_authenticated():
+    st.switch_page("pages/0_Login.py")
 
 apply_platform_theme()
 render_spotify_widget()

@@ -14,9 +14,13 @@ from ui import nutrition_charts as charts
 from ui import nutrition_forms as forms
 from config import STREAK_TOLERANCE_KCAL, MACRO_SPLIT_PROTEIN, MACRO_SPLIT_CARBS, MACRO_SPLIT_FATS
 from utils import get_day_stats
+from supabase_client import is_authenticated
 
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="Nutrition", page_icon="PHI", layout="wide")
+
+if not is_authenticated():
+    st.switch_page("pages/0_Login.py")
 
 # Apply PHI theme
 apply_platform_theme()

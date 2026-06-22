@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 import pandas as pd
 import streamlit as st
-from supabase_client import OWNER_USER_ID, supabase_client
+from supabase_client import get_supabase_client, get_current_user_id
 
 DB_NAME = "fitness.db" # Left for legacy compatibility checks if any
 PAGE_SIZE = 1000
@@ -13,11 +13,13 @@ def _report_error(context: str, exc: Exception) -> None:
 
 
 def _with_user(data: dict) -> dict:
-    return {"user_id": OWNER_USER_ID, **data} if OWNER_USER_ID else data
+    uid = get_current_user_id()
+    return {"user_id": uid, **data} if uid else data
 
 
 def _apply_owner_filter(query):
-    return query.eq("user_id", OWNER_USER_ID) if OWNER_USER_ID else query
+    uid = get_current_user_id()
+    return query.eq("user_id", uid) if uid else query
 
 
 def _fetch_all_rows(table_name: str, columns: str = "*", order_by: str | None = None, desc: bool = False, query_fn=None):
@@ -25,9 +27,9 @@ def _fetch_all_rows(table_name: str, columns: str = "*", order_by: str | None = 
     start = 0
 
     while True:
-        query = supabase_client.table(table_name).select(columns)
-        if OWNER_USER_ID:
-            query = query.eq("user_id", OWNER_USER_ID)
+        query = get_supabase_client().table(table_name).select(columns)
+        if get_current_user_id():
+            query = query.eq("user_id", get_current_user_id())
         if query_fn is not None:
             query = query_fn(query)
         if order_by:
@@ -68,7 +70,7 @@ def add_workout(date, split, exercise, sets, reps, weight, rpe, fatigue, duratio
         st.error("Please enter a valid weight")
         return
     try:
-        supabase_client.table("workouts").insert(_with_user(data)).execute()
+        get_supabase_client().table("workouts").insert(_with_user(data)).execute()
     except Exception as exc:
         _report_error("Saving workout", exc)
         return
@@ -101,7 +103,7 @@ def add_workout_with_sets(log_date, split: str, exercise: str, sets_data: list) 
         "set_data": sets_data
     }
     try:
-        supabase_client.table("workouts").insert(_with_user(data)).execute()
+        get_supabase_client().table("workouts").insert(_with_user(data)).execute()
     except Exception as exc:
         _report_error("Saving workout session", exc)
         return
@@ -130,9 +132,9 @@ def get_unique_exercises():
 
 def delete_workout_by_id(workout_id):
     try:
-        query = supabase_client.table("workouts").delete().eq("id", workout_id)
-        if OWNER_USER_ID:
-            query = query.eq("user_id", OWNER_USER_ID)
+        query = get_supabase_client().table("workouts").delete().eq("id", workout_id)
+        if get_current_user_id():
+            query = query.eq("user_id", get_current_user_id())
         query.execute()
     except Exception as exc:
         _report_error("Deleting workout", exc)
@@ -168,9 +170,9 @@ def get_best_lifts():
 @st.cache_data(ttl=300)
 def get_exercise_history(exercise_name, limit=5):
     try:
-        query = supabase_client.table("workouts").select("date, sets, reps, weight, rpe, set_data").eq("exercise", exercise_name).neq("exercise", "Session Duration")
-        if OWNER_USER_ID:
-            query = query.eq("user_id", OWNER_USER_ID)
+        query = get_supabase_client().table("workouts").select("date, sets, reps, weight, rpe, set_data").eq("exercise", exercise_name).neq("exercise", "Session Duration")
+        if get_current_user_id():
+            query = query.eq("user_id", get_current_user_id())
         response = query.order("date", desc=True).limit(limit).execute()
         return pd.DataFrame(response.data)
     except Exception as exc:
@@ -179,9 +181,9 @@ def get_exercise_history(exercise_name, limit=5):
 
 def get_last_session_for_exercise(exercise_name: str) -> list:
     try:
-        query = supabase_client.table("workouts").select("sets, reps, weight, rpe, set_data").eq("exercise", exercise_name).neq("exercise", "Session Duration")
-        if OWNER_USER_ID:
-            query = query.eq("user_id", OWNER_USER_ID)
+        query = get_supabase_client().table("workouts").select("sets, reps, weight, rpe, set_data").eq("exercise", exercise_name).neq("exercise", "Session Duration")
+        if get_current_user_id():
+            query = query.eq("user_id", get_current_user_id())
         response = query.order("date", desc=True).limit(1).execute()
         if not response.data:
             return []
@@ -204,9 +206,9 @@ def get_last_session_for_exercise(exercise_name: str) -> list:
 
 def get_personal_best(exercise_name: str):
     try:
-        query = supabase_client.table("workouts").select("weight").eq("exercise", exercise_name).neq("exercise", "Session Duration")
-        if OWNER_USER_ID:
-            query = query.eq("user_id", OWNER_USER_ID)
+        query = get_supabase_client().table("workouts").select("weight").eq("exercise", exercise_name).neq("exercise", "Session Duration")
+        if get_current_user_id():
+            query = query.eq("user_id", get_current_user_id())
         response = query.execute()
         weights = [r["weight"] for r in response.data if r["weight"] is not None]
         return max(weights) if weights else None
@@ -259,7 +261,7 @@ def add_steps(date, steps, distance=0, active_minutes=0):
 
     data = {"date": str(date), "steps": steps_int, "distance": distance_float, "active_minutes": active_mins_int}
     try:
-        supabase_client.table("steps").upsert(_with_user(data), on_conflict="user_id,date" if OWNER_USER_ID else "date").execute()
+        get_supabase_client().table("steps").upsert(_with_user(data), on_conflict="user_id,date" if get_current_user_id() else "date").execute()
     except Exception as exc:
         _report_error("Saving steps", exc)
         return
@@ -288,9 +290,9 @@ def get_steps_data(start_date=None, end_date=None):
 
 def delete_steps_by_date(date):
     try:
-        query = supabase_client.table("steps").delete().eq("date", str(date))
-        if OWNER_USER_ID:
-            query = query.eq("user_id", OWNER_USER_ID)
+        query = get_supabase_client().table("steps").delete().eq("date", str(date))
+        if get_current_user_id():
+            query = query.eq("user_id", get_current_user_id())
         query.execute()
     except Exception as exc:
         _report_error("Deleting steps", exc)
@@ -312,7 +314,7 @@ def add_food_log(date, food_item, calories, protein=0, carbs=0, fats=0, fiber=0,
         "meal_type": meal_type
     }
     try:
-        supabase_client.table("food_logs").insert(_with_user(data)).execute()
+        get_supabase_client().table("food_logs").insert(_with_user(data)).execute()
     except Exception as exc:
         _report_error("Saving food log", exc)
         return
@@ -350,7 +352,7 @@ def get_food_logs():
 
 def log_water(date, cups=1):
     try:
-        supabase_client.table("water_logs").insert(_with_user({"date": str(date), "cups": cups})).execute()
+        get_supabase_client().table("water_logs").insert(_with_user({"date": str(date), "cups": cups})).execute()
     except Exception as exc:
         _report_error("Saving water log", exc)
         return
@@ -366,9 +368,9 @@ def get_water_history():
 
 def delete_food_log(log_id):
     try:
-        query = supabase_client.table("food_logs").delete().eq("id", log_id)
-        if OWNER_USER_ID:
-            query = query.eq("user_id", OWNER_USER_ID)
+        query = get_supabase_client().table("food_logs").delete().eq("id", log_id)
+        if get_current_user_id():
+            query = query.eq("user_id", get_current_user_id())
         query.execute()
     except Exception as exc:
         _report_error("Deleting food log", exc)
@@ -385,7 +387,7 @@ def add_measurement(date, weight, waist=None, hips=None, thigh=None, chest=None,
         "hips": hips, "thigh": thigh, "chest": chest, "arms": arms
     }
     try:
-        supabase_client.table("measurements").insert(_with_user(data)).execute()
+        get_supabase_client().table("measurements").insert(_with_user(data)).execute()
     except Exception as exc:
         _report_error("Saving measurement", exc)
         return
@@ -416,7 +418,7 @@ def add_checkin(date, mood=3, energy=3, sleep_hours=None, note=""):
         "sleep_hours": sleep_hours, "note": note
     }
     try:
-        supabase_client.table("checkins").insert(_with_user(data)).execute()
+        get_supabase_client().table("checkins").insert(_with_user(data)).execute()
     except Exception as exc:
         _report_error("Saving check-in", exc)
         return

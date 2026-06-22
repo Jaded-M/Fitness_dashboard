@@ -2,6 +2,7 @@ import streamlit as st
 from components.design_system import apply_platform_theme
 from components.pr_tracker import render_pr_board, render_overload_status, render_1rm_chart
 import database
+from supabase_client import is_authenticated
 
 st.set_page_config(
     page_title="PR Tracker & Overload",
@@ -9,6 +10,9 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+if not is_authenticated():
+    st.switch_page("pages/0_Login.py")
 
 apply_platform_theme()
 

@@ -13,6 +13,7 @@ if str(ROOT_DIR) not in sys.path:
 
 from components.design_system import apply_platform_theme, page_header
 from components.sidebar import render_sidebar_shell
+from supabase_client import is_authenticated
 
 
 SIM_DIR = ROOT_DIR / "assets" / "biomechanics_sim"
@@ -25,6 +26,9 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed",
 )
+
+if not is_authenticated():
+    st.switch_page("pages/0_Login.py")
 
 apply_platform_theme()
 render_sidebar_shell("pages/3_Biomechanics_Sim.py")

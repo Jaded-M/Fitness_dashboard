@@ -21,8 +21,12 @@ from core.muscle_mapping import save_muscle_map as engine_save_muscle_map
 from core.muscle_mapping import unmapped_exercises as engine_unmapped_exercises
 from core.readiness_engine import ReadinessInputs, calculate_readiness
 from ui.theme import PHI_COLORS
+from supabase_client import is_authenticated
 
 st.set_page_config(page_title="Muscle Atlas Engine", layout="wide", page_icon="PHI")
+
+if not is_authenticated():
+    st.switch_page("pages/0_Login.py")
 
 # Apply PHI theme
 apply_platform_theme()
