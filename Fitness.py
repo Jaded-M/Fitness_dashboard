@@ -432,6 +432,7 @@ streak = calculate_logging_streak(snapshot.workouts, snapshot.food, water_df)
 
 # Render hero
 render_hero(summary, readiness, streak, snapshot, water_df)
+render_quick_actions()
 
 st.components.v1.html(
     """
