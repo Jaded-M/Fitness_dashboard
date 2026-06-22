@@ -180,7 +180,7 @@ def render_progression_tab(real_df, all_exercises, key: str = "prog_ex", chart_k
 
     # ── Quick stats row ────────────────────────────────────────
     s1, s2, s3, s4 = st.columns(4)
-    s1.metric("🏆 Best Weight", f"{ex_df['Weight'].max():.1f} kg")
+    s1.metric("Best Weight", f"{ex_df['Weight'].max():.1f} kg")
     s2.metric("🔥 Max Reps", int(ex_df["Reps"].max()))
     s3.metric("📅 Sessions", len(ex_df.groupby(ex_df["Date"].dt.date)))
 
@@ -404,13 +404,13 @@ def render_rpg_tab(real_df, best_df, key_prefix: str = "pr"):
     if len(real_df) > 10:          badges.append("🥉 Novice")
     if len(real_df) > 50:          badges.append("🥈 Intermediate")
     if total_volume   > 100_000:   badges.append("🚜 Bulldozer")
-    if total_volume   > 500_000:   badges.append("🦾 Titan")
+    if total_volume   > 500_000:   badges.append("Titan")
 
     if badges: st.success("**Badges:** " + "  ".join(badges))
     else: st.info("Keep lifting to unlock badges!")
 
     st.markdown("---")
-    st.markdown("##### 🏆 Personal Records")
+    st.markdown("##### Personal Records")
     if not best_df.empty:
         best_df.columns = ["Exercise", "Best Weight (kg)", "Best Reps", "Sessions"]
         st.dataframe(best_df, use_container_width=True, hide_index=True)

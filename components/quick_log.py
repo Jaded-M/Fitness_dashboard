@@ -387,7 +387,7 @@ def render_quick_actions():
     c1, c2, c3, c4, c5 = st.columns(5)
     if c1.button("🏋️ Workout", type="primary", use_container_width=True):
         workout_dialog()
-    if c2.button("🍎 Meal", use_container_width=True):
+    if c2.button("Meal", use_container_width=True):
         meal_dialog()
     if c3.button("⚖️ Weight", use_container_width=True):
         weight_dialog()

@@ -268,3 +268,32 @@ def render_kpi_strip(streak: int, water_cups: int, steps: int, readiness_score: 
     </div>
     """
     st.markdown(html, unsafe_allow_html=True)
+def calculate_logging_streak(workouts_df: pd.DataFrame, food_df: pd.DataFrame, water_df: pd.DataFrame) -> int:
+    """Return number of consecutive days (up to today or yesterday) with any log.
+    A day counts if there is at least one entry in any of the provided dataframes.
+    """
+    # Extract date series from each dataframe, ensure they are datetime.date
+    dates = set()
+    if not workouts_df.empty and "Date" in workouts_df.columns:
+        wk = workouts_df.copy()
+        wk["Date"] = pd.to_datetime(wk["Date"], errors="coerce").dt.date
+        dates.update(wk["Date"].dropna().unique())
+    if not food_df.empty and "date" in food_df.columns:
+        fd = food_df.copy()
+        fd["date"] = pd.to_datetime(fd["date"], errors="coerce").dt.date
+        dates.update(fd["date"].dropna().unique())
+    if not water_df.empty and "date" in water_df.columns:
+        wd = water_df.copy()
+        wd["date"] = pd.to_datetime(wd["date"], errors="coerce").dt.date
+        dates.update(wd["date"].dropna().unique())
+    # Start streak from today, fallback to yesterday if today missing
+    today = datetime.date.today()
+    streak = 0
+    cursor = today
+    # If today has no entry, start from yesterday
+    if cursor not in dates:
+        cursor = today - datetime.timedelta(days=1)
+    while cursor in dates:
+        streak += 1
+        cursor -= datetime.timedelta(days=1)
+    return streak

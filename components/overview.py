@@ -496,7 +496,7 @@ def render_workout_progression(snapshot: HealthSnapshot, key_prefix: str = "trai
     best_df = database.get_best_lifts()
 
     prog_tab, split_tab, pr_tab, heat_tab = st.tabs(
-        ["📈 Progression", "🥧 Split Volume", "🏆 Personal Records", "🟩 Heatmap"]
+        ["Progression", "Split Volume", "Personal Records", "Heatmap"]
     )
 
     with prog_tab:

@@ -64,6 +64,9 @@ def add_workout(date, split, exercise, sets, reps, weight, rpe, fatigue, duratio
         "duration": int(float(duration or 0)),
         "set_data": set_data
     }
+    if weight and (float(weight) < 0 or reps < 0):
+        st.error("Please enter a valid weight")
+        return
     try:
         supabase_client.table("workouts").insert(_with_user(data)).execute()
     except Exception as exc:

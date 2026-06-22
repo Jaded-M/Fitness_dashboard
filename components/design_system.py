@@ -9,8 +9,17 @@ def apply_platform_theme():
     """Apply the PHI Premium OS Streamlit skin — v3 Professional Edition."""
     st.markdown(
         """
-        <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap');
+        <style>        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
+
+        .stApp, [data-testid="stAppViewContainer"], [data-testid="stSidebar"] {
+            background-color: var(--bg) !important;
+        }
+
+        /* Standardize uppercase labels */
+        label, .phi-label, .phi-eyebrow, .phi-sidebar-section, .phi-form-label {
+            text-transform: uppercase !important;
+            letter-spacing: 0.05em !important;
+        }
 
         /* ==========================================
          * KEYFRAMES — only run on specific elements
@@ -28,12 +37,26 @@ def apply_platform_theme():
             to   { transform: scaleX(1); }
         }
         @keyframes phi-pulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(86,199,216,0.0); }
-            50%       { box-shadow: 0 0 34px 0 rgba(86,199,216,0.20); }
+            0%, 100% { box-shadow: 0 0 0 0 rgba(51,255,51,0.0); }
+            50%       { box-shadow: 0 0 34px 0 rgba(51,255,51,0.20); }
         }
         @keyframes phi-fadein {
             from { opacity: 0; }
             to   { opacity: 1; }
+        }
+        @keyframes phi-blink {
+            0%, 100% { opacity: 1; }
+            50%      { opacity: 0; }
+        }
+
+
+        .phi-section-title::after {
+            content: "█";
+            color: var(--green);
+            animation: phi-blink 1s step-end infinite;
+            margin-left: 0.12em;
+            font-size: 0.75em;
+            opacity: 0.5;
         }
 
         /* ==========================================
@@ -41,30 +64,30 @@ def apply_platform_theme():
          * ==========================================
          */
         :root {
-            --bg:           #070a0f;
-            --panel:        rgba(14, 18, 25, 0.96);
-            --panel-2:      rgba(20, 26, 36, 0.92);
-            --panel-3:      rgba(28, 35, 47, 0.88);
-            --ink:          #f4f7fb;
-            --soft:         #d5dde8;
-            --muted:        #8b98aa;
-            --faint:        #5f6b7b;
-            --line:         rgba(164, 177, 196, 0.16);
-            --line-strong:  rgba(210, 222, 238, 0.24);
-            --blue:         #4bb7cf;
-            --blue-2:       #3675d6;
-            --green:        #6fd18f;
+            --bg:           #000000;
+            --panel:        #080b08;
+            --panel-2:      #0c100c;
+            --panel-3:      #0f140f;
+            --ink:          #33ff33;
+            --soft:         #33ff33;
+            --muted:        rgba(51, 255, 51, 0.70);
+            --faint:        rgba(51, 255, 51, 0.40);
+            --line:         rgba(51, 255, 51, 0.18);
+            --line-strong:  rgba(51, 255, 51, 0.35);
+            --blue:         #33ff33;
+            --blue-2:       #33ff33;
+            --green:        #33ff33;
             --amber:        #e0b45d;
             --rose:         #ef6b75;
-            --violet:       #9b8fe8;
-            --orange:       #e58b5a;
-            --shadow:       0 18px 48px rgba(0,0,0,0.42);
-            --shadow-soft:  0 10px 28px rgba(0,0,0,0.28);
-            --radius:       8px;
-            --radius-lg:    10px;
-            --radius-sm:    6px;
-            --font-body:    'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-            --font-display: 'Outfit', sans-serif;
+            --violet:       #33ff33;
+            --orange:       #e0b45d;
+            --shadow:       none;
+            --shadow-soft:  none;
+            --radius:       0px;
+            --radius-lg:    0px;
+            --radius-sm:    0px;
+            --font-body:    'JetBrains Mono', 'IBM Plex Mono', monospace;
+            --font-display: 'JetBrains Mono', 'IBM Plex Mono', monospace;
         }
 
         /* ==========================================
@@ -1400,303 +1423,11 @@ def apply_platform_theme():
             background: rgba(4,7,11,0.80);
         }
 
-        /* ==========================================
-         * 21. SIGNAL OPS THEME
-         * ==========================================
-         */
-        :root {
-            --bg:           #eef2f7;
-            --panel:        #ffffff;
-            --panel-2:      #f8fafc;
-            --panel-3:      #e8eef5;
-            --ink:          #15171c;
-            --soft:         #333a45;
-            --muted:        #667080;
-            --faint:        #97a1ae;
-            --line:         rgba(24, 31, 42, 0.12);
-            --line-strong:  rgba(24, 31, 42, 0.22);
-            --blue:         #008fb3;
-            --blue-2:       #2558d8;
-            --green:        #12a37f;
-            --amber:        #c48212;
-            --rose:         #d94b62;
-            --violet:       #6f6bd9;
-            --orange:       #e05f4f;
-            --shadow:       0 18px 46px rgba(17, 24, 34, 0.14);
-            --shadow-soft:  0 8px 22px rgba(17, 24, 34, 0.10);
-            --radius:       8px;
-            --radius-lg:    10px;
-            --radius-sm:    6px;
-        }
-        .stApp {
-            color: var(--ink);
-            background:
-                linear-gradient(180deg, rgba(0,143,179,0.11) 0%, rgba(238,242,247,0) 34%),
-                linear-gradient(135deg, #f8fafc 0%, #eef2f7 48%, #f6f0ee 100%) !important;
-        }
-        .stApp::before {
-            background-image:
-                linear-gradient(rgba(24,31,42,0.052) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(24,31,42,0.04) 1px, transparent 1px);
-            background-size: 34px 34px;
-            mask-image: linear-gradient(180deg, rgba(0,0,0,0.28), transparent 72%);
-        }
-        .stApp::after {
-            background: linear-gradient(90deg, #008fb3 0%, #2558d8 48%, #e05f4f 100%);
-            height: 3px;
-        }
-        header[data-testid="stHeader"] {
-            background: rgba(248,250,252,0.84) !important;
-            border-bottom: 1px solid rgba(24,31,42,0.08);
-        }
-        .block-container {
-            max-width: 1480px;
-            padding: 1.15rem 1.6rem 4.5rem;
-        }
-        [data-testid="stSidebar"] {
-            background:
-                linear-gradient(180deg, #15171c 0%, #0e1014 100%) !important;
-            border-right: 1px solid rgba(255,255,255,0.10);
-            box-shadow: 18px 0 42px rgba(17,24,34,0.16);
-        }
-        [data-testid="stSidebar"] * {
-            color: #edf4ef;
-        }
-        .phi-sidebar-brand {
-            background: linear-gradient(135deg, rgba(255,255,255,0.11), rgba(255,255,255,0.04)) !important;
-            border-color: rgba(255,255,255,0.13) !important;
-            box-shadow: none !important;
-        }
-        .phi-sidebar-subtitle,
-        .phi-sidebar-footer,
-        .phi-nav-hint {
-            color: rgba(238,242,247,0.62) !important;
-        }
-        [data-testid="stSidebarNav"] a,
-        [data-testid="stPageLink"] a {
-            color: rgba(238,242,247,0.84) !important;
-            background: rgba(255,255,255,0.045) !important;
-            border-color: rgba(255,255,255,0.09) !important;
-            box-shadow: none !important;
-        }
-        [data-testid="stSidebarNav"] a:hover,
-        [data-testid="stPageLink"] a:hover,
-        [data-testid="stPageLink"] a[aria-current="page"],
-        [data-testid="stSidebarNav"] a[aria-current="page"] {
-            color: #ffffff !important;
-            background: rgba(0,143,179,0.18) !important;
-            border-color: rgba(94,210,232,0.34) !important;
-        }
-        .phi-page-head {
-            grid-template-columns: minmax(0, 1fr) auto;
-            padding: 1.35rem 1.45rem;
-            border: 1px solid rgba(24,31,42,0.10) !important;
-            background:
-                linear-gradient(135deg, rgba(255,255,255,0.96), rgba(248,250,252,0.96)),
-                linear-gradient(90deg, rgba(0,143,179,0.12), rgba(224,95,79,0.08)) !important;
-            box-shadow: var(--shadow-soft) !important;
-        }
-        .phi-page-head h1 {
-            color: var(--ink) !important;
-            -webkit-text-fill-color: var(--ink) !important;
-            font-size: clamp(2rem, 3.5vw, 3rem);
-        }
-        .phi-eyebrow {
-            color: var(--blue);
-        }
-        .phi-subtitle {
-            color: var(--muted);
-            font-size: 0.96rem;
-        }
-        .phi-status-chip {
-            color: #07586b;
-            background: #e3f7fb;
-            border-color: rgba(0,143,179,0.26);
-            box-shadow: none;
-        }
-        .phi-card,
-        .phi-quiet-card,
-        .phi-mini-widget,
-        .phi-insight,
-        .phi-kpi-tile,
-        .phi-action-bar,
-        .macro-card,
-        div[data-testid="stMetric"],
-        div[data-testid="stExpander"],
-        [data-testid="stPlotlyChart"],
-        [data-testid="stDataFrame"],
-        [data-testid="stDataEditor"] {
-            color: var(--ink) !important;
-            border: 1px solid rgba(24,31,42,0.11) !important;
-            background: #ffffff !important;
-            box-shadow: var(--shadow-soft) !important;
-        }
-        .phi-command {
-            border: 1px solid rgba(24,31,42,0.11) !important;
-            border-left: 5px solid var(--blue) !important;
-            background:
-                linear-gradient(135deg, #ffffff 0%, #f8fafc 62%, #fff4f1 100%) !important;
-            box-shadow: var(--shadow) !important;
-        }
-        .phi-command.good { border-left-color: var(--green) !important; border-top-color: rgba(24,31,42,0.11) !important; }
-        .phi-command.warn { border-left-color: var(--amber) !important; border-top-color: rgba(24,31,42,0.11) !important; }
-        .phi-command.risk { border-left-color: var(--rose) !important; border-top-color: rgba(24,31,42,0.11) !important; }
-        .phi-card.good,
-        .phi-mini-widget.good,
-        .phi-kpi-tile.good { border-top: 4px solid var(--green) !important; }
-        .phi-card.warn,
-        .phi-mini-widget.warn,
-        .phi-kpi-tile.warn { border-top: 4px solid var(--amber) !important; }
-        .phi-card.risk,
-        .phi-mini-widget.risk,
-        .phi-kpi-tile.risk { border-top: 4px solid var(--rose) !important; }
-        .phi-insight {
-            border-left: 5px solid var(--blue) !important;
-        }
-        .phi-insight.good { border-left-color: var(--green) !important; }
-        .phi-insight.warn { border-left-color: var(--amber) !important; }
-        .phi-insight.risk { border-left-color: var(--rose) !important; }
-        .phi-card::before,
-        .phi-mini-widget::before,
-        .phi-kpi-tile::before,
-        .phi-command::before {
-            display: none;
-        }
-        .phi-label,
-        .phi-kpi-title,
-        [data-testid="stMetricLabel"],
-        .phi-action-bar-label,
-        .phi-section-caption,
-        .phi-caption {
-            color: var(--muted) !important;
-        }
-        .phi-value,
-        .phi-widget-value,
-        .phi-kpi-value,
-        .phi-rail-value,
-        [data-testid="stMetricValue"],
-        .phi-command-action,
-        .macro-value,
-        .macro-title,
-        p,
-        li,
-        label,
-        [data-testid="stMarkdownContainer"] {
-            color: var(--ink) !important;
-        }
-        .phi-section {
-            padding-top: 0.9rem;
-            border-top: 1px solid rgba(24,31,42,0.08);
-        }
-        .phi-section-title {
-            color: var(--ink);
-            font-size: 1.08rem;
-        }
-        div[data-testid="stMetric"] {
-            border-left: 4px solid var(--blue) !important;
-        }
-        .stButton > button,
-        [data-testid="stFormSubmitButton"] button,
-        [data-testid="stDownloadButton"] button,
-        [data-testid="stPopover"] button {
-            color: var(--ink) !important;
-            background: #ffffff !important;
-            border: 1px solid rgba(24,31,42,0.15) !important;
-            box-shadow: 0 3px 10px rgba(17,24,34,0.08) !important;
-        }
-        .stButton > button:hover,
-        [data-testid="stFormSubmitButton"] button:hover,
-        [data-testid="stDownloadButton"] button:hover,
-        [data-testid="stPopover"] button:hover {
-            background: #f4fbfd !important;
-            border-color: rgba(0,143,179,0.34) !important;
-            box-shadow: 0 8px 20px rgba(17,24,34,0.12) !important;
-        }
-        .stButton > button[kind="primary"],
-        [data-testid="stFormSubmitButton"] button[kind="primary"] {
-            color: #ffffff !important;
-            background: linear-gradient(135deg, #008fb3, #2558d8) !important;
-            border-color: transparent !important;
-        }
-        .stTabs [data-baseweb="tab-list"],
-        [data-testid="stRadio"] {
-            background: rgba(255,255,255,0.74) !important;
-            border-color: rgba(24,31,42,0.12) !important;
-            box-shadow: var(--shadow-soft) !important;
-        }
-        .stTabs [data-baseweb="tab"] {
-            color: var(--muted) !important;
-        }
-        .stTabs [aria-selected="true"] {
-            color: #ffffff !important;
-            background: #15171c !important;
-            box-shadow: none !important;
-        }
-        .stTextInput input,
-        .stNumberInput input,
-        .stDateInput input,
-        .stTextArea textarea,
-        .stSelectbox div[data-baseweb="select"],
-        [data-baseweb="select"] {
-            color: var(--ink) !important;
-            background: #ffffff !important;
-            border-color: rgba(24,31,42,0.15) !important;
-        }
-        .stTextInput input:focus,
-        .stNumberInput input:focus,
-        .stDateInput input:focus,
-        .stTextArea textarea:focus {
-            border-color: rgba(0,143,179,0.42) !important;
-            box-shadow: 0 0 0 3px rgba(0,143,179,0.10) !important;
-        }
-        div[data-baseweb="popover"] ul,
-        div[role="listbox"] {
-            background: #ffffff !important;
-            border-color: rgba(24,31,42,0.12) !important;
-            box-shadow: 0 18px 42px rgba(17,24,34,0.18) !important;
-        }
-        div[data-baseweb="popover"] li,
-        div[role="option"] {
-            color: var(--ink) !important;
-        }
-        div[data-baseweb="popover"] li:hover,
-        div[role="option"]:hover {
-            background: #e9f8fb !important;
-        }
-        .custom-progress-track,
-        .phi-sidebar-progress,
-        .phi-bar {
-            background: #e0e7ef !important;
-            border-color: rgba(24,31,42,0.08) !important;
-        }
-        .custom-progress-fill,
-        .phi-sidebar-progress span,
-        .phi-bar > span {
-            background: linear-gradient(90deg, var(--blue), var(--blue-2)) !important;
-        }
-        .custom-progress-fill.over,
-        .phi-sidebar-progress.warn span {
-            background: linear-gradient(90deg, var(--amber), var(--rose)) !important;
-        }
-        .stAlert {
-            color: var(--ink) !important;
-            background: #ffffff !important;
+        .phi-home-hero h2 .phi-cursor {
+            color: var(--green);
+            animation: phi-blink 1s step-end infinite;
         }
 
-        /* ==========================================
-         * 22. RESPONSIVE
-         * ==========================================
-         */
-        @media (max-width: 980px) {
-            .phi-page-head, .phi-command-grid, .phi-kpi-strip { grid-template-columns: 1fr; }
-            .phi-quiet-grid, .phi-metric-rail { grid-template-columns: repeat(2, minmax(0,1fr)); }
-        }
-        @media (max-width: 640px) {
-            .block-container { padding-left: 0.8rem; padding-right: 0.8rem; }
-            .phi-quiet-grid, .phi-metric-rail { grid-template-columns: 1fr; }
-            .phi-ring-wrap, .phi-mini-widget { align-items: flex-start; flex-direction: column; }
-            .macro-container { grid-template-columns: 1fr; }
-        }
         </style>
         """,
         unsafe_allow_html=True,

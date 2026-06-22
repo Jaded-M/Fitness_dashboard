@@ -96,7 +96,8 @@ def normalize_group(value: Any) -> str:
         return "Unknown"
 
     raw_lower = raw.lower()
-    for token, canonical in GROUP_ALIASES.items():
+
+    for token, canonical in sorted(GROUP_ALIASES.items(), key=lambda t: -len(t[0])):
         if token in raw_lower:
             return canonical
 
@@ -229,7 +230,7 @@ def exercise_muscle_profile(exercise: str, muscle_map: dict[str, dict[str, Any]]
     for muscle in entry.get("secondary_muscles") or []:
         group = normalize_group(muscle)
         if group != "Unknown":
-            profile[group] = profile.get(group, 0.0) + 0.55
+            profile[group] = profile.get(group, 0.0) + 0.5
 
     for muscle in entry.get("tertiary_muscles") or []:
         group = normalize_group(muscle)

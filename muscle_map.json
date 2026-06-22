@@ -2,43 +2,48 @@
     "Machine Shoulder Press": {
         "primary_group": "Shoulders",
         "secondary_muscles": [
-            "Shoulders",
             "Triceps",
             "Back"
         ],
-        "tertiary_muscles": [],
-        "stimulus_type": "unknown",
+        "tertiary_muscles": [
+            "Core"
+        ],
+        "stimulus_type": "push",
         "notes": "Machine gives fixed path \u2014 great for beginners to learn pressing pattern safely."
     },
     "Dumbbell Shoulder Press": {
         "primary_group": "Shoulders",
         "secondary_muscles": [
-            "Shoulders",
             "Triceps",
             "Back"
         ],
-        "tertiary_muscles": [],
-        "stimulus_type": "unknown",
+        "tertiary_muscles": [
+            "Core"
+        ],
+        "stimulus_type": "push",
         "notes": "Requires more stabilisation than machine \u2014 greater range of motion."
     },
     "Lateral Raises": {
         "primary_group": "Shoulders",
         "secondary_muscles": [
-            "Shoulders",
             "Back"
         ],
-        "tertiary_muscles": [],
-        "stimulus_type": "unknown",
+        "tertiary_muscles": [
+            "Forearms"
+        ],
+        "stimulus_type": "isolation",
         "notes": "Pure lateral delt isolation. Keep a slight forward lean to load the middle delt optimally."
     },
     "Face Pulls": {
         "primary_group": "Shoulders",
         "secondary_muscles": [
             "Back",
-            "Shoulders"
+            "Biceps"
         ],
-        "tertiary_muscles": [],
-        "stimulus_type": "unknown",
+        "tertiary_muscles": [
+            "Forearms"
+        ],
+        "stimulus_type": "pull",
         "notes": "Extremely important for rotator cuff health and shoulder longevity. Do not skip."
     },
     "Incline Dumbbell/Chest Machine": {
@@ -47,8 +52,10 @@
             "Triceps",
             "Shoulders"
         ],
-        "tertiary_muscles": [],
-        "stimulus_type": "unknown",
+        "tertiary_muscles": [
+            "Core"
+        ],
+        "stimulus_type": "push",
         "notes": "The incline angle shifts emphasis to the upper / clavicular fibres of the pec."
     },
     "Flat Chest Press Machine": {
@@ -57,8 +64,10 @@
             "Triceps",
             "Shoulders"
         ],
-        "tertiary_muscles": [],
-        "stimulus_type": "unknown",
+        "tertiary_muscles": [
+            "Core"
+        ],
+        "stimulus_type": "push",
         "notes": "Horizontal press hits mid/lower pec fibres. Great for overall chest mass."
     },
     "Dumbbell Bench Press": {
@@ -67,95 +76,120 @@
             "Triceps",
             "Shoulders"
         ],
-        "tertiary_muscles": [],
-        "stimulus_type": "unknown",
+        "tertiary_muscles": [
+            "Core",
+            "Forearms"
+        ],
+        "stimulus_type": "push",
         "notes": "Greater stretch vs barbell; dumbbells allow natural wrist rotation."
     },
     "Pec Deck Fly (Machine/Cable)": {
         "primary_group": "Chest",
         "secondary_muscles": [
-            "Chest",
             "Shoulders"
         ],
-        "tertiary_muscles": [],
-        "stimulus_type": "unknown",
+        "tertiary_muscles": [
+            "Biceps"
+        ],
+        "stimulus_type": "isolation",
         "notes": "Combined Pec Deck and Cable versions. Focus on pure pec isolation \u2014 no tricep involved."
     },
     "Lat Pulldown": {
         "primary_group": "Back",
         "secondary_muscles": [
             "Biceps",
-            "Back",
-            "Lat"
+            "Shoulders"
         ],
-        "tertiary_muscles": [],
-        "stimulus_type": "unknown",
+        "tertiary_muscles": [
+            "Forearms",
+            "Core"
+        ],
+        "stimulus_type": "pull",
         "notes": "Wide grip emphasises lat width. Lean slightly back for full lat contraction at the bottom."
     },
     "Chest Supported Row (Seated)": {
         "primary_group": "Back",
         "secondary_muscles": [
-            "Back",
-            "Biceps"
+            "Biceps",
+            "Shoulders"
         ],
-        "tertiary_muscles": [],
-        "stimulus_type": "unknown",
+        "tertiary_muscles": [
+            "Forearms"
+        ],
+        "stimulus_type": "pull",
         "notes": "Chest pad removes lower back fatigue completely. Focus on squeezing shoulder blades together at peak contraction."
     },
     "Wide Grip Cable Row (Machine)": {
         "primary_group": "Back",
         "secondary_muscles": [
-            "Back",
-            "Biceps"
+            "Biceps",
+            "Shoulders"
         ],
-        "tertiary_muscles": [],
-        "stimulus_type": "unknown",
+        "tertiary_muscles": [
+            "Forearms",
+            "Core"
+        ],
+        "stimulus_type": "pull",
         "notes": "Wide grip cable version \u2014 focus on pulling the elbows back and wide for upper back detail."
     },
     "Bicep Hammer Curls": {
         "primary_group": "Biceps",
         "secondary_muscles": [
-            "Biceps"
+            "Forearms"
         ],
-        "tertiary_muscles": [],
-        "stimulus_type": "unknown",
+        "tertiary_muscles": [
+            "Shoulders"
+        ],
+        "stimulus_type": "isolation",
         "notes": "Neutral grip (hammer) hits brachialis (depth of arm) and forearms more than supinated curl."
     },
     "Tricep Rope Pushdowns": {
         "primary_group": "Triceps",
         "secondary_muscles": [
-            "Triceps"
+            "Forearms"
         ],
-        "tertiary_muscles": [],
-        "stimulus_type": "unknown",
+        "tertiary_muscles": [
+            "Shoulders"
+        ],
+        "stimulus_type": "isolation",
         "notes": "Rope allows wrists to flare out at bottom \u2014 better peak contraction than bar."
     },
     "Over Head Tricep Extension DB": {
         "primary_group": "Triceps",
         "secondary_muscles": [
-            "Triceps"
+            "Shoulders"
         ],
-        "tertiary_muscles": [],
-        "stimulus_type": "unknown",
+        "tertiary_muscles": [
+            "Core",
+            "Forearms"
+        ],
+        "stimulus_type": "isolation",
         "notes": "Overhead position is the ONLY exercise that fully stretches the long head. High value."
     },
     "Leg Press": {
         "primary_group": "Quads",
         "secondary_muscles": [
             "Glutes",
-            "Biceps"
+            "Hamstrings"
         ],
-        "tertiary_muscles": [],
-        "stimulus_type": "unknown",
+        "tertiary_muscles": [
+            "Calves",
+            "Core"
+        ],
+        "stimulus_type": "legs",
         "notes": "Foot placement changes emphasis: feet high = more glute/ham; feet low = more quad."
     },
     "Goblet Squat": {
         "primary_group": "Quads",
         "secondary_muscles": [
-            "Glutes"
+            "Glutes",
+            "Core"
         ],
-        "tertiary_muscles": [],
-        "stimulus_type": "unknown",
+        "tertiary_muscles": [
+            "Hamstrings",
+            "Calves"
+        ],
+        "stimulus_type": "legs",
         "notes": "Upright torso makes this very quad dominant. Holding weight in front forces core to work."
     },
     "Smith Machine Squats": {
@@ -164,103 +198,122 @@
             "Glutes",
             "Hamstrings"
         ],
-        "tertiary_muscles": [],
-        "stimulus_type": "unknown",
+        "tertiary_muscles": [
+            "Core",
+            "Calves"
+        ],
+        "stimulus_type": "legs",
         "notes": "Fixed bar path reduces stabiliser demand; allows focus on quad drive."
     },
     "Seated Leg Extension": {
         "primary_group": "Quads",
-        "secondary_muscles": [
-            "Quads"
+        "secondary_muscles": [],
+        "tertiary_muscles": [
+            "Core"
         ],
-        "tertiary_muscles": [],
-        "stimulus_type": "unknown",
+        "stimulus_type": "isolation",
         "notes": "Pure knee extension \u2014 only true quad isolation exercise. Important for VMO health."
     },
     "Seated Hamstring Leg Curl": {
         "primary_group": "Hamstrings",
         "secondary_muscles": [
-            "Hamstrings"
+            "Glutes"
         ],
-        "tertiary_muscles": [],
-        "stimulus_type": "unknown",
+        "tertiary_muscles": [
+            "Calves"
+        ],
+        "stimulus_type": "isolation",
         "notes": "Seated version keeps hip flexed \u2014 better stretch on hamstring short head. High value."
     },
     "Cable Crunch": {
         "primary_group": "Core",
         "secondary_muscles": [
-            "Core"
+            "Shoulders"
         ],
-        "tertiary_muscles": [],
-        "stimulus_type": "unknown",
+        "tertiary_muscles": [
+            "Forearms"
+        ],
+        "stimulus_type": "core",
         "notes": "Weighted ab work. Kneel and bring elbows to knees \u2014 DON'T use hip flexors to pull down."
     },
     "Calf Raises": {
         "primary_group": "Calves",
-        "secondary_muscles": [
-            "Calves"
+        "secondary_muscles": [],
+        "tertiary_muscles": [
+            "Core"
         ],
-        "tertiary_muscles": [],
-        "stimulus_type": "unknown",
+        "stimulus_type": "isolation",
         "notes": "Straight leg = gastrocnemius (outer calf). Bent knee version hits soleus deeper."
     },
     "Seated Bicep Curl": {
         "primary_group": "Biceps",
         "secondary_muscles": [
-            "Biceps"
+            "Forearms"
         ],
-        "tertiary_muscles": [],
-        "stimulus_type": "unknown",
+        "tertiary_muscles": [
+            "Shoulders"
+        ],
+        "stimulus_type": "isolation",
         "notes": "Seated position eliminates momentum \u2014 forces strict bicep contraction. Great for mind-muscle connection."
     },
     "Preacher Hammer Curl": {
         "primary_group": "Biceps",
         "secondary_muscles": [
-            "Biceps"
+            "Forearms"
         ],
-        "tertiary_muscles": [],
-        "stimulus_type": "unknown",
+        "tertiary_muscles": [
+            "Shoulders"
+        ],
+        "stimulus_type": "isolation",
         "notes": "Preacher pad locks the upper arm \u2014 eliminates cheating. Hammer grip shifts emphasis from bicep peak to brachialis depth."
     },
     "Romanian Deadlift": {
         "primary_group": "Hamstrings",
         "secondary_muscles": [
-            "Hamstrings",
-            "Glutes"
+            "Glutes",
+            "Back"
         ],
-        "tertiary_muscles": [],
-        "stimulus_type": "unknown",
-        "notes": ""
+        "tertiary_muscles": [
+            "Core",
+            "Forearms",
+            "Calves"
+        ],
+        "stimulus_type": "legs",
+        "notes": "Hinge-dominant pattern. Eccentric hamstring stretch is the main stimulus — don't round the lower back."
     },
     "Leg Extension": {
         "primary_group": "Quads",
-        "secondary_muscles": [
-            "Quads"
+        "secondary_muscles": [],
+        "tertiary_muscles": [
+            "Core"
         ],
-        "tertiary_muscles": [],
-        "stimulus_type": "unknown",
-        "notes": ""
+        "stimulus_type": "isolation",
+        "notes": "Pure quad isolation. Emphasises VMO in the last 30 degrees of extension if pointed outward slightly."
     },
     "Wide Stance Leg Press (Adductors/Hamstring)": {
         "primary_group": "Glutes",
         "secondary_muscles": [
-            "Glutes",
+            "Hamstrings",
             "Quads"
         ],
-        "tertiary_muscles": [],
-        "stimulus_type": "unknown",
-        "notes": ""
+        "tertiary_muscles": [
+            "Calves",
+            "Core"
+        ],
+        "stimulus_type": "legs",
+        "notes": "Wide foot placement shifts load to adductors, glutes, and inner hamstrings — less quad-dominant than narrow stance."
     },
     "Unilateral Lat Cable Row": {
         "primary_group": "Back",
         "secondary_muscles": [
-            "Lat",
-            "Back",
             "Biceps",
-            "Triceps"
+            "Shoulders"
         ],
-        "tertiary_muscles": [],
-        "stimulus_type": "unknown",
-        "notes": ""
+        "tertiary_muscles": [
+            "Core",
+            "Forearms"
+        ],
+        "stimulus_type": "pull",
+        "notes": "Single-arm cable row. Allows greater range of motion and helps correct left-right imbalances."
     }
 }

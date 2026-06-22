@@ -11,8 +11,8 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 
 PAGES = (
     ("Fitness.py", "Command Center", "Readiness, training, and activity"),
-    ("pages/1_🍎_Nutrition.py", "Nutrition", "Calories, macros, and hydration"),
-    ("pages/2_🦾_Muscle_Atlas.py", "Muscle Atlas", "Muscle mapping and recovery"),
+    ("pages/1_Nutrition.py", "Nutrition", "Calories, macros, and hydration"),
+    ("pages/2_Muscle_Atlas.py", "Muscle Atlas", "Muscle mapping and recovery"),
     ("pages/3_Biomechanics_Sim.py", "Biomechanics Sim", "Posture and joint-load lab"),
 )
 
