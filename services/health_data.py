@@ -7,6 +7,7 @@ import pandas as pd
 import streamlit as st
 
 import database
+from config import DEFAULT_CAL_GOAL, DEFAULT_STEP_GOAL
 from core.readiness_engine import ReadinessInputs, calculate_readiness
 
 
@@ -79,7 +80,7 @@ def today_totals(snapshot: HealthSnapshot) -> dict:
 
 
 @st.cache_data(ttl=120, show_spinner=False, hash_funcs={HealthSnapshot: id})
-def kpi_summary(snapshot: HealthSnapshot, calorie_goal: int = 2300, step_goal: int = 8000, target_weight: float = 72.1) -> dict:
+def kpi_summary(snapshot: HealthSnapshot, calorie_goal: int = DEFAULT_CAL_GOAL, step_goal: int = DEFAULT_STEP_GOAL, target_weight: float = 72.1) -> dict:
     workouts = snapshot.workouts
     food = snapshot.food
     steps = snapshot.steps
@@ -174,7 +175,7 @@ def kpi_summary(snapshot: HealthSnapshot, calorie_goal: int = 2300, step_goal: i
 
 
 @st.cache_data(ttl=120, show_spinner=False, hash_funcs={HealthSnapshot: id})
-def readiness_summary(snapshot: HealthSnapshot, calorie_goal: int = 2300, step_goal: int = 8000) -> dict:
+def readiness_summary(snapshot: HealthSnapshot, calorie_goal: int = DEFAULT_CAL_GOAL, step_goal: int = DEFAULT_STEP_GOAL) -> dict:
     return calculate_readiness(
         ReadinessInputs(
             workouts=snapshot.workouts,
@@ -187,7 +188,7 @@ def readiness_summary(snapshot: HealthSnapshot, calorie_goal: int = 2300, step_g
     )
 
 
-def weekly_report(snapshot: HealthSnapshot, calorie_goal: int = 2300, step_goal: int = 8000, target_weight: float = 72.1) -> dict:
+def weekly_report(snapshot: HealthSnapshot, calorie_goal: int = DEFAULT_CAL_GOAL, step_goal: int = DEFAULT_STEP_GOAL, target_weight: float = 72.1) -> dict:
     summary = kpi_summary(snapshot, calorie_goal, step_goal, target_weight)
     readiness = summary["readiness_report"]
     return {
@@ -199,7 +200,7 @@ def weekly_report(snapshot: HealthSnapshot, calorie_goal: int = 2300, step_goal:
 
 
 @st.cache_data(ttl=120, show_spinner=False, hash_funcs={HealthSnapshot: id})
-def habit_consistency(snapshot: HealthSnapshot, calorie_goal: int = 2300, step_goal: int = 8000, target_weight: float = 72.1) -> dict:
+def habit_consistency(snapshot: HealthSnapshot, calorie_goal: int = DEFAULT_CAL_GOAL, step_goal: int = DEFAULT_STEP_GOAL, target_weight: float = 72.1) -> dict:
     summary = kpi_summary(snapshot, calorie_goal, step_goal, target_weight)
     logged_food_days = 0 if snapshot.food.empty else snapshot.food["date"].dt.date.nunique()
     logged_step_days = 0 if snapshot.steps.empty else snapshot.steps["date"].dt.date.nunique()
