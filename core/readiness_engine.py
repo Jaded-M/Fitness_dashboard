@@ -206,7 +206,7 @@ def _daily_scores(inputs: ReadinessInputs) -> dict[str, int]:
         daily_calories = recent.groupby(recent["date"].dt.date)["calories"].sum()
         daily_protein = recent.groupby(recent["date"].dt.date)["protein"].sum()
         adherence = daily_calories.between(inputs.calorie_goal * 0.85, inputs.calorie_goal * 1.10).mean() if len(daily_calories) else 0.0
-        protein_score = min((float(daily_protein.mean()) if len(daily_protein) else 0.0) / 120.0, 1.0)
+        protein_score = min((float(daily_protein.mean()) if len(daily_protein) else 0.0) / 150.0, 1.0)
         nutrition_score = int((adherence * 65) + (protein_score * 35))
 
     subjective_score = 50
