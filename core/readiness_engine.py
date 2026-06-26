@@ -7,6 +7,8 @@ from typing import Any
 
 import pandas as pd
 
+from config import DEFAULT_CAL_GOAL, DEFAULT_STEP_GOAL
+
 from core.muscle_mapping import (
     CANONICAL_MUSCLE_GROUPS,
     exercise_muscle_profile,
@@ -37,8 +39,8 @@ class ReadinessInputs:
     food: pd.DataFrame
     steps: pd.DataFrame
     checkins: pd.DataFrame
-    calorie_goal: int = 2300
-    step_goal: int = 8000
+    calorie_goal: int = DEFAULT_CAL_GOAL
+    step_goal: int = DEFAULT_STEP_GOAL
     today: date = field(default_factory=date.today)
 
 
