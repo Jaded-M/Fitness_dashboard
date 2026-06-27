@@ -155,7 +155,8 @@ def _muscle_load(workouts: pd.DataFrame, today: date) -> tuple[list[dict[str, An
         if last is not None:
             hours_since = max((pd.Timestamp(today) - last).total_seconds() / 3600.0, 0)
             window = RECOVERY_WINDOWS.get(muscle, 48)
-            readiness = min(100.0, max(readiness, (hours_since / window) * 100.0))
+            recovery_progress = min(1.0, hours_since / window)
+            readiness = min(100.0, readiness + (raw_fatigue * recovery_progress))
 
         if readiness >= 76:
             status = "Ready"
