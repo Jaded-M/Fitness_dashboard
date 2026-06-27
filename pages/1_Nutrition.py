@@ -9,10 +9,10 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import database
 from components.design_system import apply_platform_theme, page_header, stat_card, insight_card
-from components.sidebar import render_sidebar_shell
+from components.sidebar import render_sidebar
 from ui import nutrition_charts as charts
 from ui import nutrition_forms as forms
-from config import STREAK_TOLERANCE_KCAL, MACRO_SPLIT_PROTEIN, MACRO_SPLIT_CARBS, MACRO_SPLIT_FATS
+from config import DEFAULT_CAL_GOAL, STREAK_TOLERANCE_KCAL, MACRO_SPLIT_PROTEIN, MACRO_SPLIT_CARBS, MACRO_SPLIT_FATS
 from utils import get_day_stats
 from supabase_client import is_authenticated
 
@@ -24,11 +24,11 @@ if not is_authenticated():
 
 # Apply PHI theme
 apply_platform_theme()
-render_sidebar_shell("pages/1_Nutrition.py")
+render_sidebar(active_page="pages/1_Nutrition.py")
 
 # --- Initialize Session State ---
 if "cal_goal" not in st.session_state:
-    st.session_state.cal_goal = 2300
+    st.session_state.cal_goal = DEFAULT_CAL_GOAL
 if "water_goal" not in st.session_state:
     st.session_state.water_goal = 10
 
