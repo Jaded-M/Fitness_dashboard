@@ -10,6 +10,7 @@ from api.gateway import SupabaseGateway
 from api.models import ReadinessResponse
 from api.services.snapshots import load_mobile_snapshot
 from core.bca_engine import BCA_Engine
+from config import DEFAULT_CAL_GOAL, DEFAULT_STEP_GOAL
 from core.readiness_engine import ReadinessInputs, calculate_readiness
 
 
@@ -18,8 +19,8 @@ router = APIRouter(prefix="/intelligence", tags=["intelligence"])
 
 @router.get("/readiness", response_model=ReadinessResponse)
 async def readiness(
-    calorie_goal: int = Query(default=2300, ge=1000, le=6000),
-    step_goal: int = Query(default=8000, ge=1000, le=50000),
+    calorie_goal: int = Query(default=DEFAULT_CAL_GOAL, ge=1000, le=6000),
+    step_goal: int = Query(default=DEFAULT_STEP_GOAL, ge=1000, le=50000),
     gateway: SupabaseGateway = Depends(get_gateway),
 ):
     snapshot = await load_mobile_snapshot(gateway)
@@ -39,8 +40,8 @@ async def readiness(
 
 @router.get("/today")
 async def today_summary(
-    calorie_goal: int = Query(default=2300, ge=1000, le=6000),
-    step_goal: int = Query(default=8000, ge=1000, le=50000),
+    calorie_goal: int = Query(default=DEFAULT_CAL_GOAL, ge=1000, le=6000),
+    step_goal: int = Query(default=DEFAULT_STEP_GOAL, ge=1000, le=50000),
     gateway: SupabaseGateway = Depends(get_gateway),
 ):
     snapshot = await load_mobile_snapshot(gateway)
