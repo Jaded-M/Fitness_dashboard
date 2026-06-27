@@ -6,6 +6,7 @@ import math
 
 import pandas as pd
 import streamlit as st
+from config import DEFAULT_STEP_GOAL
 
 
 def render_readiness_ring(score: int, label: str) -> None:
@@ -84,7 +85,7 @@ def render_readiness_ring(score: int, label: str) -> None:
 def compute_active_streak(
     workout_df: pd.DataFrame,
     steps_df: pd.DataFrame,
-    step_goal: int = 8000,
+    step_goal: int = DEFAULT_STEP_GOAL,
     steps_min_pct: float = 0.50,
 ) -> dict:
     """Calculate a streak that counts workout days and active-rest days."""
@@ -140,7 +141,7 @@ def compute_active_streak(
 def render_streak_card(
     workout_df: pd.DataFrame,
     steps_df: pd.DataFrame,
-    step_goal: int = 8000,
+    step_goal: int = DEFAULT_STEP_GOAL,
 ) -> None:
     """Render a compact streak card with no external calls."""
     data = compute_active_streak(workout_df, steps_df, step_goal)
