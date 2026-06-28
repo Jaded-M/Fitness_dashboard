@@ -7,7 +7,10 @@ import pandas as pd
 import streamlit as st
 
 import database
+from config import DEFAULT_CAL_GOAL, DEFAULT_STEP_GOAL
+from database_settings import load_user_settings, save_user_settings
 from components.design_system import apply_platform_theme, page_header
+from components.sidebar import render_sidebar
 from components.widgets import calculate_logging_streak
 from components.overview import (
     render_activity_sync_panel,
@@ -48,6 +51,8 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
+render_sidebar(active_page="Fitness.py")
 
 
 def _save_exercise_library(library: dict) -> None:
@@ -94,63 +99,40 @@ def _auto_sync_steps():
         st.session_state["auto_synced"] = True
 
 
-def _page_path(pattern: str) -> str:
-    match = next(Path("pages").glob(pattern), None)
-    return match.as_posix() if match else pattern
-
-
-def render_landing_sidebar() -> None:
-    """Main-page navigation without experimental pages."""
-    st.sidebar.markdown(
-        """
-        <style>
-            [data-testid="stSidebarNav"] {
-                display: none !important;
-            }
-            .phi-main-nav-title {
-                color: var(--blue);
-                font-size: 0.65rem;
-                font-weight: 800;
-                letter-spacing: 0.14em;
-                margin: 0.9rem 0 0.4rem;
-                text-transform: uppercase;
-            }
-        </style>
-        <div class="phi-sidebar-brand">
-            <div class="phi-sidebar-logo">PHI</div>
-            <div>
-                <div class="phi-sidebar-title">Personal Health Intelligence</div>
-                <div class="phi-sidebar-subtitle">Training, nutrition, and recovery</div>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    st.sidebar.markdown('<div class="phi-main-nav-title">Navigation</div>', unsafe_allow_html=True)
-    nav_items = [
-        ("Fitness.py", "Command Center", "Today and training intelligence"),
-        (_page_path("1_Nutrition.py"), "Nutrition", "Calories, macros, hydration"),
-        (_page_path("2_Muscle_Atlas.py"), "Muscle Atlas", "Mapping and recovery"),
-        (_page_path("4_PR_Tracker.py"), "PR Tracker", "Records and overload"),
-    ]
-    for path, label, caption in nav_items:
-        active_class = " active" if path == "Fitness.py" else ""
-        st.sidebar.markdown(
-            f'<div class="phi-nav-hint{active_class}"><span>{caption}</span></div>',
-            unsafe_allow_html=True,
-        )
-        st.sidebar.page_link(path, label=label)
-
-
 def sidebar_settings(snapshot=None):
-    render_landing_sidebar()
+
+    # Load persisted goals once per session
+    if "_user_settings_loaded" not in st.session_state:
+        _saved = load_user_settings()
+        st.session_state["calorie_goal"] = _saved["calorie_goal"]
+        st.session_state["step_goal"] = _saved["step_goal"]
+        st.session_state["protein_target"] = _saved["protein_target"]
+        st.session_state["_user_settings_loaded"] = True
 
     st.sidebar.markdown('<div class="phi-sidebar-section">Goals</div>', unsafe_allow_html=True)
     with st.sidebar.expander("Configure goals & window", expanded=False):
-        calorie_goal = st.number_input("Daily calorie goal", 1000, 6000, 2300, step=50)
-        step_goal = st.number_input("Daily step goal", 1000, 30000, 8000, step=500)
+        calorie_goal = st.number_input(
+            "Daily calorie goal", 1000, 6000,
+            value=st.session_state["calorie_goal"],
+            step=50,
+        )
+        step_goal = st.number_input(
+            "Daily step goal", 1000, 30000,
+            value=st.session_state["step_goal"],
+            step=500,
+        )
         target_weight = st.number_input("Target weight (kg)", 40.0, 150.0, 72.1, step=0.1)
         window = st.selectbox("Analysis window", [30, 60, 90, 180], index=2)
+
+        # Persist whenever values differ from what was last saved
+        _protein = st.session_state.get("protein_target", DEFAULT_CAL_GOAL)
+        if (
+            calorie_goal != st.session_state.get("calorie_goal")
+            or step_goal != st.session_state.get("step_goal")
+        ):
+            st.session_state["calorie_goal"] = calorie_goal
+            st.session_state["step_goal"] = step_goal
+            save_user_settings(calorie_goal, step_goal, _protein)
 
     st.sidebar.markdown('<div class="phi-sidebar-section">Library</div>', unsafe_allow_html=True)
     with st.sidebar.expander("Manage Exercise Library", expanded=False):
@@ -194,8 +176,8 @@ def sidebar_settings(snapshot=None):
         return calorie_goal, step_goal, target_weight, window
     except UnboundLocalError:
         return (
-            st.session_state.get("calorie_goal", 2300),
-            st.session_state.get("step_goal", 8000),
+            st.session_state.get("calorie_goal", DEFAULT_CAL_GOAL),
+            st.session_state.get("step_goal", DEFAULT_STEP_GOAL),
             st.session_state.get("target_weight", 72.1),
             st.session_state.get("window", 90),
         )
@@ -272,13 +254,38 @@ def render_hero(summary: dict, readiness: dict, streak: int, snapshot=None, wate
 
     last_session = ""
     if snapshot is not None and snapshot.workouts is not None and not snapshot.workouts.empty:
+        from core.muscle_mapping import exercise_muscle_profile
+        from config import JUNK_FILTER
+
         df = snapshot.workouts.copy()
         df["Date"] = pd.to_datetime(df["Date"])
-        last_row = df.loc[df["Date"].idxmax()]
-        name = last_row["Workout"]
-        days = (datetime.date.today() - last_row["Date"].date()).days
+        last_date = df["Date"].max()
+        
+        daily_df = df[df["Date"].dt.date == last_date.date()]
+        exercises = [ex for ex in daily_df["Workout"].unique() if ex not in JUNK_FILTER]
+        
+        has_upper = False
+        has_lower = False
+        for ex in exercises:
+            profile = exercise_muscle_profile(ex)
+            for muscle in profile:
+                if muscle in ["Chest", "Back", "Shoulders", "Biceps", "Triceps"]:
+                    has_upper = True
+                elif muscle in ["Quads", "Hamstrings", "Glutes", "Calves"]:
+                    has_lower = True
+                    
+        if has_upper and has_lower:
+            split_type = "Full Body"
+        elif has_upper:
+            split_type = "Upper"
+        elif has_lower:
+            split_type = "Lower"
+        else:
+            split_type = "Full Body"
+            
+        days = (datetime.date.today() - last_date.date()).days
         when = "Today" if days == 0 else "Yesterday" if days == 1 else f"{days} days ago"
-        last_session = f"{name} · {when}"
+        last_session = f"{split_type} · {len(exercises)} exercises · {when}"
 
     st.markdown(
         f"""
