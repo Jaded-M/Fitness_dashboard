@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from api.auth import get_current_user
 from api.models import ApiUser
-from api.routers import activity, intelligence, nutrition, workouts
+from api.routers import activity, auth, intelligence, nutrition, workouts
 
 
 app = FastAPI(
@@ -40,6 +40,7 @@ def me(user: ApiUser = Depends(get_current_user)):
     return {"id": user.id, "email": user.email}
 
 
+app.include_router(auth.router, prefix="/api/v1")
 app.include_router(workouts.router, prefix="/api/v1")
 app.include_router(nutrition.router, prefix="/api/v1")
 app.include_router(activity.router, prefix="/api/v1")
