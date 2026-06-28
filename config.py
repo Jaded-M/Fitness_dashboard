@@ -5,9 +5,12 @@ config.py — Central configuration and constants for the Elite Fitness Dashboar
 # ============================================================
 # 🎯 GOALS & TARGETS
 # ============================================================
-DEFAULT_CAL_GOAL      = 2300
-STREAK_TOLERANCE_KCAL = 150   # Hit your goal within +/- 150 kcal to keep streak alive
-DEFAULT_WATER_GOAL    = 12    # Cups of water
+DEFAULT_CAL_GOAL        = 2300
+DEFAULT_STEP_GOAL       = 8000    # Daily step target
+DEFAULT_PROTEIN_TARGET  = 150     # Daily protein target in grams
+DEFAULT_WATER_GOAL_L    = 3.0     # Daily water target in litres
+STREAK_TOLERANCE_KCAL   = 150     # Hit your goal within +/- 150 kcal to keep streak alive
+DEFAULT_WATER_GOAL      = 12      # Cups of water
 
 # ============================================================
 # 🥩 MACRO SPLIT (Percentage of total calories)
