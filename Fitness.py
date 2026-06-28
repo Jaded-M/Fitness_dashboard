@@ -7,7 +7,7 @@ import pandas as pd
 import streamlit as st
 
 import database
-from config import DEFAULT_CAL_GOAL, DEFAULT_STEP_GOAL
+from config import DEFAULT_CAL_GOAL, DEFAULT_PROTEIN_TARGET, DEFAULT_STEP_GOAL
 from database_settings import load_user_settings, save_user_settings
 from components.design_system import apply_platform_theme, page_header
 from components.sidebar import render_sidebar
@@ -125,7 +125,7 @@ def sidebar_settings(snapshot=None):
         window = st.selectbox("Analysis window", [30, 60, 90, 180], index=2)
 
         # Persist whenever values differ from what was last saved
-        _protein = st.session_state.get("protein_target", DEFAULT_CAL_GOAL)
+        _protein = st.session_state.get("protein_target", DEFAULT_PROTEIN_TARGET)
         if (
             calorie_goal != st.session_state.get("calorie_goal")
             or step_goal != st.session_state.get("step_goal")
