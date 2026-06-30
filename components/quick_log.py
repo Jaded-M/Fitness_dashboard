@@ -21,6 +21,11 @@ _SPLIT_MAP = {
 }
 
 
+# ── Shared log date ──────────────────────────────────────────────────────────
+if "shared_log_date" not in st.session_state:
+    st.session_state["shared_log_date"] = date.today()
+
+
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
 def _exercise_options(split: str = "") -> list[str]:
@@ -170,7 +175,8 @@ def workout_dialog():
     # ── Header ────────────────────────────────────────────────
     hc1, hc2 = st.columns(2)
     with hc1:
-        session["date"] = st.date_input("Date", session["date"], key="ws_date")
+        session["date"] = st.date_input("Date", st.session_state["shared_log_date"], key="ws_date")
+        st.session_state["shared_log_date"] = session["date"]
     with hc2:
         split_idx = _SPLITS.index(session["split"]) if session["split"] in _SPLITS else 0
         session["split"] = st.selectbox("Split", _SPLITS, index=split_idx, key="ws_split")
@@ -316,7 +322,8 @@ def workout_dialog():
 
 @st.dialog("Log meal")
 def meal_dialog():
-    log_date = st.date_input("Date", date.today(), key="ql_food_date")
+    log_date = st.date_input("Date", st.session_state["shared_log_date"], key="ql_food_date")
+    st.session_state["shared_log_date"] = log_date
     meal = st.radio("Meal", ["Breakfast", "Lunch", "Snack", "Dinner"], horizontal=True, key="ql_meal")
     name = st.text_input("Food", placeholder="Chicken rice bowl", key="ql_food")
     c1, c2 = st.columns(2)
@@ -337,7 +344,8 @@ def meal_dialog():
 
 @st.dialog("Log weight")
 def weight_dialog():
-    log_date = st.date_input("Date", date.today(), key="ql_weight_date")
+    log_date = st.date_input("Date", st.session_state["shared_log_date"], key="ql_weight_date")
+    st.session_state["shared_log_date"] = log_date
     weight = st.number_input("Weight kg", 0.0, 300.0, 80.0, step=0.1, format="%.1f", key="ql_weight_kg")
     waist  = st.number_input("Waist inches (optional)", 0.0, 100.0, 0.0, step=0.1, key="ql_waist")
     if st.button("Save weight", type="primary", use_container_width=True):
@@ -351,7 +359,8 @@ def weight_dialog():
 
 @st.dialog("Log activity")
 def steps_dialog():
-    log_date = st.date_input("Date", date.today(), key="ql_steps_date")
+    log_date = st.date_input("Date", st.session_state["shared_log_date"], key="ql_steps_date")
+    st.session_state["shared_log_date"] = log_date
     steps    = st.number_input("Steps", 0, 100_000, 8000, step=500, key="ql_steps")
     distance = round(steps * 0.00076, 2)
     active_m = round(steps / 100, 0)
@@ -364,7 +373,8 @@ def steps_dialog():
 
 @st.dialog("Daily check-in")
 def checkin_dialog():
-    log_date = st.date_input("Date", date.today(), key="ql_checkin_date")
+    log_date = st.date_input("Date", st.session_state["shared_log_date"], key="ql_checkin_date")
+    st.session_state["shared_log_date"] = log_date
     c1, c2, c3 = st.columns(3)
     mood  = c1.slider("Mood",   1, 5, 3, key="ql_mood")
     energy = c2.slider("Energy", 1, 5, 3, key="ql_energy")
