@@ -38,7 +38,7 @@ def extract_top_set(row) -> tuple[float, int]:
 
     return top_weight, top_reps
 
-def render_pr_board():
+def render_pr_board(workouts: pd.DataFrame):
     """Render the Top 10 all-time PRs across all exercises."""
     st.markdown(
         """
@@ -50,9 +50,34 @@ def render_pr_board():
         unsafe_allow_html=True,
     )
     
-    df = database.get_best_lifts()
-    if df.empty:
+    if workouts.empty:
         st.info("No workouts logged yet. Your PRs will appear here.")
+        return
+        
+    best_lifts = []
+    for ex, group in workouts.groupby("exercise"):
+        if ex == "Session Duration":
+            continue
+        max_weight = 0
+        max_reps = 0
+        for _, row in group.iterrows():
+            w, r = extract_top_set(row)
+            if w > max_weight:
+                max_weight = w
+                max_reps = r
+            elif w == max_weight and r > max_reps:
+                max_reps = r
+        if max_weight > 0:
+            best_lifts.append({
+                "exercise": ex, 
+                "best_weight": max_weight, 
+                "best_reps": max_reps, 
+                "sessions": len(group)
+            })
+            
+    df = pd.DataFrame(best_lifts)
+    if df.empty:
+        st.info("No PRs yet.")
         return
     
     # Sort by best weight and take top 10
@@ -79,15 +104,20 @@ def render_pr_board():
             unsafe_allow_html=True
         )
 
-def render_1rm_chart(exercise: str):
+def render_1rm_chart(workouts: pd.DataFrame, exercise: str):
     """Render the Estimated 1RM progression chart for a specific exercise."""
-    history = database.get_exercise_history(exercise, limit=100)
+    if workouts.empty:
+        st.caption(f"No data available for {exercise}.")
+        return
+        
+    history = workouts[workouts["exercise"] == exercise].copy()
     if history.empty:
         st.caption(f"No data available for {exercise}.")
         return
 
     # Calculate 1RM for each session
     history['date'] = pd.to_datetime(history['date'])
+    history = history.sort_values("date").tail(100)
     
     # Extract top set per session for 1RM calculation
     daily_1rm = []
@@ -118,7 +148,7 @@ def render_1rm_chart(exercise: str):
     )
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
-def render_overload_status():
+def render_overload_status(workouts: pd.DataFrame):
     """Show progressive overload status for recently trained exercises."""
     st.markdown(
         """
@@ -130,11 +160,11 @@ def render_overload_status():
         unsafe_allow_html=True,
     )
     
-    recent_workouts = database.get_all_workouts()
-    if recent_workouts.empty:
+    if workouts.empty:
         st.info("No recent workouts to analyze.")
         return
         
+    recent_workouts = workouts.copy()
     recent_workouts["date"] = pd.to_datetime(recent_workouts["date"])
     cutoff = datetime.now() - timedelta(days=14)
     recent = recent_workouts[recent_workouts["date"] >= cutoff]
@@ -146,7 +176,7 @@ def render_overload_status():
         if ex == "Session Duration":
             continue
             
-        history = database.get_exercise_history(ex, limit=2)
+        history = recent_workouts[recent_workouts["exercise"] == ex].sort_values("date", ascending=False).head(2)
         if len(history) < 2:
             continue
             
