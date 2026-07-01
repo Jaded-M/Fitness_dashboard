@@ -12,7 +12,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.append(str(ROOT_DIR))
 
 from components.design_system import apply_platform_theme, page_header
-from components.sidebar import render_sidebar_shell
+from components.sidebar import render_sidebar
 from supabase_client import is_authenticated
 
 
@@ -31,7 +31,7 @@ if not is_authenticated():
     st.switch_page("pages/0_Login.py")
 
 apply_platform_theme()
-render_sidebar_shell("pages/3_Biomechanics_Sim.py")
+render_sidebar(active_page="pages/3_Biomechanics_Sim.py")
 
 
 def load_simulator_html() -> str:
