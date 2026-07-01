@@ -12,7 +12,12 @@ from components.design_system import apply_platform_theme, page_header, stat_car
 from components.sidebar import render_sidebar
 from ui import nutrition_charts as charts
 from ui import nutrition_forms as forms
-from config import DEFAULT_CAL_GOAL, STREAK_TOLERANCE_KCAL, MACRO_SPLIT_PROTEIN, MACRO_SPLIT_CARBS, MACRO_SPLIT_FATS
+from config import (
+    DEFAULT_CAL_GOAL, STREAK_TOLERANCE_KCAL, MACRO_SPLIT_PROTEIN, 
+    MACRO_SPLIT_CARBS, MACRO_SPLIT_FATS, DEFAULT_WATER_GOAL_L,
+    DEFAULT_STEP_GOAL, DEFAULT_PROTEIN_TARGET
+)
+from database_settings import load_user_settings, save_user_settings
 from utils import get_day_stats
 from supabase_client import is_authenticated
 
@@ -27,10 +32,13 @@ apply_platform_theme()
 render_sidebar(active_page="pages/1_Nutrition.py")
 
 # --- Initialize Session State ---
-if "cal_goal" not in st.session_state:
-    st.session_state.cal_goal = DEFAULT_CAL_GOAL
+if "_nutrition_settings_loaded" not in st.session_state:
+    _saved = load_user_settings()
+    st.session_state["cal_goal"] = _saved["calorie_goal"]
+    st.session_state["protein_target"] = _saved["protein_target"]
+    st.session_state["_nutrition_settings_loaded"] = True
 if "water_goal" not in st.session_state:
-    st.session_state.water_goal = 10
+    st.session_state.water_goal = DEFAULT_WATER_GOAL_L
 
 # --- Load Data ---
 today_date = datetime.date.today()
@@ -197,8 +205,14 @@ with action3:
     st.button("💧 +1 Cup Water", use_container_width=True, on_click=database.log_water, args=(today_date, 1))
 with action4:
     with st.popover("⚙️ Goals & Settings", use_container_width=True):
-        st.session_state.cal_goal   = st.number_input("Daily Calorie Goal", 1000, 5000, st.session_state.cal_goal)
-        st.session_state.water_goal = st.number_input("Daily Water Goal", 1, 20, st.session_state.water_goal)
+        new_cal_goal = st.number_input("Daily Calorie Goal", 1000, 5000, st.session_state.cal_goal)
+        st.session_state.water_goal = st.number_input("Daily Water Goal", 1, 20, int(st.session_state.water_goal))
+        
+        if new_cal_goal != st.session_state.cal_goal:
+            st.session_state.cal_goal = new_cal_goal
+            _step = st.session_state.get("step_goal", DEFAULT_STEP_GOAL)
+            _prot = st.session_state.get("protein_target", DEFAULT_PROTEIN_TARGET)
+            save_user_settings(new_cal_goal, _step, _prot)
         recipes = [
             "**Greek Yogurt Bowl**: yogurt + protein + berries ≈ 350 kcal",
             "**Paneer Tikka Salad**: paneer + greens + mint chutney ≈ 400 kcal",
