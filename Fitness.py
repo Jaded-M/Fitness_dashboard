@@ -25,6 +25,7 @@ from components.quick_log import render_quick_actions
 from core.spotify import render_spotify_widget
 from services.google_fit import sync_google_fit_data
 from services.health_data import kpi_summary, load_snapshot
+from core.bca_engine import BCA_Engine
 
 
 from supabase_client import is_authenticated
@@ -414,6 +415,125 @@ def render_hero(summary: dict, readiness: dict, streak: int, snapshot=None, wate
         unsafe_allow_html=True,
     )
 
+def render_intelligence_card(
+    summary: dict,
+    readiness: dict,
+    snapshot,
+    target_weight: float = 72.1,
+) -> None:
+    """Render a unified intelligence card below the hero grid."""
+
+    # ── 1. Current weight ─────────────────────────────────────────────────────
+    current_weight = 84.0
+    try:
+        meas = snapshot.measurements
+        if meas is not None and not meas.empty and "weight" in meas.columns:
+            val = meas["weight"].dropna()
+            if not val.empty:
+                candidate = float(val.iloc[-1])
+                if candidate > 0:
+                    current_weight = candidate
+    except Exception:
+        pass
+
+    # ── 2. BCA engine ─────────────────────────────────────────────────────────
+    engine  = BCA_Engine(current_weight_kg=current_weight)
+    metrics = engine.estimate_current_metrics()
+    macros  = engine.get_macro_targets("cut", target_weight_kg=target_weight)
+
+    body_fat_pct  = metrics["estimated_pbf_percent"]
+    smm_kg        = metrics["estimated_smm_kg"]
+
+    today_calories  = summary.get("today_calories", 0)
+    today_protein   = summary.get("today_protein", 0)
+    protein_target  = macros["protein_g"]
+    protein_pct     = int(today_protein / max(protein_target, 1) * 100)
+
+    r_score           = readiness.get("score", 0)
+    r_label           = readiness.get("label", "—")
+    recommended_split = readiness.get("recommended_split", "—")
+
+    # ── 3. Top 3 recovery muscles (highest readiness %) ───────────────────────
+    muscle_status = readiness.get("muscle_status", {})
+    if muscle_status:
+        sorted_muscles = sorted(muscle_status.items(), key=lambda x: x[1], reverse=True)[:3]
+        top_muscles    = "  ·  ".join(f"{m} {int(v)}%" for m, v in sorted_muscles)
+    else:
+        top_muscles = "No muscle data"
+
+    # ── 4. Render ─────────────────────────────────────────────────────────────
+    st.markdown(
+        f"""
+        <div class="phi-intel-card">
+            <div class="phi-intel-header">// UNIFIED INTELLIGENCE</div>
+            <div class="phi-intel-row">
+                <span class="phi-intel-label">BODY</span>
+                <span class="phi-intel-value">{current_weight:.1f}kg &nbsp;&middot;&nbsp; {body_fat_pct}% BF &nbsp;&middot;&nbsp; SMM {smm_kg}kg</span>
+            </div>
+            <div class="phi-intel-row">
+                <span class="phi-intel-label">FUEL</span>
+                <span class="phi-intel-value">{today_calories:,} kcal logged &nbsp;&middot;&nbsp; {today_protein}g protein <span class="phi-intel-dim">({protein_pct}% of {protein_target}g target)</span></span>
+            </div>
+            <div class="phi-intel-row">
+                <span class="phi-intel-label">READINESS</span>
+                <span class="phi-intel-value">{r_score}/100 &nbsp;&middot;&nbsp; {r_label} &nbsp;&middot;&nbsp; {recommended_split}</span>
+            </div>
+            <div class="phi-intel-row">
+                <span class="phi-intel-label">RECOVERY</span>
+                <span class="phi-intel-value">{top_muscles}</span>
+            </div>
+        </div>
+        <style>
+            .phi-intel-card {{
+                margin: 0 0 1.25rem;
+                padding: 1rem 1.4rem;
+                border: 1px solid rgba(0, 204, 136, 0.15);
+                border-left: 3px solid var(--green);
+                background: var(--panel);
+                font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            }}
+            .phi-intel-header {{
+                color: var(--green);
+                font-size: 0.65rem;
+                font-weight: 700;
+                letter-spacing: 0.15em;
+                text-transform: uppercase;
+                opacity: 0.45;
+                margin-bottom: 0.8rem;
+            }}
+            .phi-intel-row {{
+                display: flex;
+                align-items: baseline;
+                gap: 1rem;
+                padding: 0.35rem 0;
+                border-top: 1px solid rgba(0, 204, 136, 0.07);
+                line-height: 1.45;
+            }}
+            .phi-intel-row:first-of-type {{ border-top: none; }}
+            .phi-intel-label {{
+                flex-shrink: 0;
+                width: 8rem;
+                color: var(--green);
+                font-size: 0.65rem;
+                font-weight: 700;
+                letter-spacing: 0.13em;
+                opacity: 0.55;
+            }}
+            .phi-intel-value {{
+                color: var(--green);
+                font-size: 0.82rem;
+                font-weight: 500;
+            }}
+            .phi-intel-dim {{
+                opacity: 0.45;
+                font-size: 0.76rem;
+            }}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 # ── Load data once ────────────────────────────────────────────────────────────
 with st.spinner("Loading your health data…"):
     _auto_sync_steps()
@@ -439,6 +559,7 @@ streak = calculate_logging_streak(snapshot.workouts, snapshot.food, water_df)
 
 # Render hero
 render_hero(summary, readiness, streak, snapshot, water_df)
+render_intelligence_card(summary, readiness, snapshot, target_weight)
 render_quick_actions()
 
 st.components.v1.html(
