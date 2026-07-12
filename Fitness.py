@@ -624,27 +624,27 @@ with overview:
         render_sleep_chart(snapshot)
         render_weight_trend(snapshot)
         st.components.v1.html("""
-<canvas id="phiPong" width="320" height="200" style="width:100%;max-width:320px;display:block;margin:0.5rem auto 0;border:1px solid rgba(51,255,51,0.15);border-radius:0;background:#000;"></canvas>
+<canvas id="phiPong" width="440" height="300" style="width:100%;display:block;margin:0.5rem auto 0;border:1px solid rgba(51,255,51,0.15);border-radius:0;background:#000;"></canvas>
 <script>
-(function(){var c=document.getElementById('phiPong');if(!c)return;var x=c.getContext('2d');c.width=320;c.height=200;
-var bx=160,by=100,bdx=1.6,bdy=1.2,p1y=70,p2y=70,s1=0,s2=0,bSize=5,padW=4,padH=24,speed=1;
-function ai(vy,t){if(t<vy+12)t+=1.2;else if(t>vy+12)t-=1.2;return t}
+(function(){var c=document.getElementById('phiPong');if(!c)return;var x=c.getContext('2d');c.width=440;c.height=300;
+var bx=220,by=150,bdx=2.0,bdy=1.5,p1y=100,p2y=100,s1=0,s2=0,bSize=6,padW=5,padH=30,speed=1.2;
+function ai(vy,t){if(t<vy+15)t+=1.5;else if(t>vy+15)t-=1.5;return t}
 function loop(){bx+=bdx*speed;by+=bdy*speed;
-if(by-bSize<0||by+bSize>200)bdy=-bdy;
+if(by-bSize<0||by+bSize>300)bdy=-bdy;
 if(bx-bSize<padW&&by>p1y&&by<p1y+padH){bdx=-bdx;bx=padW+bSize;bdx*=1.03}
-if(bx+bSize>320-padW&&by>p2y&&by<p2y+padH){bdx=-bdx;bx=320-padW-bSize;bdx*=1.03}
-if(bx<0){s2++;bx=160;by=100;bdx=1.6;bdy=1.2;speed=1}
-if(bx>320){s1++;bx=160;by=100;bdx=-1.6;bdy=1.2;speed=1}
-p1y=ai(by-12,p1y);if(p1y<0)p1y=0;if(p1y>200-padH)p1y=200-padH;
-p2y=ai(by-12,p2y);if(p2y<0)p2y=0;if(p2y>200-padH)p2y=200-padH;
-x.fillStyle='#000';x.fillRect(0,0,320,200);
-x.strokeStyle='rgba(51,255,51,0.2)';x.lineWidth=1;x.setLineDash([4,6]);x.beginPath();x.moveTo(160,0);x.lineTo(160,200);x.stroke();x.setLineDash([]);
-x.fillStyle='#33FF33';x.fillRect(2,p1y,padW,padH);x.fillRect(318-padW,p2y,padW,padH);
+if(bx+bSize>440-padW&&by>p2y&&by<p2y+padH){bdx=-bdx;bx=440-padW-bSize;bdx*=1.03}
+if(bx<0){s2++;bx=220;by=150;bdx=2.0;bdy=1.5;speed=1.2}
+if(bx>440){s1++;bx=220;by=150;bdx=-2.0;bdy=1.5;speed=1.2}
+p1y=ai(by-15,p1y);if(p1y<0)p1y=0;if(p1y>300-padH)p1y=300-padH;
+p2y=ai(by-15,p2y);if(p2y<0)p2y=0;if(p2y>300-padH)p2y=300-padH;
+x.fillStyle='#000';x.fillRect(0,0,440,300);
+x.strokeStyle='rgba(51,255,51,0.2)';x.lineWidth=1;x.setLineDash([4,6]);x.beginPath();x.moveTo(220,0);x.lineTo(220,300);x.stroke();x.setLineDash([]);
+x.fillStyle='#33FF33';x.fillRect(2,p1y,padW,padH);x.fillRect(438-padW,p2y,padW,padH);
 x.fillRect(bx-bSize,by-bSize,bSize*2,bSize*2);
-x.font='14px "JetBrains Mono","IBM Plex Mono",monospace';x.textAlign='center';x.fillText(s1+' : '+s2,160,20);
+x.font='16px "JetBrains Mono","IBM Plex Mono",monospace';x.textAlign='center';x.fillText(s1+' : '+s2,220,25);
 requestAnimationFrame(loop)}loop()})();
 </script>
-        """, height=210)
+        """, height=320)
     with c2:
         render_protein_chart(snapshot, protein_target)
         render_fiber_chart(snapshot)
