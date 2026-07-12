@@ -436,17 +436,10 @@ def render_intelligence_card(
     except Exception:
         pass
 
-    # ── 2. BCA engine ─────────────────────────────────────────────────────────
-    engine  = BCA_Engine(current_weight_kg=current_weight)
-    metrics = engine.estimate_current_metrics()
-    macros  = engine.get_macro_targets("cut", target_weight_kg=target_weight)
-
-    body_fat_pct  = metrics["estimated_pbf_percent"]
-    smm_kg        = metrics["estimated_smm_kg"]
-
+    # ── 2. Protein target (bodyweight-based) ──────────────────────────────────
     today_calories  = summary.get("today_calories", 0)
     today_protein   = summary.get("today_protein", 0)
-    protein_target  = macros["protein_g"]
+    protein_target  = int(current_weight * 1.8)
     protein_pct     = int(today_protein / max(protein_target, 1) * 100)
 
     r_score           = readiness.get("score", 0)
@@ -456,10 +449,22 @@ def render_intelligence_card(
     # ── 3. Top 3 recovery muscles (highest readiness %) ───────────────────────
     muscle_status = readiness.get("muscle_status", {})
     if muscle_status:
-        sorted_muscles = sorted(muscle_status.items(), key=lambda x: x[1], reverse=True)[:3]
-        top_muscles    = "  ·  ".join(f"{m} {int(v)}%" for m, v in sorted_muscles)
+        # Support dict {muscle: readiness} or list of dicts [{'muscle':..., 'readiness':...}]
+        if isinstance(muscle_status, dict):
+            iterable = muscle_status.items()
+            # each element is (muscle, readiness)
+            key_func = lambda x: x[1]
+            fmt = lambda m, r: f"{m} {int(r)}%"
+        else:
+            iterable = muscle_status
+            # assume each entry is a dict with keys 'muscle' and 'readiness'
+            key_func = lambda x: x.get("readiness", 0)
+            fmt = lambda entry: f"{entry.get('muscle','?')} {int(entry.get('readiness',0))}%"
+        sorted_muscles = sorted(iterable, key=key_func, reverse=True)[:3]
+        top_muscles = "  ·  ".join(fmt(*m) if isinstance(m, tuple) else fmt(m) for m in sorted_muscles)
     else:
         top_muscles = "No muscle data"
+
 
     # ── 4. Render ─────────────────────────────────────────────────────────────
     st.markdown(
@@ -468,7 +473,7 @@ def render_intelligence_card(
             <div class="phi-intel-header">// UNIFIED INTELLIGENCE</div>
             <div class="phi-intel-row">
                 <span class="phi-intel-label">BODY</span>
-                <span class="phi-intel-value">{current_weight:.1f}kg &nbsp;&middot;&nbsp; {body_fat_pct}% BF &nbsp;&middot;&nbsp; SMM {smm_kg}kg</span>
+                <span class="phi-intel-value">{current_weight:.1f}kg <span class="phi-intel-dim">(last logged)</span></span>
             </div>
             <div class="phi-intel-row">
                 <span class="phi-intel-label">FUEL</span>
