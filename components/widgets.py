@@ -10,76 +10,39 @@ from config import DEFAULT_STEP_GOAL
 
 
 def render_readiness_ring(score: int, label: str) -> None:
-    """Animated SVG readiness ring."""
-    if score >= 75:
-        color, glow, accent = "#2f9f68", "rgba(47,159,104,0.26)", "#197f96"
-    elif score >= 50:
-        color, glow, accent = "#c98a18", "rgba(201,138,24,0.26)", "#cf7240"
-    else:
-        color, glow, accent = "#d95f5f", "rgba(217,95,95,0.26)", "#7469c9"
-
-    radius = 56
+    """Animated SVG readiness ring — green phosphor terminal aesthetic."""
+    clipped = min(max(score, 0), 100)
+    radius = 54
     center = 76
+    stroke_w = 7
     circumference = 2 * math.pi * radius
-    dash_offset = circumference * (1 - min(max(score, 0), 100) / 100)
-    inner_radius = 43
-    inner_circumference = 2 * math.pi * inner_radius
-    inner_offset = inner_circumference * (1 - min(max(score, 0), 100) / 100)
+    dash_offset = circumference * (1 - clipped / 100)
+    glow = "rgba(51,255,51,0.4)"
 
-    st.markdown(
-        f"""
-        <div class="phi-ring-wrap">
-            <svg class="phi-ring" width="176" height="176" viewBox="0 0 152 152"
-                 style="filter:drop-shadow(0 0 18px {glow});">
-                <defs>
-                    <radialGradient id="phiRingCore" cx="50%" cy="45%" r="58%">
-                        <stop offset="0%" stop-color="rgba(255,255,255,0.72)"/>
-                        <stop offset="58%" stop-color="rgba(47,159,104,0.08)"/>
-                        <stop offset="100%" stop-color="rgba(237,243,238,0.28)"/>
-                    </radialGradient>
-                    <linearGradient id="phiRingGradient" x1="10%" y1="10%" x2="90%" y2="90%">
-                        <stop offset="0%" stop-color="{accent}"/>
-                        <stop offset="52%" stop-color="{color}"/>
-                        <stop offset="100%" stop-color="#17201c"/>
-                    </linearGradient>
-                    <filter id="phiRingGlow">
-                        <feGaussianBlur stdDeviation="3.5" result="blur"/>
-                        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                    </filter>
-                </defs>
-                <circle cx="{center}" cy="{center}" r="66" fill="url(#phiRingCore)"
-                        stroke="rgba(35,49,43,0.08)" stroke-width="1"/>
-                <circle cx="{center}" cy="{center}" r="{radius}" fill="none" stroke="rgba(35,49,43,0.08)" stroke-width="8"/>
-                <circle cx="{center}" cy="{center}" r="{radius}" fill="none" stroke="url(#phiRingGradient)" 
-                        stroke-width="8" stroke-dasharray="{circumference}" stroke-dashoffset="{dash_offset}"
-                        stroke-linecap="round" style="transform-origin: 50% 50%; transform: rotate(-90deg); filter: url(#phiRingGlow); animation: phi-ring-draw 1.2s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;"/>
-                <circle cx="{center}" cy="{center}" r="{inner_radius}" fill="none" stroke="rgba(35,49,43,0.08)" stroke-width="2"/>
-                <circle cx="{center}" cy="{center}" r="{inner_radius}" fill="none" stroke="{accent}" 
-                        stroke-width="3" stroke-dasharray="{inner_circumference}" stroke-dashoffset="{inner_offset}"
-                        stroke-linecap="round" style="transform-origin: 50% 50%; transform: rotate(90deg); opacity:0.8; animation: phi-ring-draw 1.6s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;"/>
-                <g opacity="0.72" stroke="rgba(35,49,43,0.20)" stroke-width="1.2">
-                    <line x1="{center}" y1="10" x2="{center}" y2="18"/>
-                    <line x1="{center}" y1="134" x2="{center}" y2="142"/>
-                    <line x1="10" y1="{center}" x2="18" y2="{center}"/>
-                    <line x1="134" y1="{center}" x2="142" y2="{center}"/>
-                </g>
-                <circle cx="{center}" cy="{center}" r="31" fill="rgba(255,255,255,0.72)"
-                        stroke="rgba(35,49,43,0.10)" stroke-width="1"/>
-                <text x="{center}" y="{center - 8}" text-anchor="middle" dominant-baseline="central"
-                      fill="{color}" font-size="22" font-weight="850"
-                      font-family="Space Grotesk,Manrope,sans-serif">{score}%</text>
-                <text x="{center}" y="{center + 15}" text-anchor="middle" dominant-baseline="central"
-                      fill="#8f9aad" font-size="8.5" font-weight="800"
-                      font-family="Manrope,sans-serif" letter-spacing="0.12em">READINESS</text>
-            </svg>
-            <div>
-                <div class="phi-label">Today's status</div>
-                <div class="phi-ring-label">{label}</div>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    html = f"""<div class="phi-ring-wrap">
+<svg class="phi-ring" width="160" height="160" viewBox="0 0 152 152" style="filter:drop-shadow(0 0 8px {glow}); flex-shrink: 0; overflow: visible;">
+<defs>
+<filter id="phiPhosGlow">
+<feGaussianBlur stdDeviation="3.0" result="blur"/>
+<feMerge>
+<feMergeNode in="blur"/>
+<feMergeNode in="SourceGraphic"/>
+</feMerge>
+</filter>
+</defs>
+<circle cx="{center}" cy="{center}" r="72" fill="#0a0d0a" stroke="rgba(51,255,51,0.08)" stroke-width="1"/>
+<circle cx="{center}" cy="{center}" r="{radius}" fill="none" stroke="#0d110d" stroke-width="{stroke_w}"/>
+<circle cx="{center}" cy="{center}" r="{radius}" fill="none" stroke="#33FF33" stroke-width="{stroke_w}" stroke-dasharray="{circumference}" stroke-dashoffset="{dash_offset}" stroke-linecap="butt" filter="url(#phiPhosGlow)" style="transform-origin: 50% 50%; transform: rotate(-90deg);"/>
+<circle cx="{center}" cy="{center}" r="{radius - stroke_w - 2}" fill="#0a0d0a"/>
+<text x="{center}" y="{center - 7}" text-anchor="middle" dominant-baseline="central" fill="#33FF33" font-size="28" font-weight="700" font-family="'JetBrains Mono', 'IBM Plex Mono', monospace">{score}</text>
+<text x="{center}" y="{center + 15}" text-anchor="middle" dominant-baseline="central" fill="#33FF33" font-size="7" font-weight="700" font-family="'JetBrains Mono', 'IBM Plex Mono', monospace" letter-spacing="0.2em" opacity="0.65">READINESS</text>
+</svg>
+<div>
+<div class="phi-label">Today's status</div>
+<div class="phi-ring-label" style="font-family:'JetBrains Mono','IBM Plex Mono',monospace;color:#33FF33;">{label}</div>
+</div>
+</div>"""
+    st.markdown(html, unsafe_allow_html=True)
 
 
 def compute_active_streak(
