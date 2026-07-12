@@ -11,20 +11,27 @@ from config import DEFAULT_CAL_GOAL, DEFAULT_PROTEIN_TARGET, DEFAULT_STEP_GOAL
 from database_settings import load_user_settings, save_user_settings
 from components.design_system import apply_platform_theme, page_header
 from components.sidebar import render_sidebar
-from components.widgets import calculate_logging_streak
+from components.widgets import calculate_logging_streak, render_readiness_ring
 from components.overview import (
     render_activity_sync_panel,
+    render_kpis,
+    render_nutrition_chart,
+    render_primary_layer,
     render_recovery_matrix,
     render_secondary_layer,
     render_steps_chart,
     render_training_table,
     render_weight_chart,
     render_workout_progression,
+    render_sleep_chart,
+    render_protein_chart,
+    render_weight_trend,
+    render_fiber_chart,
 )
 from components.quick_log import render_quick_actions
 from core.spotify import render_spotify_widget
 from services.google_fit import sync_google_fit_data
-from services.health_data import kpi_summary, load_snapshot
+from services.health_data import kpi_summary, load_snapshot, workout_highlights
 from core.bca_engine import BCA_Engine
 
 
@@ -560,7 +567,13 @@ streak = calculate_logging_streak(snapshot.workouts, snapshot.food, water_df)
 
 # Render hero
 render_hero(summary, readiness, streak, snapshot, water_df)
-render_intelligence_card(summary, readiness, snapshot, target_weight)
+
+# Readiness ring + intelligence card side by side
+rcol1, rcol2 = st.columns([0.22, 0.78])
+with rcol1:
+    render_readiness_ring(readiness["score"], readiness.get("label", "Ready"))
+with rcol2:
+    render_intelligence_card(summary, readiness, snapshot, target_weight)
 render_quick_actions()
 
 st.components.v1.html(
@@ -593,6 +606,54 @@ overview, training, recovery, body_activity = st.tabs(
     ["Overview", "Training", "Recovery", "Body & Activity"]
 )
 render_secondary_layer(snapshot, calorie_goal, step_goal)
+
+with overview:
+    highlights = workout_highlights(snapshot)
+    wt = summary.get("weight_trend_direction", "\u2014")
+    wc = summary.get("weekly_weight_change")
+    wc_str = "Need more weigh-ins" if wc is None else f"{wc:+.2f} kg/week"
+    st.markdown(f"""
+        <div class="phi-hero-grid" style="margin-bottom:0.75rem;">
+            <div class="phi-hero-card" style="border-left:3px solid #33FF33;">
+                <div class="phi-label">Body trend</div>
+                <div class="phi-hero-value">{wt}</div>
+                <div class="phi-caption">{wc_str}</div>
+            </div>
+            <div class="phi-hero-card" style="border-left:3px solid #33FF33;">
+                <div class="phi-label">Nutrition</div>
+                <div class="phi-hero-value">{summary['calorie_adherence']}%</div>
+                <div class="phi-caption">Calorie adherence</div>
+            </div>
+            <div class="phi-hero-card" style="border-left:3px solid #33FF33;">
+                <div class="phi-label">Activity</div>
+                <div class="phi-hero-value">{summary['activity_score']}%</div>
+                <div class="phi-caption">{summary['avg_steps']:,} avg steps</div>
+            </div>
+            <div class="phi-hero-card" style="border-left:3px solid #33FF33;">
+                <div class="phi-label">Performance</div>
+                <div class="phi-hero-value">{highlights['best_lift']}</div>
+                <div class="phi-caption">{highlights['volume_note']}</div>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+    c1, c2 = st.columns(2)
+    
+    # We recalculate protein target for the charts based on latest weight
+    meas = snapshot.measurements.copy()
+    if not meas.empty and "weight" in meas.columns and "date" in meas.columns:
+        meas["date"] = pd.to_datetime(meas["date"], errors="coerce")
+        meas = meas.sort_values("date", ascending=True)
+        current_weight = float(meas["weight"].dropna().iloc[-1])
+    else:
+        current_weight = 84.0
+    protein_target = int(current_weight * 1.8)
+
+    with c1:
+        render_sleep_chart(snapshot)
+        render_weight_trend(snapshot)
+    with c2:
+        render_protein_chart(snapshot, protein_target)
+        render_fiber_chart(snapshot)
 
 with training:
     st.subheader("Training progression")
