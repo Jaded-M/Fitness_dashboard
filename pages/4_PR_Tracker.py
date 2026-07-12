@@ -19,10 +19,13 @@ if not is_authenticated():
 
 apply_platform_theme()
 render_sidebar(active_page="pages/4_PR_Tracker.py")
-
 with st.spinner("Loading performance data..."):
     snapshot = load_snapshot()
 workouts = snapshot.workouts if snapshot and snapshot.workouts is not None else pd.DataFrame()
+if not workouts.empty:
+    workouts = workouts.rename(columns={"Workout": "exercise"})
+
+
 
 st.markdown(
     """
