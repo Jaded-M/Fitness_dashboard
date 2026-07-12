@@ -425,10 +425,10 @@ def render_intelligence_card(
 
     # ── 1. Current weight ─────────────────────────────────────────────────────
     meas = snapshot.measurements.copy()
-    if not meas.empty and "weight" in meas.columns and "date" in meas.columns:
-        meas["date"] = pd.to_datetime(meas["date"], errors="coerce")
-        meas = meas.sort_values("date", ascending=True)
-        current_weight = float(meas["weight"].dropna().iloc[-1])
+    if not meas.empty and "Weight" in meas.columns and "Date" in meas.columns:
+        meas["Date"] = pd.to_datetime(meas["Date"], errors="coerce")
+        meas = meas.sort_values("Date", ascending=True)
+        current_weight = float(meas["Weight"].dropna().iloc[-1])
     else:
         current_weight = 84.0
 
