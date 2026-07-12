@@ -424,17 +424,13 @@ def render_intelligence_card(
     """Render a unified intelligence card below the hero grid."""
 
     # ── 1. Current weight ─────────────────────────────────────────────────────
-    current_weight = 84.0
-    try:
-        meas = snapshot.measurements
-        if meas is not None and not meas.empty and "weight" in meas.columns:
-            val = meas["weight"].dropna()
-            if not val.empty:
-                candidate = float(val.iloc[-1])
-                if candidate > 0:
-                    current_weight = candidate
-    except Exception:
-        pass
+    meas = snapshot.measurements.copy()
+    if not meas.empty and "weight" in meas.columns and "date" in meas.columns:
+        meas["date"] = pd.to_datetime(meas["date"], errors="coerce")
+        meas = meas.sort_values("date", ascending=True)
+        current_weight = float(meas["weight"].dropna().iloc[-1])
+    else:
+        current_weight = 84.0
 
     # ── 2. Protein target (bodyweight-based) ──────────────────────────────────
     today_calories  = summary.get("today_calories", 0)
