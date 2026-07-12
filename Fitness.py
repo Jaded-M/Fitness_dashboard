@@ -31,7 +31,7 @@ from components.overview import (
 from components.quick_log import render_quick_actions
 from core.spotify import render_spotify_widget
 from services.google_fit import sync_google_fit_data
-from services.health_data import kpi_summary, load_snapshot, workout_highlights
+from services.health_data import kpi_summary, load_snapshot
 from core.bca_engine import BCA_Engine
 
 
@@ -608,34 +608,6 @@ overview, training, recovery, body_activity = st.tabs(
 render_secondary_layer(snapshot, calorie_goal, step_goal)
 
 with overview:
-    highlights = workout_highlights(snapshot)
-    wt = summary.get("weight_trend_direction", "\u2014")
-    wc = summary.get("weekly_weight_change")
-    wc_str = "Need more weigh-ins" if wc is None else f"{wc:+.2f} kg/week"
-    st.markdown(f"""
-        <div class="phi-hero-grid" style="margin-bottom:0.75rem;">
-            <div class="phi-hero-card" style="border-left:3px solid #33FF33;">
-                <div class="phi-label">Body trend</div>
-                <div class="phi-hero-value">{wt}</div>
-                <div class="phi-caption">{wc_str}</div>
-            </div>
-            <div class="phi-hero-card" style="border-left:3px solid #33FF33;">
-                <div class="phi-label">Nutrition</div>
-                <div class="phi-hero-value">{summary['calorie_adherence']}%</div>
-                <div class="phi-caption">Calorie adherence</div>
-            </div>
-            <div class="phi-hero-card" style="border-left:3px solid #33FF33;">
-                <div class="phi-label">Activity</div>
-                <div class="phi-hero-value">{summary['activity_score']}%</div>
-                <div class="phi-caption">{summary['avg_steps']:,} avg steps</div>
-            </div>
-            <div class="phi-hero-card" style="border-left:3px solid #33FF33;">
-                <div class="phi-label">Performance</div>
-                <div class="phi-hero-value">{highlights['best_lift']}</div>
-                <div class="phi-caption">{highlights['volume_note']}</div>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
     c1, c2 = st.columns(2)
     
     # We recalculate protein target for the charts based on latest weight
@@ -651,6 +623,28 @@ with overview:
     with c1:
         render_sleep_chart(snapshot)
         render_weight_trend(snapshot)
+        st.components.v1.html("""
+<canvas id="phiPong" width="320" height="200" style="width:100%;max-width:320px;display:block;margin:0.5rem auto 0;border:1px solid rgba(51,255,51,0.15);border-radius:0;background:#000;"></canvas>
+<script>
+(function(){var c=document.getElementById('phiPong');if(!c)return;var x=c.getContext('2d');c.width=320;c.height=200;
+var bx=160,by=100,bdx=1.6,bdy=1.2,p1y=70,p2y=70,s1=0,s2=0,bSize=5,padW=4,padH=24,speed=1;
+function ai(vy,t){if(t<vy+12)t+=1.2;else if(t>vy+12)t-=1.2;return t}
+function loop(){bx+=bdx*speed;by+=bdy*speed;
+if(by-bSize<0||by+bSize>200)bdy=-bdy;
+if(bx-bSize<padW&&by>p1y&&by<p1y+padH){bdx=-bdx;bx=padW+bSize;bdx*=1.03}
+if(bx+bSize>320-padW&&by>p2y&&by<p2y+padH){bdx=-bdx;bx=320-padW-bSize;bdx*=1.03}
+if(bx<0){s2++;bx=160;by=100;bdx=1.6;bdy=1.2;speed=1}
+if(bx>320){s1++;bx=160;by=100;bdx=-1.6;bdy=1.2;speed=1}
+p1y=ai(by-12,p1y);if(p1y<0)p1y=0;if(p1y>200-padH)p1y=200-padH;
+p2y=ai(by-12,p2y);if(p2y<0)p2y=0;if(p2y>200-padH)p2y=200-padH;
+x.fillStyle='#000';x.fillRect(0,0,320,200);
+x.strokeStyle='rgba(51,255,51,0.2)';x.lineWidth=1;x.setLineDash([4,6]);x.beginPath();x.moveTo(160,0);x.lineTo(160,200);x.stroke();x.setLineDash([]);
+x.fillStyle='#33FF33';x.fillRect(2,p1y,padW,padH);x.fillRect(318-padW,p2y,padW,padH);
+x.fillRect(bx-bSize,by-bSize,bSize*2,bSize*2);
+x.font='14px "JetBrains Mono","IBM Plex Mono",monospace';x.textAlign='center';x.fillText(s1+' : '+s2,160,20);
+requestAnimationFrame(loop)}loop()})();
+</script>
+        """, height=210)
     with c2:
         render_protein_chart(snapshot, protein_target)
         render_fiber_chart(snapshot)
