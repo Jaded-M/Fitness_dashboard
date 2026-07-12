@@ -23,7 +23,7 @@ with st.spinner("Loading performance data..."):
     snapshot = load_snapshot()
 workouts = snapshot.workouts if snapshot and snapshot.workouts is not None else pd.DataFrame()
 if not workouts.empty:
-    workouts = workouts.rename(columns={"Workout": "exercise"})
+    workouts = workouts.rename(columns={"Workout": "exercise", "Date": "date"})
 
 
 
