@@ -43,7 +43,7 @@ def _workout_frame() -> pd.DataFrame:
     return df.dropna(subset=["Date"])
 
 
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=300, hash_funcs={pd.DataFrame: lambda x: x.to_json()})
 def load_snapshot(days: int = 90) -> HealthSnapshot:
     database.init_db()
     end = date.today()
@@ -81,7 +81,7 @@ def today_totals(snapshot: HealthSnapshot) -> dict:
 
 
 @st.cache_data(ttl=120, show_spinner=False, hash_funcs={HealthSnapshot: id})
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=300, hash_funcs={pd.DataFrame: lambda x: x.to_json()})
 def kpi_summary(snapshot: HealthSnapshot, calorie_goal: int = DEFAULT_CAL_GOAL, step_goal: int = DEFAULT_STEP_GOAL, target_weight: float = 72.1) -> dict:
     workouts = snapshot.workouts
     food = snapshot.food
