@@ -97,10 +97,14 @@ def render_login(auth_url: str):
         f"""
         <a href="{auth_url}" target="_self" style="text-decoration:none;">
             <div style="
-                background:linear-gradient(135deg,#1DB954,#34d399);
-                color:#06111c;
-                padding:12px 14px;
-                border-radius:12px;
+                background:transparent;
+                border:1px solid #33FF33;
+                color:#33FF33;
+                border-radius:0;
+                font-family:monospace;
+                text-transform:uppercase;
+                letter-spacing:0.1em;
+                padding:0.4rem 1rem;
                 text-align:center;
                 font-weight:800;
                 margin-bottom:10px;">

@@ -289,11 +289,11 @@ def calculate_readiness(inputs: ReadinessInputs) -> dict[str, Any]:
 
     daily = _daily_scores(inputs)
     score = int(
-        recovery_score * 0.36
-        + training_load_score * 0.22
-        + daily["activity_score"] * 0.16
-        + daily["nutrition_score"] * 0.14
-        + daily["subjective_score"] * 0.12
+        recovery_score * 0.34
+        + training_load_score * 0.20
+        + daily["activity_score"] * 0.14
+        + daily["nutrition_score"] * 0.12
+        + daily["subjective_score"] * 0.20
     )
     if days_since_training is not None:
         if days_since_training >= 7:

@@ -260,6 +260,8 @@ def render_body_progress(physical_df, tf_days):
     st.markdown("##### All Measurements")
     disp = phys.copy()
     disp["Date"] = disp["Date"].dt.strftime("%d %b %Y")
+    display_cols = [col for col in ["Date", "Weight", "Waist", "Hips", "Thigh", "Chest", "Arms"] if col in disp.columns]
+    disp = disp[display_cols]
     st.dataframe(disp, use_container_width=True, hide_index=True)
 
 

@@ -4,6 +4,7 @@ import plotly.graph_objects as go
 import database
 import json
 from datetime import datetime, timedelta
+from ui.theme import CHART_CONFIG, PHI_COLORS, chart_layout
 
 def calculate_1rm(weight: float, reps: int) -> float:
     """Calculate Estimated 1RM using the Epley formula."""
@@ -132,21 +133,19 @@ def render_1rm_chart(workouts: pd.DataFrame, exercise: str):
     fig.add_trace(go.Scatter(
         x=df_1rm["date"], y=df_1rm["e1RM"],
         mode="lines+markers",
-        line=dict(color="#4bb7cf", width=3),
-        marker=dict(size=8, color="#6fd18f"),
+        line=dict(color=PHI_COLORS["blue"], width=3),
+        marker=dict(size=8, color=PHI_COLORS["green"], line=dict(color="rgba(246,251,255,0.70)", width=1.2)),
         name="Est. 1RM"
     ))
     
-    fig.update_layout(
+    fig.update_layout(**chart_layout(
         height=250,
         margin=dict(l=0, r=0, t=20, b=0),
-        plot_bgcolor="rgba(0,0,0,0)",
-        paper_bgcolor="rgba(0,0,0,0)",
-        xaxis=dict(showgrid=False, color="#8b98aa"),
-        yaxis=dict(showgrid=True, gridcolor="rgba(164, 177, 196, 0.1)", color="#8b98aa", title="e1RM (kg)"),
+        xaxis=dict(showgrid=False),
+        yaxis=dict(showgrid=True, gridcolor=PHI_COLORS["grid"], title="e1RM (kg)"),
         showlegend=False
-    )
-    st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+    ))
+    st.plotly_chart(fig, use_container_width=True, config=CHART_CONFIG)
 
 def render_overload_status(workouts: pd.DataFrame):
     """Show progressive overload status for recently trained exercises."""

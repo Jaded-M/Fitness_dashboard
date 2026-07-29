@@ -1,0 +1,122 @@
+<svg class="phi-body-svg" xmlns="http://www.w3.org/2000/svg"
+ viewBox="0 0 540 500" role="img" aria-label="Muscle readiness body map"
+ style="width:100%;height:auto;display:block;">
+  <defs>
+    <radialGradient id="bgGlow" cx="50%" cy="20%" r="75%">
+      <stop offset="0%" stop-color="rgba(51,255,51,0.06)"/>
+      <stop offset="50%" stop-color="rgba(51,255,51,0.02)"/>
+      <stop offset="100%" stop-color="rgba(51,255,51,0)"/>
+    </radialGradient>
+    <filter id="neonGlow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="dotGlow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect x="0" y="0" width="540" height="500" fill="#000000"/>
+  <rect x="16" y="16" width="508" height="468" rx="0" fill="url(#bgGlow)"
+   stroke="rgba(51,255,51,0.10)" stroke-width="1"/>
+
+  <!-- Scanlines -->
+  <rect x="0" y="0" width="540" height="500" fill="url(#scanlines)" opacity="0.04"
+   style="background-image:repeating-linear-gradient(0deg,transparent,transparent 1px,rgba(51,255,51,0.03) 1px,rgba(51,255,51,0.03) 2px);background-size:100% 2px"/>
+
+  <!-- Center divider -->
+  <line x1="270" y1="56" x2="270" y2="456" stroke="rgba(51,255,51,0.08)" stroke-dasharray="3 6"/>
+
+  <!-- FRONT / BACK labels -->
+  <text x="135" y="46" text-anchor="middle" fill="rgba(51,255,51,0.50)"
+   font-family="'IBM Plex Mono','JetBrains Mono',monospace" font-size="10"
+   font-weight="600" letter-spacing="0.15em">FRONT</text>
+  <text x="405" y="46" text-anchor="middle" fill="rgba(51,255,51,0.50)"
+   font-family="'IBM Plex Mono','JetBrains Mono',monospace" font-size="10"
+   font-weight="600" letter-spacing="0.15em">BACK</text>
+
+  <!-- Heads -->
+  <circle cx="155" cy="82" r="22" fill="rgba(51,255,51,0.06)"
+   stroke="rgba(51,255,51,0.12)" stroke-width="1.2"/>
+  <circle cx="385" cy="82" r="22" fill="rgba(51,255,51,0.06)"
+   stroke="rgba(51,255,51,0.12)" stroke-width="1.2"/>
+
+  <!-- Body silhouettes -->
+  <g opacity="0.06">
+    <path d="M135 104 C150 104 162 110 168 124 L168 450 L135 450 Z" fill="#33ff33"/>
+    <path d="M405 104 C390 104 378 110 372 124 L372 450 L405 450 Z" fill="#33ff33"/>
+  </g>
+
+  <!-- Front muscles -->
+  <g class="front-group"><path class="phi-muscle chest" d="M124 128 C136 118 149 121 155 136 L155 178 L119 169 C116 151 118 139 124 128 Z" fill="#33ff33" fill-opacity="0.89" stroke="#33ff33" stroke-opacity="0.15" stroke-width="1" data-muscle="Chest" data-name="Chest" data-readiness="88" data-status="Ready"><title>Chest: Ready (88%)</title></path>
+<path class="phi-muscle chest" d="M186 128 C174 118 161 121 155 136 L155 178 L191 169 C194 151 192 139 186 128 Z" fill="#33ff33" fill-opacity="0.89" stroke="#33ff33" stroke-opacity="0.15" stroke-width="1" data-muscle="Chest" data-name="Chest" data-readiness="88" data-status="Ready"><title>Chest: Ready (88%)</title></path>
+<path class="phi-muscle core" d="M129 177 L155 184 L181 177 L176 251 L155 260 L134 251 Z" fill="#33ff33" fill-opacity="0.83" stroke="#33ff33" stroke-opacity="0.15" stroke-width="1" data-muscle="Core" data-name="Core" data-readiness="76" data-status="Ready"><title>Core: Ready (76%)</title></path>
+<path class="phi-muscle shoulders" d="M104 130 C111 111 132 113 139 129 C128 140 116 150 103 160 C96 151 96 140 104 130 Z" fill="#33ff33" fill-opacity="0.85" stroke="#33ff33" stroke-opacity="0.15" stroke-width="1" data-muscle="Shoulders" data-name="Shoulders" data-readiness="80" data-status="Ready"><title>Shoulders: Ready (80%)</title></path>
+<path class="phi-muscle shoulders" d="M206 130 C199 111 178 113 171 129 C182 140 194 150 207 160 C214 151 214 140 206 130 Z" fill="#33ff33" fill-opacity="0.85" stroke="#33ff33" stroke-opacity="0.15" stroke-width="1" data-muscle="Shoulders" data-name="Shoulders" data-readiness="80" data-status="Ready"><title>Shoulders: Ready (80%)</title></path>
+<path class="phi-muscle biceps" d="M93 158 C104 158 111 167 108 180 L96 225 C93 236 78 232 80 219 L88 177 C89 169 89 162 93 158 Z" fill="#1a2a1a" fill-opacity="0.30" stroke="#1a2a1a" stroke-opacity="0.15" stroke-width="1" data-muscle="Biceps" data-name="Biceps" data-readiness="0" data-status="Empty"><title>Biceps: Empty (0%)</title></path>
+<path class="phi-muscle biceps" d="M217 158 C206 158 199 167 202 180 L214 225 C217 236 232 232 230 219 L222 177 C221 169 221 162 217 158 Z" fill="#1a2a1a" fill-opacity="0.30" stroke="#1a2a1a" stroke-opacity="0.15" stroke-width="1" data-muscle="Biceps" data-name="Biceps" data-readiness="0" data-status="Empty"><title>Biceps: Empty (0%)</title></path>
+<path class="phi-muscle forearms" d="M80 223 C90 225 96 234 93 245 L84 292 C81 305 65 302 67 288 L72 241 C73 231 75 225 80 223 Z" fill="#1a2a1a" fill-opacity="0.30" stroke="#1a2a1a" stroke-opacity="0.15" stroke-width="1" data-muscle="Forearms" data-name="Forearms" data-readiness="0" data-status="Empty"><title>Forearms: Empty (0%)</title></path>
+<path class="phi-muscle forearms" d="M230 223 C220 225 214 234 217 245 L226 292 C229 305 245 302 243 288 L238 241 C237 231 235 225 230 223 Z" fill="#1a2a1a" fill-opacity="0.30" stroke="#1a2a1a" stroke-opacity="0.15" stroke-width="1" data-muscle="Forearms" data-name="Forearms" data-readiness="0" data-status="Empty"><title>Forearms: Empty (0%)</title></path>
+<path class="phi-muscle quads" d="M132 269 L153 265 L151 363 C148 382 126 381 125 361 L123 303 C123 288 126 276 132 269 Z" fill="#ef6b75" fill-opacity="0.62" stroke="#ef6b75" stroke-opacity="0.15" stroke-width="1" data-muscle="Quads" data-name="Quads" data-readiness="34" data-status="Fatigued"><title>Quads: Fatigued (34%)</title></path>
+<path class="phi-muscle quads" d="M178 269 L157 265 L159 363 C162 382 184 381 185 361 L187 303 C187 288 184 276 178 269 Z" fill="#ef6b75" fill-opacity="0.62" stroke="#ef6b75" stroke-opacity="0.15" stroke-width="1" data-muscle="Quads" data-name="Quads" data-readiness="34" data-status="Fatigued"><title>Quads: Fatigued (34%)</title></path>
+<path class="phi-muscle calves" d="M126 366 C137 372 146 372 151 365 L146 433 C145 449 124 449 123 432 Z" fill="#1a2a1a" fill-opacity="0.30" stroke="#1a2a1a" stroke-opacity="0.15" stroke-width="1" data-muscle="Calves" data-name="Calves" data-readiness="0" data-status="Empty"><title>Calves: Empty (0%)</title></path>
+<path class="phi-muscle calves" d="M184 366 C173 372 164 372 159 365 L164 433 C165 449 186 449 187 432 Z" fill="#1a2a1a" fill-opacity="0.30" stroke="#1a2a1a" stroke-opacity="0.15" stroke-width="1" data-muscle="Calves" data-name="Calves" data-readiness="0" data-status="Empty"><title>Calves: Empty (0%)</title></path></g>
+
+  <!-- Back muscles -->
+  <g class="back-group"><path class="phi-muscle back" d="M354 127 C365 115 405 115 416 127 L407 214 C397 230 373 230 363 214 Z" fill="#e0b45d" fill-opacity="0.76" stroke="#e0b45d" stroke-opacity="0.15" stroke-width="1" data-muscle="Back" data-name="Back" data-readiness="62" data-status="Manage load"><title>Back: Manage (62%)</title></path>
+<path class="phi-muscle shoulders" d="M334 130 C342 112 362 113 369 129 C358 141 346 151 333 160 C326 151 326 140 334 130 Z" fill="#33ff33" fill-opacity="0.85" stroke="#33ff33" stroke-opacity="0.15" stroke-width="1" data-muscle="Shoulders" data-name="Shoulders" data-readiness="80" data-status="Ready"><title>Shoulders: Ready (80%)</title></path>
+<path class="phi-muscle shoulders" d="M436 130 C428 112 408 113 401 129 C412 141 424 151 437 160 C444 151 444 140 436 130 Z" fill="#33ff33" fill-opacity="0.85" stroke="#33ff33" stroke-opacity="0.15" stroke-width="1" data-muscle="Shoulders" data-name="Shoulders" data-readiness="80" data-status="Ready"><title>Shoulders: Ready (80%)</title></path>
+<path class="phi-muscle triceps" d="M323 158 C334 158 341 167 338 181 L326 226 C323 237 308 233 310 219 L318 177 C319 169 319 162 323 158 Z" fill="#1a2a1a" fill-opacity="0.30" stroke="#1a2a1a" stroke-opacity="0.15" stroke-width="1" data-muscle="Triceps" data-name="Triceps" data-readiness="0" data-status="Empty"><title>Triceps: Empty (0%)</title></path>
+<path class="phi-muscle triceps" d="M447 158 C436 158 429 167 432 181 L444 226 C447 237 462 233 460 219 L452 177 C451 169 451 162 447 158 Z" fill="#1a2a1a" fill-opacity="0.30" stroke="#1a2a1a" stroke-opacity="0.15" stroke-width="1" data-muscle="Triceps" data-name="Triceps" data-readiness="0" data-status="Empty"><title>Triceps: Empty (0%)</title></path>
+<path class="phi-muscle forearms" d="M310 223 C320 225 326 234 323 245 L314 292 C311 305 295 302 297 288 L302 241 C303 231 305 225 310 223 Z" fill="#1a2a1a" fill-opacity="0.30" stroke="#1a2a1a" stroke-opacity="0.15" stroke-width="1" data-muscle="Forearms" data-name="Forearms" data-readiness="0" data-status="Empty"><title>Forearms: Empty (0%)</title></path>
+<path class="phi-muscle forearms" d="M460 223 C450 225 444 234 447 245 L456 292 C459 305 475 302 473 288 L468 241 C467 231 465 225 460 223 Z" fill="#1a2a1a" fill-opacity="0.30" stroke="#1a2a1a" stroke-opacity="0.15" stroke-width="1" data-muscle="Forearms" data-name="Forearms" data-readiness="0" data-status="Empty"><title>Forearms: Empty (0%)</title></path>
+<path class="phi-muscle glutes" d="M363 225 C374 218 396 218 407 225 L405 270 C393 279 377 279 365 270 Z" fill="#1a2a1a" fill-opacity="0.30" stroke="#1a2a1a" stroke-opacity="0.15" stroke-width="1" data-muscle="Glutes" data-name="Glutes" data-readiness="0" data-status="Empty"><title>Glutes: Empty (0%)</title></path>
+<path class="phi-muscle hamstrings" d="M362 269 L383 265 L381 363 C378 382 356 381 355 361 L353 303 C353 288 356 276 362 269 Z" fill="#33ff33" fill-opacity="0.84" stroke="#33ff33" stroke-opacity="0.15" stroke-width="1" data-muscle="Hamstrings" data-name="Hamstrings" data-readiness="78" data-status="Ready"><title>Hamstrings: Ready (78%)</title></path>
+<path class="phi-muscle hamstrings" d="M408 269 L387 265 L389 363 C392 382 414 381 415 361 L417 303 C417 288 414 276 408 269 Z" fill="#33ff33" fill-opacity="0.84" stroke="#33ff33" stroke-opacity="0.15" stroke-width="1" data-muscle="Hamstrings" data-name="Hamstrings" data-readiness="78" data-status="Ready"><title>Hamstrings: Ready (78%)</title></path>
+<path class="phi-muscle calves" d="M356 366 C367 372 376 372 381 365 L376 433 C375 449 354 449 353 432 Z" fill="#1a2a1a" fill-opacity="0.30" stroke="#1a2a1a" stroke-opacity="0.15" stroke-width="1" data-muscle="Calves" data-name="Calves" data-readiness="0" data-status="Empty"><title>Calves: Empty (0%)</title></path>
+<path class="phi-muscle calves" d="M414 366 C403 372 394 372 389 365 L394 433 C395 449 416 449 417 432 Z" fill="#1a2a1a" fill-opacity="0.30" stroke="#1a2a1a" stroke-opacity="0.15" stroke-width="1" data-muscle="Calves" data-name="Calves" data-readiness="0" data-status="Empty"><title>Calves: Empty (0%)</title></path></g>
+
+  <!-- Labels -->
+  <g font-family="'IBM Plex Mono','JetBrains Mono',monospace" font-size="8"
+   fill="rgba(51,255,51,0.45)" font-weight="600" letter-spacing="0.10em">
+    <circle cx="34" cy="145" r="2.5" fill="#33ff33" filter="url(#dotGlow)"/>
+    <text x="42" y="148">Shoulders</text>
+    <circle cx="34" cy="200" r="2.5" fill="#33ff33" filter="url(#dotGlow)"/>
+    <text x="42" y="203">Biceps</text>
+    <circle cx="34" cy="255" r="2.5" fill="#33ff33" filter="url(#dotGlow)"/>
+    <text x="42" y="258">Forearms</text>
+    <circle cx="34" cy="330" r="2.5" fill="#33ff33" filter="url(#dotGlow)"/>
+    <text x="42" y="333">Quads</text>
+    <circle cx="34" cy="410" r="2.5" fill="#33ff33" filter="url(#dotGlow)"/>
+    <text x="42" y="413">Calves</text>
+    <circle cx="500" cy="145" r="2.5" fill="#33ff33" filter="url(#dotGlow)"/>
+    <text x="508" y="148" text-anchor="end">Back</text>
+    <circle cx="500" cy="200" r="2.5" fill="#33ff33" filter="url(#dotGlow)"/>
+    <text x="508" y="203" text-anchor="end">Triceps</text>
+    <circle cx="500" cy="255" r="2.5" fill="#33ff33" filter="url(#dotGlow)"/>
+    <text x="508" y="258" text-anchor="end">Forearms</text>
+    <circle cx="500" cy="330" r="2.5" fill="#33ff33" filter="url(#dotGlow)"/>
+    <text x="508" y="333" text-anchor="end">Hamstrings</text>
+    <circle cx="500" cy="410" r="2.5" fill="#33ff33" filter="url(#dotGlow)"/>
+    <text x="508" y="413" text-anchor="end">Calves</text>
+    <circle cx="270" cy="145" r="2.5" fill="#33ff33" filter="url(#dotGlow)"/>
+    <text x="278" y="148">Chest</text>
+    <circle cx="270" cy="210" r="2.5" fill="#33ff33" filter="url(#dotGlow)"/>
+    <text x="278" y="213">Core</text>
+    <circle cx="270" cy="305" r="2.5" fill="#33ff33" filter="url(#dotGlow)"/>
+    <text x="278" y="308">Glutes</text>
+  </g>
+
+  <!-- Legend -->
+  <g font-family="'IBM Plex Mono','JetBrains Mono',monospace" font-size="7"
+   fill="rgba(51,255,51,0.35)" letter-spacing="0.05em">
+    <rect x="22" y="460" width="6" height="6" fill="#33ff33" opacity="0.7"/>
+    <text x="32" y="465">4 ready</text>
+    <rect x="82" y="460" width="6" height="6" fill="#e0b45d" opacity="0.7"/>
+    <text x="92" y="465">1 manage</text>
+    <rect x="158" y="460" width="6" height="6" fill="#ef6b75" opacity="0.7"/>
+    <text x="168" y="465">1 fatigued</text>
+  </g>
+</svg>

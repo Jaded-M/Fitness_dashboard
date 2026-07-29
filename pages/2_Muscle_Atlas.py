@@ -9,7 +9,7 @@ import time
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import database
 from components.design_system import apply_platform_theme, page_header, stat_card, insight_card
-from components.sidebar import render_sidebar_shell
+from components.sidebar import render_sidebar
 from components.body_heatmap import render_svg_body_heatmap
 from core.muscle_mapping import CANONICAL_MUSCLE_GROUPS
 from core.muscle_mapping import STIMULUS_TYPES
@@ -30,7 +30,7 @@ if not is_authenticated():
 
 # Apply PHI theme
 apply_platform_theme()
-render_sidebar_shell("pages/2_Muscle_Atlas.py")
+render_sidebar(active_page="pages/2_Muscle_Atlas.py")
 
 
 # ── Helpers ──────────────────────────────────────────────────
@@ -284,7 +284,7 @@ if not df.empty:
             y=coverage["Exercises"],
             marker=dict(
                 color=coverage["Exercises"],
-                colorscale=[[0, "rgba(47,159,104,0.20)"], [1, PHI_COLORS["green"]]],
+                colorscale=[[0, "rgba(50,216,255,0.24)"], [0.55, PHI_COLORS["violet"]], [1, PHI_COLORS["green"]]],
                 showscale=False,
                 line=dict(width=0),
                 cornerradius=4,
@@ -299,12 +299,12 @@ if not df.empty:
         height=320,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="Plus Jakarta Sans, Inter, sans-serif", color=PHI_COLORS["muted"]),
+        font=dict(family="Inter, Space Grotesk, sans-serif", color=PHI_COLORS["muted"]),
         margin=dict(t=20, b=40, l=10, r=10),
         xaxis=dict(showgrid=False, zeroline=False, tickfont=dict(size=11)),
         yaxis=dict(showgrid=True, gridcolor=PHI_COLORS["grid"], zeroline=False, title="Exercises mapped"),
         showlegend=False,
-        hoverlabel=dict(bgcolor="#ffffff", font_color=PHI_COLORS["ink"], font_size=13),
+        hoverlabel=dict(bgcolor="rgba(12,18,31,0.96)", bordercolor="rgba(50,216,255,0.28)", font_color=PHI_COLORS["ink"], font_size=13),
     )
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 else:

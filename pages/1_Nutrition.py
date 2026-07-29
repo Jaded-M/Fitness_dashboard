@@ -56,9 +56,10 @@ if not water_df_raw.empty:
 
 # Process Measurement Data
 latest_weight = 0
-if not physical_df.empty:
-    physical_df["Date"] = pd.to_datetime(physical_df["Date"]).dt.normalize()
-    latest_weight = physical_df.iloc[-1]["Weight"]
+if not physical_df.empty and "Weight" in physical_df.columns and "Date" in physical_df.columns:
+    physical_df["Date"] = pd.to_datetime(physical_df["Date"], errors="coerce")
+    physical_df = physical_df.sort_values("Date", ascending=True)
+    latest_weight = float(physical_df["Weight"].dropna().iloc[-1])
 
 # Process Day Stats
 t_cal, t_prot, t_carb, t_fat, t_fib = 0, 0, 0, 0, 0

@@ -15,6 +15,7 @@ PAGES = (
     ("Fitness.py", "Command Center", "Readiness, training, and activity"),
     ("pages/1_Nutrition.py", "Nutrition", "Calories, macros, and hydration"),
     ("pages/2_Muscle_Atlas.py", "Muscle Atlas", "Muscle mapping and recovery"),
+    ("pages/_3_Biomechanics_Sim.py", "Biomechanics Lab", "Movement simulation"),
     ("pages/4_PR_Tracker.py", "PR Tracker", "Records and overload"),
 )
 
@@ -44,11 +45,12 @@ def render_sidebar(active_page: str | None = None) -> None:
         <div class="phi-sidebar-brand">
             {_logo_html()}
             <div>
-                <div class="phi-sidebar-title">Personal Health Intelligence</div>
-                <div class="phi-sidebar-subtitle">Local training command center</div>
+                <div class="phi-sidebar-title">PHI</div>
+                <div class="phi-sidebar-subtitle">Personal Health Intelligence</div>
             </div>
         </div>
         <div class="phi-sidebar-section">Navigation</div>
+        <div class="phi-sidebar-nav-stack">
         """,
         unsafe_allow_html=True,
     )
@@ -59,6 +61,8 @@ def render_sidebar(active_page: str | None = None) -> None:
             unsafe_allow_html=True,
         )
         st.sidebar.page_link(path, label=label)
+
+    st.sidebar.markdown("</div>", unsafe_allow_html=True)
 
     if is_authenticated():
         if st.sidebar.button("> Logout", key="sidebar_logout", use_container_width=True):

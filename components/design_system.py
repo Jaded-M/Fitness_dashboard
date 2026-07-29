@@ -9,7 +9,7 @@ def apply_platform_theme():
     """Apply the PHI Premium OS Streamlit skin — v3 Professional Edition."""
     st.markdown(
         """
-        <style>        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
+        <style>        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
 
         .stApp, [data-testid="stAppViewContainer"], [data-testid="stSidebar"] {
             background-color: var(--bg) !important;
@@ -37,8 +37,8 @@ def apply_platform_theme():
             to   { transform: scaleX(1); }
         }
         @keyframes phi-pulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(51,255,51,0.0); }
-            50%       { box-shadow: 0 0 34px 0 rgba(51,255,51,0.20); }
+            0%, 100% { box-shadow: none !important; }
+            50%       { box-shadow: none !important; }
         }
         @keyframes phi-fadein {
             from { opacity: 0; }
@@ -64,30 +64,30 @@ def apply_platform_theme():
          * ==========================================
          */
         :root {
-            --bg:           #000000;
-            --panel:        #080b08;
-            --panel-2:      #0c100c;
-            --panel-3:      #0f140f;
-            --ink:          #33ff33;
-            --soft:         #33ff33;
-            --muted:        rgba(51, 255, 51, 0.70);
-            --faint:        rgba(51, 255, 51, 0.40);
-            --line:         rgba(51, 255, 51, 0.18);
-            --line-strong:  rgba(51, 255, 51, 0.35);
-            --blue:         #33ff33;
-            --blue-2:       #33ff33;
-            --green:        #33ff33;
-            --amber:        #e0b45d;
-            --rose:         #ef6b75;
-            --violet:       #33ff33;
-            --orange:       #e0b45d;
-            --shadow:       none;
-            --shadow-soft:  none;
-            --radius:       0px;
-            --radius-lg:    0px;
-            --radius-sm:    0px;
-            --font-body:    'JetBrains Mono', 'IBM Plex Mono', monospace;
-            --font-display: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+            --bg:           #080b12;
+            --panel:        rgba(14, 20, 34, 0.86);
+            --panel-2:      rgba(20, 29, 48, 0.90);
+            --panel-3:      rgba(24, 34, 56, 0.94);
+            --ink:          #f6fbff;
+            --soft:         #d7f7ff;
+            --muted:        rgba(154, 167, 184, 0.82);
+            --faint:        rgba(154, 167, 184, 0.48);
+            --line:         rgba(50, 216, 255, 0.16);
+            --line-strong:  rgba(181, 108, 255, 0.34);
+            --blue:         #32d8ff;
+            --blue-2:       #6ee7ff;
+            --green:        #40f2a0;
+            --amber:        #ffd166;
+            --rose:         #ff5c8a;
+            --violet:       #b56cff;
+            --orange:       #ff8a3d;
+            --shadow:       0 0 0 1px rgba(50,216,255,0.08), 0 18px 40px rgba(0,0,0,0.26);
+            --shadow-soft:  0 0 0 1px rgba(50,216,255,0.06);
+            --radius:       4px;
+            --radius-lg:    6px;
+            --radius-sm:    3px;
+            --font-body:    'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
         }
 
         /* ==========================================
@@ -105,59 +105,57 @@ def apply_platform_theme():
          * ==========================================
          */
         [data-testid="stSidebar"] {
-            background:
-                radial-gradient(ellipse at 30% 0%, rgba(77,200,220,0.14) 0%, transparent 40%),
-                linear-gradient(180deg, rgba(8,12,20,0.98) 0%, rgba(5,8,14,0.99) 100%);
-            border-right: 1px solid rgba(77,200,220,0.18);
-            box-shadow: 20px 0 60px rgba(0,0,0,0.36);
+            background: var(--bg);
+            border-right: 1px solid var(--line);
         }
         [data-testid="stSidebarNav"] {
             padding-top: 0.3rem;
             margin-top: 0.6rem;
-            border-top: 1px solid rgba(140,156,180,0.10);
+            border-top: 1px solid var(--line);
         }
         [data-testid="stSidebarNav"] a,
         [data-testid="stPageLink"] a {
             position: relative;
             margin: 0.08rem 0 0.35rem;
-            padding: 0.62rem 0.78rem !important;
-            border: 1px solid rgba(140,156,180,0.12);
-            border-radius: 12px;
+            padding: 0.55rem 0.78rem !important;
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
             color: var(--soft) !important;
-            background: linear-gradient(135deg, rgba(16,22,34,0.62), rgba(5,8,14,0.48));
-            box-shadow: 0 8px 22px rgba(0,0,0,0.16);
-            transition: background 140ms ease, border-color 140ms ease, color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
+            background: var(--panel);
+            transition: background 140ms ease, border-color 140ms ease;
         }
         [data-testid="stSidebarNav"] a::before,
         [data-testid="stPageLink"] a::before {
-            content: "";
+            content: ">";
             position: absolute;
-            left: 0.42rem;
+            left: 0.45rem;
             top: 50%;
-            width: 0.34rem;
-            height: 0.34rem;
-            border-radius: 999px;
-            background: rgba(77,200,220,0.55);
-            box-shadow: 0 0 12px rgba(77,200,220,0.24);
+            color: var(--green);
+            font-family: var(--font-display);
+            font-size: 0.55rem;
+            opacity: 0.5;
             transform: translateY(-50%);
         }
         [data-testid="stSidebarNav"] a:hover,
         [data-testid="stPageLink"] a:hover {
-            color: var(--ink) !important;
-            border-color: rgba(77,200,220,0.38);
-            background: linear-gradient(135deg, rgba(77,200,220,0.16), rgba(82,221,160,0.08));
-            transform: translateX(2px);
-            box-shadow: 0 14px 30px rgba(0,0,0,0.22), 0 0 24px rgba(77,200,220,0.08);
+            color: var(--green) !important;
+            border-color: var(--green);
+            background: var(--panel-2);
         }
         [data-testid="stPageLink"] a[aria-current="page"],
         [data-testid="stSidebarNav"] a[aria-current="page"] {
-            color: var(--ink) !important;
-            border-color: rgba(82,221,160,0.48);
-            background: linear-gradient(135deg, rgba(77,200,220,0.22), rgba(82,221,160,0.12));
-            box-shadow: 0 12px 30px rgba(0,0,0,0.24), inset 3px 0 0 rgba(82,221,160,0.9);
+            color: var(--green) !important;
+            border-color: var(--green);
+            background: var(--panel-3);
+            border-left: 3px solid var(--green);
+        }
+        [data-testid="stPageLink"] a[aria-current="page"]::before,
+        [data-testid="stSidebarNav"] a[aria-current="page"]::before {
+            opacity: 1;
+            color: var(--green);
         }
         .phi-nav-hint {
-            color: var(--faint);
+            color: var(--muted);
             font-size: 0.62rem;
             font-weight: 700;
             line-height: 1.25;
@@ -175,27 +173,24 @@ def apply_platform_theme():
             gap: 0.85rem;
             padding: 1rem;
             margin: 0.25rem 0 1rem;
-            border: 1px solid rgba(77,200,220,0.20);
+            border: 1px solid var(--line);
             border-radius: var(--radius);
-            background: linear-gradient(135deg, rgba(77,200,220,0.12) 0%, rgba(176,160,248,0.07) 100%);
-            box-shadow: 0 14px 40px rgba(0,0,0,0.24);
+            background: var(--panel);
         }
         .phi-sidebar-logo {
             display: grid;
             place-items: center;
             width: 46px;
             height: 46px;
-            border-radius: 13px;
-            color: #040c10;
-            background: linear-gradient(135deg, var(--blue), var(--green));
+            border: 1px solid var(--green);
+            background: var(--panel-2);
+            color: var(--green);
             font-family: var(--font-display);
             font-weight: 900;
             font-size: 0.88rem;
-            letter-spacing: -0.02em;
-            box-shadow: 0 0 22px rgba(77,200,220,0.30);
         }
         .phi-sidebar-title {
-            color: var(--ink);
+            color: var(--green);
             font-weight: 800;
             font-size: 0.92rem;
             line-height: 1.3;
@@ -207,7 +202,7 @@ def apply_platform_theme():
             margin-top: 0.18rem;
         }
         .phi-sidebar-section, .phi-form-label {
-            color: var(--blue);
+            color: var(--green);
             font-size: 0.65rem;
             font-weight: 800;
             letter-spacing: 0.14em;
@@ -215,53 +210,14 @@ def apply_platform_theme():
             margin: 0.9rem 0 0.4rem;
         }
         .phi-sidebar-card {
-            position: relative;
-            overflow: hidden;
             margin: 0.55rem 0;
             padding: 0.82rem;
-            border: 1px solid rgba(255,255,255,0.08);
+            border: 1px solid var(--line);
             border-radius: var(--radius);
-            background: linear-gradient(160deg, rgba(20,28,42,0.6), rgba(8,12,20,0.8));
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+            background: var(--panel);
         }
         .phi-sidebar-card.compact { padding: 0.68rem; }
-        .phi-command {
-            position: relative;
-            padding: 2rem;
-            border-radius: 28px;
-            background: linear-gradient(160deg, rgba(8,12,18,0.92), rgba(3,7,12,0.96));
-            border: 1px solid rgba(77,200,220,0.14);
-            border-top-width: 4px;
-            box-shadow: var(--shadow);
-            margin-bottom: 2rem;
-            overflow: hidden;
-        }
-        .phi-command.good { border-top-color: var(--green); }
-        .phi-command.warn { border-top-color: var(--amber); }
-        .phi-command.risk { border-top-color: var(--rose); }
-
-        .phi-command::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            background:
-                radial-gradient(ellipse at 80% 0%, rgba(77,200,220,0.06) 0%, transparent 50%),
-                radial-gradient(ellipse at 10% 100%, rgba(176,160,248,0.05) 0%, transparent 40%);
-        }
-        .phi-command-grid {
-            position: relative;
-            z-index: 1;
-            display: grid;
-            grid-template-columns: auto 1fr;
-            gap: 2.5rem;
-            align-items: center;
-        }
         .phi-sidebar-row {
-            position: relative;
-            z-index: 1;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -269,7 +225,7 @@ def apply_platform_theme():
             margin: 0.45rem 0;
         }
         .phi-sidebar-kpi {
-            color: var(--ink);
+            color: var(--green);
             font-family: var(--font-display);
             font-size: 1.38rem;
             font-weight: 800;
@@ -288,10 +244,10 @@ def apply_platform_theme():
             align-items: center;
             gap: 0.3rem;
             padding: 0.2rem 0.44rem;
-            border: 1px solid rgba(140,156,180,0.16);
-            border-radius: 999px;
-            color: var(--muted);
-            background: rgba(3,7,12,0.38);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            color: var(--soft);
+            background: var(--panel-2);
             font-size: 0.65rem;
             font-weight: 800;
             letter-spacing: 0.04em;
@@ -300,33 +256,26 @@ def apply_platform_theme():
             content: "";
             width: 0.38rem;
             height: 0.38rem;
-            border-radius: 999px;
-            background: var(--blue);
-            box-shadow: 0 0 10px rgba(77,200,220,0.7);
+            background: var(--green);
         }
-        .phi-sidebar-status.good::before { background: var(--green); box-shadow: 0 0 10px rgba(82,221,160,0.7); }
-        .phi-sidebar-status.warn::before { background: var(--amber); box-shadow: 0 0 10px rgba(240,192,96,0.7); }
-        .phi-sidebar-status.risk::before { background: var(--rose);  box-shadow: 0 0 10px rgba(248,96,112,0.7); }
+        .phi-sidebar-status.good::before { background: var(--green); }
+        .phi-sidebar-status.warn::before { background: var(--amber); }
+        .phi-sidebar-status.risk::before { background: var(--rose); }
         .phi-sidebar-progress {
-            position: relative;
-            z-index: 1;
             height: 0.44rem;
             overflow: hidden;
-            border-radius: 999px;
-            background: rgba(140,156,180,0.10);
+            border-radius: var(--radius);
+            background: var(--panel-2);
             margin-top: 0.4rem;
         }
         .phi-sidebar-progress span {
             display: block;
             height: 100%;
-            border-radius: inherit;
-            background: linear-gradient(90deg, var(--blue), var(--green));
-            box-shadow: 0 0 14px rgba(77,200,220,0.20);
+            background: var(--green);
             transition: width 0.4s ease;
         }
-        .phi-sidebar-progress.warn span { background: linear-gradient(90deg, var(--amber), var(--rose)); }
+        .phi-sidebar-progress.warn span { background: var(--amber); }
         .phi-sidebar-mini-grid {
-            position: relative; z-index: 1;
             display: grid;
             grid-template-columns: repeat(2, minmax(0,1fr));
             gap: 0.45rem;
@@ -334,16 +283,14 @@ def apply_platform_theme():
         }
         .phi-sidebar-mini {
             padding: 0.56rem;
-            border: 1px solid rgba(140,156,180,0.12);
-            border-radius: 11px;
-            background: rgba(3,7,12,0.32);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            background: var(--panel-2);
         }
         .phi-sidebar-footer {
             padding: 0.8rem 0.2rem 1.1rem;
-            border-top: 1px solid rgba(140,156,180,0.10);
-        }
-
-        /* ==========================================
+            border-top: 1px solid var(--line);
+        }/* ==========================================
          * 4. TYPOGRAPHY
          * ==========================================
          */
@@ -357,10 +304,7 @@ def apply_platform_theme():
             line-height: 1.2;
             margin: 0;
             max-width: 860px;
-            background: linear-gradient(140deg, #ffffff 10%, #a8dce8 50%, #8aaabb 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            background: none;
         }
         h2, h3 { font-size: 1.18rem; margin-top: 1.1rem; }
         [data-testid="stMarkdownContainer"] h3 {
@@ -407,9 +351,9 @@ def apply_platform_theme():
             content: "";
             width: 7px;
             height: 7px;
-            border-radius: 999px;
+            border-radius: 0px;
             background: var(--green);
-            box-shadow: 0 0 14px rgba(82,221,160,0.9);
+            box-shadow: none !important;
         }
         .phi-subtitle {
             color: var(--muted);
@@ -419,15 +363,15 @@ def apply_platform_theme():
             margin-top: 0.7rem;
         }
         .phi-status-chip {
-            border: 1px solid rgba(82,221,160,0.32);
+            border: 1px solid rgba(51,255,51,0.32);
             color: var(--green);
-            border-radius: 999px;
+            border-radius: 0px;
             padding: 0.52rem 0.88rem;
             font-size: 0.72rem;
             font-weight: 800;
             letter-spacing: 0.04em;
-            background: rgba(82,221,160,0.08);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 0 24px rgba(82,221,160,0.12);
+            background: rgba(51,255,51,0.08);
+            box-shadow: none !important;
             white-space: nowrap;
         }
 
@@ -443,11 +387,9 @@ def apply_platform_theme():
             border: 1px solid var(--line);
             border-radius: var(--radius);
             background:
-                linear-gradient(170deg, rgba(255,255,255,0.03), rgba(255,255,255,0.005)),
+                linear-gradient(170deg, rgba(51,255,51,0.02), rgba(51,255,51,0.005)),
                 rgba(12, 16, 26, 0.45);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            box-shadow: var(--shadow-soft), inset 0 1px 1px rgba(255,255,255,0.08);
+            -webkit-box-shadow: none !important;
             transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
         }
         .phi-card::before {
@@ -455,16 +397,16 @@ def apply_platform_theme():
             position: absolute;
             inset: 0;
             pointer-events: none;
-            background: linear-gradient(135deg, rgba(255,255,255,0.10) 0%, transparent 32%);
+            background: linear-gradient(135deg, rgba(51,255,51,0.06) 0%, transparent 32%);
             opacity: 0.6;
         }
         .phi-card:hover {
             transform: translateY(-2px);
-            border-color: rgba(77,200,220,0.38);
-            box-shadow: var(--shadow), 0 0 0 1px rgba(77,200,220,0.10);
+            border-color: rgba(51,255,51,0.38);
+            box-shadow: none !important;
             will-change: transform;
         }
-        .phi-card.good { border-color: rgba(82,221,160,0.34); }
+        .phi-card.good { border-color: rgba(51,255,51,0.34); }
         .phi-card.warn { border-color: rgba(240,192,96,0.34); }
         .phi-card.risk { border-color: rgba(248,96,112,0.34); }
 
@@ -474,15 +416,13 @@ def apply_platform_theme():
             border: 1px solid var(--line);
             border-radius: var(--radius);
             background: rgba(12, 18, 28, 0.5);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255,255,255,0.04);
+            -webkit-box-shadow: none !important;
             transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
         }
         .phi-quiet-card:hover {
             transform: translateY(-2px);
-            border-color: rgba(77,200,220,0.34);
-            box-shadow: var(--shadow);
+            border-color: rgba(51,255,51,0.34);
+            box-shadow: none !important;
             will-change: transform;
         }
         .phi-quiet-grid {
@@ -508,11 +448,9 @@ def apply_platform_theme():
             border-radius: var(--radius-lg);
             padding: 1rem;
             background:
-                radial-gradient(ellipse at 88% 12%, rgba(77,200,220,0.12) 0%, transparent 50%),
+                radial-gradient(ellipse at 88% 12%, rgba(51,255,51,0.12) 0%, transparent 50%),
                 rgba(12, 18, 28, 0.5);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            box-shadow: var(--shadow-soft), inset 0 1px 1px rgba(255,255,255,0.08);
+            -webkit-box-shadow: none !important;
             transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
         }
         .phi-mini-widget::before {
@@ -520,15 +458,15 @@ def apply_platform_theme():
             position: absolute;
             inset: 0;
             pointer-events: none;
-            background: linear-gradient(135deg, rgba(255,255,255,0.07) 0%, transparent 30%);
+            background: linear-gradient(135deg, rgba(51,255,51,0.05) 0%, transparent 30%);
         }
         .phi-mini-widget:hover {
             transform: translateY(-2px);
-            border-color: rgba(77,200,220,0.38);
-            box-shadow: var(--shadow);
+            border-color: rgba(51,255,51,0.38);
+            box-shadow: none !important;
             will-change: transform;
         }
-        .phi-mini-widget.good { border-color: rgba(82,221,160,0.32); }
+        .phi-mini-widget.good { border-color: rgba(51,255,51,0.32); }
         .phi-mini-widget.warn { border-color: rgba(240,192,96,0.32); }
         .phi-mini-widget.risk { border-color: rgba(248,96,112,0.32); }
         .phi-widget-value {
@@ -551,16 +489,16 @@ def apply_platform_theme():
             place-items: center;
             width: 70px;
             height: 70px;
-            border-radius: 20px;
+            border-radius: 0px;
             color: var(--blue);
             font-size: 0.68rem;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.06em;
             text-align: center;
-            background: rgba(77,200,220,0.07);
-            border: 1px solid rgba(77,200,220,0.20);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 0 24px rgba(77,200,220,0.10);
+            background: rgba(51,255,51,0.07);
+            border: 1px solid rgba(51,255,51,0.20);
+            box-shadow: none !important;
         }
         .phi-hydration-bars {
             display: grid;
@@ -569,17 +507,17 @@ def apply_platform_theme():
             gap: 4px;
             padding: 0.58rem;
             border-radius: var(--radius);
-            border: 1px solid rgba(77,200,220,0.16);
-            background: rgba(77,200,220,0.05);
+            border: 1px solid rgba(51,255,51,0.16);
+            background: rgba(51,255,51,0.05);
         }
         .phi-hydration-bars span {
             display: block;
-            border-radius: 999px;
-            background: rgba(140,156,180,0.16);
+            border-radius: 0px;
+            background: rgba(51,255,51,0.16);
         }
         .phi-hydration-bars span.filled {
             background: var(--blue);
-            box-shadow: 0 0 10px rgba(77,200,220,0.55);
+            box-shadow: none !important;
         }
 
         /* ==========================================
@@ -590,22 +528,20 @@ def apply_platform_theme():
             position: relative;
             overflow: hidden;
             padding: 1.35rem;
-            border: 1px solid rgba(77,200,220,0.32);
+            border: 1px solid rgba(51,255,51,0.32);
             border-radius: var(--radius-lg);
             background:
-                radial-gradient(ellipse at 14% 18%, rgba(77,200,220,0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 14% 18%, rgba(51,255,51,0.15) 0%, transparent 50%),
                 rgba(12, 18, 28, 0.4);
-            box-shadow: var(--shadow), 0 0 0 1px rgba(255,255,255,0.05);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            animation: phi-pulse 7s ease-in-out infinite;
+            box-shadow: none !important;
+            -webkit-animation: phi-pulse 7s ease-in-out infinite;
         }
         .phi-command::before {
             content: "";
             position: absolute;
             inset: 0;
             pointer-events: none;
-            background: linear-gradient(135deg, rgba(255,255,255,0.10) 0%, transparent 35%);
+            background: linear-gradient(135deg, rgba(51,255,51,0.06) 0%, transparent 35%);
         }
         .phi-command-grid {
             display: grid;
@@ -649,8 +585,8 @@ def apply_platform_theme():
         }
         .phi-rail-item {
             padding: 0.74rem;
-            border-radius: 13px;
-            border: 1px solid rgba(140,156,180,0.14);
+            border-radius: 0px;
+            border: 1px solid rgba(51,255,51,0.14);
             background: rgba(4,8,14,0.44);
         }
         .phi-rail-value {
@@ -672,9 +608,7 @@ def apply_platform_theme():
             border: 1px solid var(--line);
             border-left: 4px solid var(--blue);
             background: rgba(12, 18, 28, 0.45);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255,255,255,0.05);
+            -webkit-box-shadow: none !important;
             transition: border-left-color 220ms ease;
         }
         .phi-insight.good { border-left-color: var(--green); }
@@ -684,31 +618,31 @@ def apply_platform_theme():
         .phi-pill {
             display: inline-flex;
             align-items: center;
-            border-radius: 999px;
-            border: 1px solid rgba(140,163,184,0.22);
+            border-radius: 0px;
+            border: 1px solid rgba(51,255,51,0.22);
             padding: 0.28rem 0.58rem;
             color: var(--muted);
             font-size: 0.74rem;
             font-weight: 800;
             margin: 0.16rem 0.18rem 0.16rem 0;
-            background: rgba(140,163,184,0.06);
+            background: rgba(51,255,51,0.06);
             transition: background 120ms ease, border-color 120ms ease;
         }
-        .phi-pill.good { color: var(--green); border-color: rgba(82,221,160,0.32); background: rgba(82,221,160,0.07); }
+        .phi-pill.good { color: var(--green); border-color: rgba(51,255,51,0.32); background: rgba(51,255,51,0.07); }
         .phi-pill.warn { color: var(--amber); border-color: rgba(240,192,96,0.34); background: rgba(240,192,96,0.07); }
         .phi-pill.risk { color: var(--rose);  border-color: rgba(248,96,112,0.32); background: rgba(248,96,112,0.07); }
 
         .phi-bar {
             height: 0.52rem;
-            border-radius: 999px;
-            background: rgba(140,156,180,0.12);
+            border-radius: 0px;
+            background: rgba(51,255,51,0.12);
             overflow: hidden;
             margin-top: 0.55rem;
         }
         .phi-bar > span {
             display: block;
             height: 100%;
-            border-radius: 999px;
+            border-radius: 0px;
             transform-origin: left center;
             animation: phi-bar-fill 0.75s cubic-bezier(0.4,0,0.2,1) both;
             background: linear-gradient(90deg, var(--rose), var(--amber), var(--green), var(--blue));
@@ -721,7 +655,7 @@ def apply_platform_theme():
         .phi-section {
             margin: 1.2rem 0 0.65rem;
             padding: 0.85rem 0 0.12rem;
-            border-top: 1px solid rgba(140,156,180,0.10);
+            border-top: 1px solid rgba(51,255,51,0.10);
         }
         .phi-section-title {
             color: var(--soft);
@@ -753,7 +687,6 @@ def apply_platform_theme():
             font-weight: 800;
             line-height: 1.2;
             margin-top: 0.5rem;
-            text-shadow: 0 0 22px rgba(77,200,220,0.16);
         }
         .phi-caption {
             color: var(--muted);
@@ -780,11 +713,9 @@ def apply_platform_theme():
             gap: 1.1rem;
             padding: 1.2rem;
             border-radius: var(--radius-lg);
-            border: 1px solid rgba(255,255,255,0.08);
+            border: 1px solid rgba(51,255,51,0.05);
             background: rgba(16, 22, 34, 0.4);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            box-shadow: var(--shadow-soft), inset 0 1px 1px rgba(255,255,255,0.08);
+            -webkit-box-shadow: none !important;
             transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
         }
         .phi-kpi-tile::before {
@@ -792,12 +723,12 @@ def apply_platform_theme():
             position: absolute;
             inset: 0;
             pointer-events: none;
-            background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 40%);
+            background: linear-gradient(135deg, rgba(51,255,51,0.04) 0%, transparent 40%);
         }
         .phi-kpi-tile:hover {
             transform: translateY(-2px);
-            border-color: rgba(77,200,220,0.40);
-            box-shadow: var(--shadow);
+            border-color: rgba(51,255,51,0.40);
+            box-shadow: none !important;
             will-change: transform;
         }
         .phi-kpi-icon {
@@ -805,13 +736,13 @@ def apply_platform_theme():
             place-items: center;
             width: 48px;
             height: 48px;
-            border-radius: 14px;
-            background: rgba(77,200,220,0.08);
-            border: 1px solid rgba(77,200,220,0.22);
+            border-radius: 0px;
+            background: rgba(51,255,51,0.08);
+            border: 1px solid rgba(51,255,51,0.22);
             color: var(--blue);
             font-size: 1.4rem;
         }
-        .phi-kpi-tile.good .phi-kpi-icon { color: var(--green); background: rgba(82,221,160,0.08); border-color: rgba(82,221,160,0.25); }
+        .phi-kpi-tile.good .phi-kpi-icon { color: var(--green); background: rgba(51,255,51,0.08); border-color: rgba(51,255,51,0.25); }
         .phi-kpi-tile.warn .phi-kpi-icon { color: var(--amber); background: rgba(240,192,96,0.08); border-color: rgba(240,192,96,0.25); }
         .phi-kpi-tile.risk .phi-kpi-icon { color: var(--rose); background: rgba(248,96,112,0.08); border-color: rgba(248,96,112,0.25); }
         .phi-kpi-title {
@@ -846,12 +777,12 @@ def apply_platform_theme():
             flex-direction: column;
             gap: 0.6rem;
             padding: 1rem;
-            border: 1px solid rgba(77,200,220,0.20);
+            border: 1px solid rgba(51,255,51,0.20);
             border-radius: var(--radius-lg);
             background:
-                radial-gradient(ellipse at 5% 50%, rgba(77,200,220,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 5% 50%, rgba(51,255,51,0.08) 0%, transparent 50%),
                 linear-gradient(160deg, rgba(12,18,28,0.80), rgba(6,10,16,0.84));
-            box-shadow: var(--shadow-soft);
+            box-shadow: none !important;
             margin-bottom: 0.5rem;
         }
         .phi-action-bar-label {
@@ -868,29 +799,29 @@ def apply_platform_theme():
          */
         .stButton > button {
             min-height: 2.75rem;
-            border-radius: 11px;
-            border: 1px solid rgba(140,156,180,0.20);
+            border-radius: 0px;
+            border: 1px solid rgba(51,255,51,0.20);
             background: linear-gradient(170deg, rgba(28,38,56,0.92), rgba(14,22,38,0.92));
             color: var(--ink);
             font-weight: 800;
             font-size: 0.83rem;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 8px 20px rgba(0,0,0,0.20);
+            box-shadow: none !important;
             transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
         }
         .stButton > button:hover {
             transform: translateY(-2px);
-            border-color: rgba(77,200,220,0.48);
-            box-shadow: 0 16px 36px rgba(0,0,0,0.26), 0 0 20px rgba(77,200,220,0.10);
+            border-color: rgba(51,255,51,0.48);
+            box-shadow: none !important;
             will-change: transform;
         }
         .stButton > button[kind="primary"] {
-            color: #030e11;
+            color: #000000;
             border-color: transparent;
             background: linear-gradient(135deg, var(--blue), var(--green));
-            box-shadow: 0 14px 32px rgba(77,200,220,0.22);
+            box-shadow: none !important;
         }
         .stButton > button[kind="primary"]:hover {
-            box-shadow: 0 18px 40px rgba(77,200,220,0.30);
+            box-shadow: none !important;
         }
 
         /* ==========================================
@@ -900,28 +831,28 @@ def apply_platform_theme():
         .stTabs [data-baseweb="tab-list"] {
             gap: 0.3rem;
             padding: 0.4rem;
-            border: 1px solid rgba(77,200,220,0.16);
+            border: 1px solid rgba(51,255,51,0.16);
             border-radius: var(--radius-lg);
             background: rgba(6,10,16,0.74);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+            box-shadow: none !important;
         }
         .stTabs [data-baseweb="tab"] {
             height: 2.6rem;
             padding: 0 1rem;
-            border-radius: 11px;
+            border-radius: 0px;
             color: var(--muted);
             font-size: 0.80rem;
             font-weight: 800;
             letter-spacing: 0.02em;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.04);
+            background: rgba(51,255,51,0.02);
+            border: 1px solid rgba(51,255,51,0.02);
             transition: color 120ms ease, background 120ms ease;
         }
-        .stTabs [data-baseweb="tab"]:hover { color: var(--ink); background: rgba(77,200,220,0.08); }
+        .stTabs [data-baseweb="tab"]:hover { color: var(--ink); background: rgba(51,255,51,0.08); }
         .stTabs [aria-selected="true"] {
-            color: #040e12;
+            color: #000000;
             background: linear-gradient(135deg, var(--blue), var(--green));
-            box-shadow: 0 8px 24px rgba(77,200,220,0.22);
+            box-shadow: none !important;
             border: none;
         }
 
@@ -934,13 +865,13 @@ def apply_platform_theme():
             border-left: 3px solid var(--blue);
             border-radius: var(--radius);
             background: linear-gradient(170deg, rgba(16,24,36,0.88), rgba(8,12,18,0.92));
-            box-shadow: var(--shadow-soft);
+            box-shadow: none !important;
             padding: 1rem;
             transition: transform 140ms ease, border-color 140ms ease;
         }
         div[data-testid="stMetric"]:hover {
             transform: translateY(-2px);
-            border-color: rgba(77,200,220,0.30);
+            border-color: rgba(51,255,51,0.30);
             will-change: transform;
         }
         [data-testid="stMetricLabel"] {
@@ -963,10 +894,10 @@ def apply_platform_theme():
          * ==========================================
          */
         div[data-testid="stExpander"] {
-            border: 1px solid rgba(77,200,220,0.14);
+            border: 1px solid rgba(51,255,51,0.14);
             border-radius: var(--radius-lg);
             background: rgba(7,11,18,0.74);
-            box-shadow: var(--shadow-soft);
+            box-shadow: none !important;
             overflow: hidden;
         }
         div[data-testid="stExpander"] summary {
@@ -975,36 +906,36 @@ def apply_platform_theme():
             color: var(--soft);
         }
         [data-testid="stDataFrame"], .stDataFrame {
-            border: 1px solid rgba(77,200,220,0.12);
+            border: 1px solid rgba(51,255,51,0.12);
             border-radius: var(--radius);
             overflow: hidden;
-            box-shadow: var(--shadow-soft);
+            box-shadow: none !important;
         }
         .js-plotly-plot { border-radius: var(--radius); overflow: hidden; }
         [data-testid="stPlotlyChart"] {
             position: relative;
             padding: 0.8rem 1rem;
-            border: 1px solid rgba(77,200,220,0.12);
+            border: 1px solid rgba(51,255,51,0.12);
             border-radius: var(--radius-lg);
             background: linear-gradient(170deg, rgba(10,16,26,0.74), rgba(5,8,13,0.74));
-            box-shadow: inset 20px 20px 40px rgba(77,200,220,0.015), var(--shadow-soft);
+            box-shadow: none !important;
             transition: border-color 200ms ease;
         }
         [data-testid="stPlotlyChart"]:hover {
-            border-color: rgba(77,200,220,0.22);
+            border-color: rgba(51,255,51,0.22);
         }
         [data-testid="stRadio"] {
             padding: 0.4rem;
-            border: 1px solid rgba(77,200,220,0.14);
+            border: 1px solid rgba(51,255,51,0.14);
             border-radius: var(--radius);
             background: rgba(6,10,16,0.58);
         }
-        [data-testid="stRadio"] label { border-radius: 999px; padding: 0.16rem 0.32rem; }
+        [data-testid="stRadio"] label { border-radius: 0px; padding: 0.16rem 0.32rem; }
         [data-testid="stPopover"] button,
         [data-testid="stDownloadButton"] button {
             min-height: 2.75rem;
-            border-radius: 11px;
-            border: 1px solid rgba(140,156,180,0.20);
+            border-radius: 0px;
+            border: 1px solid rgba(51,255,51,0.20);
             background: linear-gradient(170deg, rgba(28,38,56,0.92), rgba(14,22,38,0.92));
             color: var(--ink);
             font-weight: 800;
@@ -1020,8 +951,8 @@ def apply_platform_theme():
         .stDateInput input,
         .stSelectbox div[data-baseweb="select"],
         .stTextArea textarea {
-            border-radius: 10px !important;
-            border-color: rgba(140,156,180,0.20) !important;
+            border-radius: 0px !important;
+            border-color: rgba(51,255,51,0.20) !important;
             background: rgba(5,9,15,0.80) !important;
             color: var(--ink) !important;
             font-size: 0.88rem !important;
@@ -1069,22 +1000,22 @@ def apply_platform_theme():
         div[data-baseweb="popover"] { z-index: 999999 !important; }
         div[data-baseweb="popover"] ul, div[role="listbox"] {
             padding: 0.32rem !important;
-            border: 1px solid rgba(77,200,220,0.22) !important;
-            border-radius: 13px !important;
-            background: #07101c !important;
-            box-shadow: 0 16px 44px rgba(0,0,0,0.48) !important;
+            border: 1px solid rgba(50,216,255,0.22) !important;
+            border-radius: var(--radius) !important;
+            background: #0b0f1a !important;
+            box-shadow: none !important;
         }
         div[data-baseweb="popover"] li, div[role="option"] {
             min-height: 2.25rem !important;
             display: flex !important;
             align-items: center !important;
-            border-radius: 9px !important;
+            border-radius: 0px !important;
             color: var(--soft) !important;
             line-height: 1.2 !important;
             white-space: nowrap !important;
         }
         div[data-baseweb="popover"] li:hover, div[role="option"]:hover {
-            background: rgba(77,200,220,0.12) !important;
+            background: rgba(51,255,51,0.12) !important;
             color: var(--ink) !important;
         }
 
@@ -1094,11 +1025,11 @@ def apply_platform_theme():
          */
         .stAlert {
             border-radius: var(--radius);
-            border: 1px solid rgba(77,200,220,0.16);
+            border: 1px solid rgba(51,255,51,0.16);
             background: rgba(10,15,24,0.90);
             color: var(--ink);
         }
-        hr { border-color: rgba(140,156,180,0.12); }
+        hr { border-color: rgba(51,255,51,0.12); }
 
         /* ==========================================
          * 19. NUTRITION PAGE — macro cards & progress
@@ -1108,13 +1039,13 @@ def apply_platform_theme():
             width: 100%;
             height: 10px;
             overflow: hidden;
-            border-radius: 999px;
+            border-radius: 0px;
             background: rgba(22,30,44,0.80);
             border: 1px solid var(--line);
         }
         .custom-progress-fill {
             height: 100%;
-            border-radius: 999px;
+            border-radius: 0px;
             background: linear-gradient(90deg, var(--blue), var(--green));
             transition: width 0.28s ease;
         }
@@ -1136,7 +1067,7 @@ def apply_platform_theme():
         }
         .macro-card:hover {
             transform: translateY(-1px);
-            border-color: rgba(77,200,220,0.28);
+            border-color: rgba(51,255,51,0.28);
             will-change: transform;
         }
         .macro-title {
@@ -1162,270 +1093,208 @@ def apply_platform_theme():
         }
 
         /* ==========================================
-         * 20. VISUAL OVERHAUL LAYER
-         * ==========================================
-         */
-        .stApp {
+         * 20. RGB RETRO-FUTURE CLEANUP
+         * ========================================== */
+        .stApp, [data-testid="stAppViewContainer"] {
             background:
-                linear-gradient(180deg, rgba(75,183,207,0.055) 0%, transparent 28%),
-                linear-gradient(135deg, #080b10 0%, #0b1017 46%, #06080c 100%);
+                linear-gradient(rgba(50,216,255,0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(181,108,255,0.030) 1px, transparent 1px),
+                radial-gradient(ellipse at top, rgba(50,216,255,0.14), transparent 42%),
+                linear-gradient(180deg, #0b0f1a 0%, #070a10 100%) !important;
+            background-size: 44px 44px, 44px 44px, 100% 100%, 100% 100%;
         }
-        .stApp::before {
-            background-image:
-                linear-gradient(rgba(164,177,196,0.026) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(164,177,196,0.020) 1px, transparent 1px);
-            background-size: 36px 36px;
-            mask-image: linear-gradient(180deg, rgba(0,0,0,0.42), transparent 68%);
+        [data-testid="stSidebar"] {
+            background:
+                linear-gradient(rgba(50,216,255,0.035) 1px, transparent 1px),
+                linear-gradient(180deg, rgba(7,10,17,0.98), rgba(9,13,22,0.98)) !important;
+            background-size: 100% 28px, 100% 100% !important;
+            border-right: 1px solid rgba(50,216,255,0.14) !important;
+        }
+        .phi-sidebar-nav-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 0.28rem;
+        }
+        [data-testid="stSidebar"] [data-testid="stPageLink"] {
+            margin: 0 !important;
+        }
+        [data-testid="stSidebar"] [data-testid="stPageLink"] a {
+            min-height: 2.7rem !important;
+            display: flex !important;
+            align-items: center !important;
+            border-radius: var(--radius) !important;
+            border: 1px solid rgba(50,216,255,0.16) !important;
+            background: rgba(8, 13, 23, 0.86) !important;
+            color: var(--soft) !important;
+            font-family: var(--font-display) !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.01em !important;
+        }
+        [data-testid="stSidebar"] [data-testid="stPageLink"] a:hover {
+            background: rgba(50,216,255,0.08) !important;
+            border-color: rgba(50,216,255,0.36) !important;
+            color: var(--ink) !important;
+        }
+        [data-testid="stSidebar"] [data-testid="stPageLink"] a[aria-current="page"] {
+            background: linear-gradient(90deg, rgba(50,216,255,0.16), rgba(181,108,255,0.08)) !important;
+            border-left: 3px solid var(--blue) !important;
+            color: var(--ink) !important;
+        }
+        [data-testid="stSidebar"] .phi-nav-hint {
+            min-height: 1rem;
+            margin: 0.34rem 0 0.08rem !important;
+            color: rgba(154,167,184,0.62) !important;
+            font-family: 'JetBrains Mono', monospace !important;
+            font-size: 0.58rem !important;
+            letter-spacing: 0.07em !important;
+        }
+        .phi-sidebar-brand {
+            background:
+                linear-gradient(135deg, rgba(50,216,255,0.10), rgba(181,108,255,0.04)),
+                rgba(8,13,23,0.92) !important;
+            border-color: rgba(50,216,255,0.22) !important;
+        }
+        .phi-sidebar-logo {
+            border-radius: var(--radius-sm) !important;
+            border: 1px solid rgba(50,216,255,0.34) !important;
+            background: rgba(50,216,255,0.07) !important;
+            color: var(--blue) !important;
+        }
+        .phi-sidebar-title {
+            color: var(--ink) !important;
+            font-family: 'JetBrains Mono', monospace !important;
+            letter-spacing: 0.12em !important;
+        }
+        .phi-sidebar-subtitle {
+            color: var(--muted) !important;
         }
         .block-container {
-            max-width: 1440px;
-            padding: 1rem 1.4rem 4rem;
+            padding-top: 1rem !important;
         }
-        header[data-testid="stHeader"] {
-            background: rgba(7,10,15,0.72) !important;
-            backdrop-filter: blur(14px);
+        .phi-section-title::after,
+        .phi-cursor {
+            display: none !important;
         }
         .phi-page-head {
-            padding: 1.05rem 1.15rem;
-            margin: 0 0 1rem;
-            border: 1px solid rgba(164,177,196,0.14);
-            border-radius: var(--radius);
-            background:
-                linear-gradient(135deg, rgba(18,24,33,0.96), rgba(10,14,21,0.96)),
-                linear-gradient(90deg, rgba(75,183,207,0.12), transparent 48%);
-            box-shadow: var(--shadow-soft);
+            padding: 0.85rem 0 0.55rem !important;
+            margin-bottom: 0.2rem !important;
         }
-        .phi-page-head h1 {
-            font-size: clamp(1.8rem, 3.2vw, 2.65rem);
-            line-height: 1.08;
-            letter-spacing: -0.02em;
-            background: none;
-            -webkit-text-fill-color: var(--ink);
+        h1 {
+            color: var(--ink) !important;
+            letter-spacing: 0 !important;
         }
-        .phi-subtitle {
-            max-width: 780px;
-            color: var(--muted);
-            font-size: 0.92rem;
+        h2, h3, .phi-section-title, .phi-sidebar-title {
+            letter-spacing: 0 !important;
         }
-        .phi-status-chip {
-            border-radius: var(--radius-sm);
-            background: rgba(111,209,143,0.08);
-            box-shadow: none;
+        label, .phi-label, .phi-eyebrow, .phi-sidebar-section, .phi-form-label {
+            letter-spacing: 0.075em !important;
         }
-        .phi-sidebar-brand,
         .phi-card,
-        .phi-insight,
         .phi-quiet-card,
         .phi-mini-widget,
-        .phi-sidebar-card,
+        .phi-command,
         .phi-action-bar,
-        .macro-card,
+        .phi-kpi-tile,
+        .phi-sidebar-card,
+        .phi-sidebar-brand,
         div[data-testid="stMetric"],
         div[data-testid="stExpander"],
         [data-testid="stPlotlyChart"],
-        [data-testid="stDataFrame"],
-        [data-testid="stDataEditor"] {
-            border-radius: var(--radius) !important;
-            border-color: rgba(164,177,196,0.15) !important;
-            background: linear-gradient(180deg, rgba(18,24,33,0.92), rgba(10,14,21,0.92)) !important;
+        .macro-card {
+            background:
+                linear-gradient(145deg, rgba(18, 26, 43, 0.92), rgba(10, 15, 25, 0.88)) !important;
+            border-color: rgba(50,216,255,0.14) !important;
             box-shadow: var(--shadow-soft) !important;
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
-        }
-        .phi-card,
-        .phi-quiet-card,
-        .phi-mini-widget,
-        .phi-insight {
-            min-height: 104px;
         }
         .phi-card::before,
         .phi-mini-widget::before,
-        .phi-kpi-tile::before,
-        .phi-command::before {
-            opacity: 0.24;
+        .phi-command::before,
+        .phi-kpi-tile::before {
+            opacity: 0.22 !important;
+            background: linear-gradient(135deg, rgba(50,216,255,0.12), transparent 42%) !important;
         }
         .phi-card:hover,
         .phi-quiet-card:hover,
         .phi-mini-widget:hover,
-        .phi-insight:hover,
-        div[data-testid="stMetric"]:hover {
-            transform: translateY(-1px);
-            border-color: rgba(75,183,207,0.30) !important;
-            box-shadow: 0 14px 32px rgba(0,0,0,0.30) !important;
-        }
-        .phi-command {
-            padding: 1.35rem;
-            border-radius: var(--radius) !important;
-            border-top-width: 3px;
-            background: linear-gradient(135deg, rgba(18,24,33,0.98), rgba(9,13,20,0.98)) !important;
-            animation: none !important;
-        }
-        .phi-command-grid {
-            gap: 1.35rem;
-        }
-        .phi-command-action {
-            font-size: clamp(1.35rem, 2.1vw, 2rem);
-            line-height: 1.16;
-        }
-        .phi-kpi-strip,
-        .phi-quiet-grid,
-        .phi-metric-rail {
-            gap: 0.7rem;
-        }
-        .phi-kpi-tile {
-            border-radius: var(--radius) !important;
-            background: linear-gradient(180deg, rgba(18,24,33,0.92), rgba(10,14,21,0.92)) !important;
-        }
-        .phi-label,
-        .phi-kpi-title,
-        [data-testid="stMetricLabel"] {
-            color: var(--muted);
-            font-size: 0.68rem;
-            font-weight: 800;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
+        .phi-kpi-tile:hover,
+        div[data-testid="stMetric"]:hover,
+        [data-testid="stPlotlyChart"]:hover {
+            transform: translateY(-1px) !important;
+            border-color: rgba(181,108,255,0.34) !important;
         }
         .phi-value,
-        .phi-widget-value,
         .phi-kpi-value,
+        .phi-sidebar-kpi,
+        .phi-widget-value,
         .phi-rail-value,
+        .phi-hero-value,
+        .phi-intel-value,
         [data-testid="stMetricValue"] {
-            color: var(--ink);
-            font-family: var(--font-display);
-            letter-spacing: -0.02em;
+            color: var(--ink) !important;
         }
-        div[data-testid="stMetric"] {
-            min-height: 110px;
-            padding: 0.95rem 1rem;
-            border-left: 3px solid var(--blue) !important;
+        .phi-eyebrow,
+        .phi-section-title,
+        .phi-action-bar-label,
+        .phi-intel-header,
+        .phi-intel-label {
+            color: var(--blue) !important;
         }
-        [data-testid="stMetricValue"] {
-            font-size: 1.65rem;
-            font-weight: 800;
-        }
-        [data-testid="stMetricDelta"] {
-            font-size: 0.78rem;
-            font-weight: 800;
+        .phi-status-chip,
+        .phi-pill,
+        .phi-sidebar-status {
+            border-radius: var(--radius-sm) !important;
         }
         .stButton > button,
-        [data-testid="stFormSubmitButton"] button,
-        [data-testid="stDownloadButton"] button,
-        [data-testid="stPopover"] button {
-            min-height: 2.55rem;
-            border-radius: var(--radius-sm) !important;
-            border: 1px solid rgba(164,177,196,0.18) !important;
-            background: linear-gradient(180deg, rgba(30,39,52,0.98), rgba(16,21,30,0.98)) !important;
+        [data-testid="stPopover"] button,
+        [data-testid="stDownloadButton"] button {
+            border-radius: var(--radius) !important;
+            background: rgba(8,13,23,0.92) !important;
+            border-color: rgba(50,216,255,0.24) !important;
             color: var(--ink) !important;
-            font-size: 0.83rem !important;
-            font-weight: 800 !important;
-            box-shadow: 0 8px 18px rgba(0,0,0,0.20);
-            transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
         }
         .stButton > button:hover,
-        [data-testid="stFormSubmitButton"] button:hover,
-        [data-testid="stDownloadButton"] button:hover,
-        [data-testid="stPopover"] button:hover {
-            transform: translateY(-1px);
-            border-color: rgba(75,183,207,0.36) !important;
-            box-shadow: 0 10px 24px rgba(0,0,0,0.28);
-        }
-        .stButton > button[kind="primary"],
-        [data-testid="stFormSubmitButton"] button[kind="primary"] {
-            color: #051016 !important;
-            border-color: rgba(111,209,143,0.38) !important;
-            background: linear-gradient(135deg, var(--green), var(--blue)) !important;
+        [data-testid="stPopover"] button:hover,
+        [data-testid="stDownloadButton"] button:hover {
+            border-color: rgba(255,92,138,0.42) !important;
         }
         .stTabs [data-baseweb="tab-list"] {
-            gap: 0.25rem;
-            padding: 0.25rem;
-            border: 1px solid rgba(164,177,196,0.14);
-            border-radius: var(--radius);
-            background: rgba(8,12,18,0.78);
-            overflow-x: auto;
+            background: rgba(9, 13, 22, 0.72) !important;
+            border-color: rgba(50,216,255,0.14) !important;
         }
         .stTabs [data-baseweb="tab"] {
-            height: 2.35rem;
-            padding: 0 0.85rem;
-            border-radius: var(--radius-sm);
-            color: var(--muted);
-            font-size: 0.78rem;
-            font-weight: 800;
-            background: transparent;
-            border: 0;
-            white-space: nowrap;
-        }
-        .stTabs [aria-selected="true"] {
-            color: var(--ink) !important;
-            background: rgba(75,183,207,0.12) !important;
-            box-shadow: inset 0 0 0 1px rgba(75,183,207,0.24);
-        }
-        .stTextInput input,
-        .stNumberInput input,
-        .stDateInput input,
-        .stTextArea textarea,
-        .stSelectbox div[data-baseweb="select"],
-        [data-baseweb="select"] {
-            min-height: 2.55rem !important;
             border-radius: var(--radius-sm) !important;
-            border: 1px solid rgba(164,177,196,0.18) !important;
-            background: rgba(6,9,14,0.92) !important;
-            color: var(--ink) !important;
-            box-shadow: none !important;
+            background: transparent !important;
         }
-        .stTextInput input:focus,
-        .stNumberInput input:focus,
-        .stDateInput input:focus,
-        .stTextArea textarea:focus {
-            border-color: rgba(75,183,207,0.42) !important;
-            box-shadow: 0 0 0 1px rgba(75,183,207,0.18) !important;
-        }
-        div[data-baseweb="popover"] ul,
-        div[role="listbox"] {
-            border-radius: var(--radius) !important;
-            background: #0b111a !important;
-        }
-        [data-testid="stRadio"] {
-            border-radius: var(--radius) !important;
-            background: rgba(8,12,18,0.70);
+        .stTabs [aria-selected="true"],
+        .stButton > button[kind="primary"] {
+            background: linear-gradient(135deg, var(--blue), var(--violet), var(--rose)) !important;
+            color: #071019 !important;
         }
         [data-testid="stPlotlyChart"] {
-            padding: 0.65rem 0.75rem;
+            padding: 0.6rem 0.75rem !important;
         }
-        .js-plotly-plot {
-            border-radius: var(--radius-sm);
+        .custom-progress-fill,
+        .phi-bar > span,
+        .phi-sidebar-progress span {
+            background: linear-gradient(90deg, var(--blue), var(--violet), var(--rose), var(--green)) !important;
         }
-        .stDataFrame,
-        [data-testid="stDataEditor"] {
-            overflow: hidden;
+        .custom-progress-track,
+        .phi-bar,
+        .phi-sidebar-progress {
+            background: rgba(154,167,184,0.12) !important;
+            border-color: rgba(50,216,255,0.12) !important;
         }
-        .stAlert {
-            border-radius: var(--radius) !important;
-            border-color: rgba(164,177,196,0.18) !important;
-            background: rgba(14,18,25,0.96) !important;
+        .phi-quiet-grid,
+        .phi-kpi-strip {
+            gap: 0.75rem !important;
+            margin-bottom: 1rem !important;
         }
         .phi-section {
-            margin: 1.15rem 0 0.65rem;
+            margin-top: 0.95rem !important;
+            border-top-color: rgba(50,216,255,0.12) !important;
         }
-        .phi-section-title {
-            font-size: 1rem;
-            letter-spacing: -0.01em;
-        }
-        .phi-section-caption,
-        .phi-caption,
-        p,
-        li,
-        label {
-            color: var(--soft);
-        }
-        .custom-progress-track {
-            height: 8px;
-            border-radius: 999px;
-            background: rgba(4,7,11,0.80);
-        }
-
-        .phi-home-hero h2 .phi-cursor {
-            color: var(--green);
-            animation: phi-blink 1s step-end infinite;
+        .js-plotly-plot .plotly .main-svg {
+            border-radius: var(--radius) !important;
         }
 
         </style>

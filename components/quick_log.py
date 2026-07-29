@@ -168,6 +168,8 @@ def _cb_remove_exercise(i: int):
 
 @st.dialog("Log Workout Session", width="large")
 def workout_dialog():
+    if "shared_log_date" not in st.session_state:
+        st.session_state["shared_log_date"] = date.today()
     _init_session()
     session = st.session_state[_SESSION_KEY]
     exs     = session["exercises"]
@@ -322,6 +324,8 @@ def workout_dialog():
 
 @st.dialog("Log meal")
 def meal_dialog():
+    if "shared_log_date" not in st.session_state:
+        st.session_state["shared_log_date"] = date.today()
     log_date = st.date_input("Date", st.session_state["shared_log_date"], key="ql_food_date")
     st.session_state["shared_log_date"] = log_date
     meal = st.radio("Meal", ["Breakfast", "Lunch", "Snack", "Dinner"], horizontal=True, key="ql_meal")
@@ -344,6 +348,8 @@ def meal_dialog():
 
 @st.dialog("Log weight")
 def weight_dialog():
+    if "shared_log_date" not in st.session_state:
+        st.session_state["shared_log_date"] = date.today()
     log_date = st.date_input("Date", st.session_state["shared_log_date"], key="ql_weight_date")
     st.session_state["shared_log_date"] = log_date
     weight = st.number_input("Weight kg", 0.0, 300.0, 80.0, step=0.1, format="%.1f", key="ql_weight_kg")
@@ -359,6 +365,8 @@ def weight_dialog():
 
 @st.dialog("Log activity")
 def steps_dialog():
+    if "shared_log_date" not in st.session_state:
+        st.session_state["shared_log_date"] = date.today()
     log_date = st.date_input("Date", st.session_state["shared_log_date"], key="ql_steps_date")
     st.session_state["shared_log_date"] = log_date
     steps    = st.number_input("Steps", 0, 100_000, 8000, step=500, key="ql_steps")
@@ -373,6 +381,8 @@ def steps_dialog():
 
 @st.dialog("Daily check-in")
 def checkin_dialog():
+    if "shared_log_date" not in st.session_state:
+        st.session_state["shared_log_date"] = date.today()
     log_date = st.date_input("Date", st.session_state["shared_log_date"], key="ql_checkin_date")
     st.session_state["shared_log_date"] = log_date
     c1, c2, c3 = st.columns(3)

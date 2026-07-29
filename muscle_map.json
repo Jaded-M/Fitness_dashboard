@@ -279,7 +279,7 @@
             "Calves"
         ],
         "stimulus_type": "legs",
-        "notes": "Hinge-dominant pattern. Eccentric hamstring stretch is the main stimulus — don't round the lower back."
+        "notes": "Hinge-dominant pattern. Eccentric hamstring stretch is the main stimulus \u2014 don't round the lower back."
     },
     "Leg Extension": {
         "primary_group": "Quads",
@@ -301,7 +301,7 @@
             "Core"
         ],
         "stimulus_type": "legs",
-        "notes": "Wide foot placement shifts load to adductors, glutes, and inner hamstrings — less quad-dominant than narrow stance."
+        "notes": "Wide foot placement shifts load to adductors, glutes, and inner hamstrings \u2014 less quad-dominant than narrow stance."
     },
     "Unilateral Lat Cable Row": {
         "primary_group": "Back",
@@ -315,5 +315,12 @@
         ],
         "stimulus_type": "pull",
         "notes": "Single-arm cable row. Allows greater range of motion and helps correct left-right imbalances."
+    },
+    "Wrist - Extension/Curls/Rotations": {
+        "primary_group": "Forearms",
+        "secondary_muscles": [],
+        "tertiary_muscles": [],
+        "stimulus_type": "unknown",
+        "notes": ""
     }
 }

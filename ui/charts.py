@@ -108,12 +108,11 @@ def render_consistency_heatmap(workout_df, key: str = "consistency_heatmap"):
     matrix = df.pivot(index="Day", columns="Week_Rank", values="counts").fillna(0)
     text_matrix = df.pivot(index="Day", columns="Week_Rank", values="Date").astype(str).replace("NaT", "")
     
-    # Custom colorscale: 0 is faint, then gradient up to bright cyan
     colors = [
-        [0.0, "rgba(255, 255, 255, 0.03)"],
-        [0.01, "rgba(86, 199, 216, 0.15)"],
-        [0.5, "rgba(86, 199, 216, 0.6)"],
-        [1.0, "rgba(86, 199, 216, 1.0)"]
+        [0.0, "rgba(154, 167, 184, 0.08)"],
+        [0.01, "rgba(50, 216, 255, 0.18)"],
+        [0.55, "rgba(181, 108, 255, 0.58)"],
+        [1.0, "rgba(64, 242, 160, 0.95)"]
     ]
     
     fig = go.Figure(data=go.Heatmap(
@@ -124,7 +123,7 @@ def render_consistency_heatmap(workout_df, key: str = "consistency_heatmap"):
         showscale=False,
         xgap=4,
         ygap=4,
-        hoverlabel=dict(bgcolor="rgba(17, 22, 29, 0.95)", bordercolor="rgba(86,199,216,0.3)", font=dict(color="#f5f1e8"))
+        hoverlabel=dict(bgcolor="rgba(12,18,31,0.96)", bordercolor="rgba(50,216,255,0.28)", font=dict(color=PHI_COLORS["ink"]))
     ))
     
     fig.update_layout(
@@ -139,7 +138,7 @@ def render_consistency_heatmap(workout_df, key: str = "consistency_heatmap"):
             autorange="reversed",
             showgrid=False,
             zeroline=False,
-            tickfont=dict(color="#a7b0ae", size=10)
+            tickfont=dict(color=PHI_COLORS["muted"], size=10)
         ),
         xaxis=dict(showgrid=False, zeroline=False, showticklabels=False)
     )
@@ -212,7 +211,9 @@ def render_progression_tab(real_df, all_exercises, key: str = "prog_ex", chart_k
         x=daily["Date"], y=daily["Volume"],
         name="Volume (kg·reps)",
         marker=dict(
-            color=daily["Volume"], colorscale="Plasma", showscale=False,
+            color=daily["Volume"],
+            colorscale=[[0, "rgba(50,216,255,0.24)"], [0.55, "rgba(181,108,255,0.55)"], [1, "rgba(255,92,138,0.86)"]],
+            showscale=False,
             line=dict(width=0),
             cornerradius=4,
             opacity=0.4,
@@ -226,8 +227,8 @@ def render_progression_tab(real_df, all_exercises, key: str = "prog_ex", chart_k
         x=daily["Date"], y=daily["Weight"],
         mode="lines+markers", name="Max Weight (kg)",
         line=dict(color=ACCENT_BLUE, width=3),
-        marker=dict(size=8, color=ACCENT_BLUE, line=dict(color="white", width=1.5)),
-        fill="tozeroy", fillcolor="rgba(0,210,255,0.06)",
+        marker=dict(size=8, color=ACCENT_BLUE, line=dict(color="rgba(246,251,255,0.75)", width=1.2)),
+        fill="tozeroy", fillcolor="rgba(50,216,255,0.08)",
         hovertemplate="<b>%{x|%d %b}</b><br>Max: %{y:.1f} kg<extra></extra>"
     ))
 
@@ -235,7 +236,7 @@ def render_progression_tab(real_df, all_exercises, key: str = "prog_ex", chart_k
     fig.add_trace(go.Scatter(
         x=daily["Date"], y=daily["E1RM"],
         mode="lines", name="Est. 1RM",
-        line=dict(color="#ffb86c", width=2, dash="dash"),
+        line=dict(color=PHI_COLORS["amber"], width=2, dash="dash"),
         hovertemplate="<b>%{x|%d %b}</b><br>E1RM: %{y:.1f} kg<extra></extra>"
     ))
 
@@ -247,7 +248,7 @@ def render_progression_tab(real_df, all_exercises, key: str = "prog_ex", chart_k
     layout.update(
         title=dict(
             text=f"📈 {chosen} — Strength × Volume Evolution",
-            font=dict(size=16, color="#f8fafc")
+            font=dict(size=16, color=PHI_COLORS["ink"])
         ),
         yaxis=dict(title="Weight / E1RM (kg)", side="left", showgrid=False),
         yaxis2=dict(
@@ -261,7 +262,7 @@ def render_progression_tab(real_df, all_exercises, key: str = "prog_ex", chart_k
         ),
         legend=dict(
             orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1,
-            bgcolor="rgba(255,255,255,0.04)", bordercolor="rgba(255,255,255,0.08)"
+            bgcolor="rgba(12,18,31,0.72)", bordercolor="rgba(50,216,255,0.16)"
         ),
         barmode="overlay",   # Bars render behind the lines
         hovermode="closest",
@@ -284,8 +285,8 @@ def render_split_volume_tab(real_df, key_prefix: str = "split_volume"):
     """
     # ── Palette: enough distinct colours for up to 8 splits ──────────────────
     _PALETTE = [
-        "#197f96", "#7469c9", "#2f9f68", "#c98a18",
-        "#ef7f82", "#b7cc7a", "#f9a87b", "#a8d8ea",
+        PHI_COLORS["blue"], PHI_COLORS["violet"], PHI_COLORS["green"], PHI_COLORS["amber"],
+        PHI_COLORS["rose"], PHI_COLORS["orange"], "#6ee7ff", "#ff9bd2",
     ]
 
     # ── 1. Session frequency per split ───────────────────────────────────────
@@ -315,14 +316,14 @@ def render_split_volume_tab(real_df, key_prefix: str = "split_volume"):
         ),
         text=split_sessions["Sessions"].apply(lambda v: f"{v} session{'s' if v != 1 else ''}"),
         textposition="outside",
-        textfont=dict(color="#68766f", size=11),
+        textfont=dict(color=PHI_COLORS["muted"], size=11),
         hovertemplate="<b>%{y}</b><br>%{x} sessions<extra></extra>",
     ))
     layout_freq = CHART_LAYOUT.copy()
     layout_freq.update(
         title=dict(
             text=f"Training Split Frequency — {total_sessions} total sessions",
-            font=dict(size=15, color="#f5f1e8"),
+            font=dict(size=15, color=PHI_COLORS["ink"]),
         ),
         xaxis=dict(title="Sessions", showgrid=False, zeroline=False),
         yaxis=dict(showgrid=False, zeroline=False),
@@ -371,14 +372,14 @@ def render_split_volume_tab(real_df, key_prefix: str = "split_volume"):
     layout_weekly.update(
         title=dict(
             text="Weekly Volume by Split — Last 8 Weeks",
-            font=dict(size=15, color="#f5f1e8"),
+            font=dict(size=15, color=PHI_COLORS["ink"]),
         ),
         barmode="group",
-        yaxis=dict(title="Volume (kg·reps)", gridcolor="rgba(148,163,184,0.12)", zeroline=False),
+        yaxis=dict(title="Volume (kg·reps)", gridcolor=PHI_COLORS["grid"], zeroline=False),
         xaxis=dict(tickangle=-20, showgrid=False, zeroline=False),
         legend=dict(
             orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1,
-            bgcolor="rgba(255,255,255,0.03)", bordercolor="rgba(255,255,255,0.08)",
+            bgcolor="rgba(12,18,31,0.72)", bordercolor="rgba(50,216,255,0.16)",
         ),
         height=380,
         margin=dict(l=10, r=10, t=72, b=50),
@@ -419,12 +420,14 @@ def render_rpg_tab(real_df, best_df, key_prefix: str = "pr"):
         fig_pr = go.Figure(go.Bar(
             x=top10["Best Weight (kg)"], y=top10["Exercise"], orientation="h",
             marker=dict(
-                color=top10["Best Weight (kg)"], colorscale="Plasma", showscale=False,
-                line=dict(color="rgba(255,255,255,0.1)", width=0.5)
+                color=top10["Best Weight (kg)"],
+                colorscale=[[0, PHI_COLORS["blue"]], [0.55, PHI_COLORS["violet"]], [1, PHI_COLORS["rose"]]],
+                showscale=False,
+                line=dict(color="rgba(246,251,255,0.16)", width=0.5)
             ),
             hovertemplate="<b>%{y}</b><br>Best: %{x:.1f} kg<extra></extra>",
             text=top10["Best Weight (kg)"].apply(lambda v: f"{v:.1f} kg"),
-            textposition="inside", insidetextanchor="middle", textfont=dict(color="white", size=11)
+            textposition="inside", insidetextanchor="middle", textfont=dict(color=PHI_COLORS["ink"], size=11)
         ))
         layout_pr = CHART_LAYOUT.copy()
         layout_pr.update(dict(

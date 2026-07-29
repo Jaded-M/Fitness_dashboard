@@ -32,6 +32,7 @@ from components.quick_log import render_quick_actions
 from core.spotify import render_spotify_widget
 from services.google_fit import sync_google_fit_data
 from services.health_data import kpi_summary, load_snapshot
+from services.phi_reports import generate_daily_report, generate_weekly_report
 from core.bca_engine import BCA_Engine
 
 
@@ -408,6 +409,11 @@ def render_hero(summary: dict, readiness: dict, streak: int, snapshot=None, wate
                 line-height: 1;
             }}
             .phi-hero-value small {{ font-size: 0.6em; color: var(--muted); }}
+            .phi-hero-card.last-session .phi-hero-value {{
+                font-size: clamp(0.95rem, 1.8vw, 1.3rem) !important;
+                font-weight: 600;
+                line-height: 1.4;
+            }}
             @media (max-width: 980px) {{
                 .phi-hero-grid {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
                 .phi-hero-grid-bottom {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
@@ -574,6 +580,20 @@ with rcol1:
     render_readiness_ring(readiness["score"], readiness.get("label", "Ready"))
 with rcol2:
     render_intelligence_card(summary, readiness, snapshot, target_weight)
+
+col1, col2 = st.columns(2)
+with col1:
+    if st.button("📋 Daily Briefing", use_container_width=True):
+        with st.spinner("Generating report..."):
+            report = generate_daily_report(summary, readiness, snapshot)
+        st.expander("Daily Briefing", expanded=True).markdown(report)
+
+with col2:
+    if st.button("📊 Weekly Report", use_container_width=True):
+        with st.spinner("Generating report..."):
+            report = generate_weekly_report(summary, readiness, snapshot)
+        st.expander("Weekly Report", expanded=True).markdown(report)
+
 render_quick_actions()
 
 st.components.v1.html(
@@ -624,7 +644,7 @@ with overview:
         render_sleep_chart(snapshot)
         render_weight_trend(snapshot)
         st.components.v1.html("""
-<canvas id="phiPong" width="440" height="420" style="width:100%;display:block;margin:0.5rem auto 0;border:1px solid rgba(51,255,51,0.15);border-radius:0;background:#000;"></canvas>
+<canvas id="phiPong" width="440" height="420" style="width:100%;display:block;margin:0.5rem auto 0;border:1px solid rgba(50,216,255,0.18);border-radius:4px;background:#0b0f1a;"></canvas>
 <script>
 (function(){var c=document.getElementById('phiPong');if(!c)return;var x=c.getContext('2d');c.width=440;c.height=420;
 var bx=220,by=210,bdx=1.6,bdy=1.0,p1y=150,p2y=150,s1=0,s2=0,bSize=6,padW=5,padH=36,speed=1.0;
@@ -637,9 +657,9 @@ if(bx<0){s2++;bx=220;by=210;bdx=1.6;bdy=1.0;speed=1.0}
 if(bx>440){s1++;bx=220;by=210;bdx=-1.6;bdy=1.0;speed=1.0}
 p1y=ai(by-18,p1y);if(p1y<0)p1y=0;if(p1y>420-padH)p1y=420-padH;
 p2y=ai(by-18,p2y);if(p2y<0)p2y=0;if(p2y>420-padH)p2y=420-padH;
-x.fillStyle='#000';x.fillRect(0,0,440,420);
-x.strokeStyle='rgba(51,255,51,0.2)';x.lineWidth=1;x.setLineDash([4,6]);x.beginPath();x.moveTo(220,0);x.lineTo(220,420);x.stroke();x.setLineDash([]);
-x.fillStyle='#33FF33';x.fillRect(2,p1y,padW,padH);x.fillRect(438-padW,p2y,padW,padH);
+x.fillStyle='#0b0f1a';x.fillRect(0,0,440,420);
+x.strokeStyle='rgba(50,216,255,0.22)';x.lineWidth=1;x.setLineDash([4,6]);x.beginPath();x.moveTo(220,0);x.lineTo(220,420);x.stroke();x.setLineDash([]);
+x.fillStyle='#32d8ff';x.fillRect(2,p1y,padW,padH);x.fillRect(438-padW,p2y,padW,padH);
 x.fillRect(bx-bSize,by-bSize,bSize*2,bSize*2);
 x.font='18px "JetBrains Mono","IBM Plex Mono",monospace';x.textAlign='center';x.fillText(s1+' : '+s2,220,28);
 requestAnimationFrame(loop)}loop()})();
