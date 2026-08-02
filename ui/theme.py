@@ -3,17 +3,19 @@
 # ============================================================
 import copy
 
+from design_tokens import *
+
 PHI_COLORS = {
-    "blue": "#32d8ff",
-    "green": "#40f2a0",
-    "amber": "#ffd166",
-    "rose": "#ff5c8a",
-    "violet": "#b56cff",
-    "olive": "#78d86f",
-    "orange": "#ff8a3d",
-    "muted": "#9aa7b8",
-    "ink": "#f6fbff",
-    "grid": "rgba(50, 216, 255, 0.12)",
+    "blue": PRIMARY,
+    "green": PRIMARY_GLOW,
+    "amber": AMBER,
+    "rose": ROSE,
+    "violet": PRIMARY_FAINT,
+    "olive": CHART_SECONDARY,
+    "orange": STATUS_WARN,
+    "muted": PRIMARY_DIM,
+    "ink": PRIMARY,
+    "grid": BORDER_FAINT,
 }
 
 CHART_CONFIG = {
@@ -24,15 +26,13 @@ CHART_CONFIG = {
 }
 
 CHART_LAYOUT = dict(
-    paper_bgcolor='rgba(0,0,0,0)',
-    plot_bgcolor='rgba(0,0,0,0)',
-    font=dict(family='Inter, Space Grotesk, sans-serif', color=PHI_COLORS["muted"], size=12),
+    font=dict(family=FONT_MONO, color=PHI_COLORS["muted"], size=12),
     margin=dict(l=20, r=20, t=44, b=34),
     xaxis=dict(
         showgrid=False, 
         zeroline=False, 
         showline=False, 
-        tickcolor='rgba(50, 216, 255, 0.18)',
+        tickcolor=PRIMARY_GHOST,
         title_font=dict(size=12, color=PHI_COLORS["muted"]),
         tickfont=dict(size=11, color=PHI_COLORS["muted"])
     ),
@@ -41,16 +41,16 @@ CHART_LAYOUT = dict(
         gridcolor=PHI_COLORS["grid"], 
         zeroline=False, 
         showline=False, 
-        tickcolor='rgba(50, 216, 255, 0.18)',
+        tickcolor=PRIMARY_GHOST,
         title_font=dict(size=12, color=PHI_COLORS["muted"]),
         tickfont=dict(size=11, color=PHI_COLORS["muted"])
     ),
     hovermode='x unified',
     hoverlabel=dict(
-        bgcolor='rgba(12, 18, 31, 0.96)',
-        bordercolor='rgba(50,216,255,0.28)',
+        bgcolor=PANEL,
+        bordercolor=PRIMARY_FAINT,
         font_size=13, 
-        font_family='Inter, Space Grotesk, sans-serif',
+        font_family=FONT_MONO,
         font_color=PHI_COLORS["ink"]
     ),
     colorway=[
@@ -68,8 +68,8 @@ CHART_LAYOUT = dict(
         y=1.02,
         xanchor="right",
         x=1,
-        bgcolor="rgba(12,18,31,0.72)",
-        bordercolor="rgba(50,216,255,0.16)",
+        bgcolor=PANEL,
+        bordercolor=PRIMARY_GHOST,
         font=dict(size=11, color=PHI_COLORS["muted"])
     )
 )
@@ -89,5 +89,5 @@ def chart_layout(**overrides):
 CYAN = PHI_COLORS["blue"]
 PURPLE = PHI_COLORS["violet"]
 PINK = PHI_COLORS["rose"]
-SURFACE = "#11161d"
+SURFACE = PANEL
 RED = PHI_COLORS["rose"]
