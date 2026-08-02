@@ -56,7 +56,7 @@ st.markdown(
     <link rel="manifest" href="/app/static/manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#008fb3">
+    <meta name="theme-color" content="#33FF33">
     """,
     unsafe_allow_html=True
 )
@@ -382,7 +382,7 @@ def render_hero(summary: dict, readiness: dict, streak: int, snapshot=None, wate
             }}
             .phi-hero-card {{
                 padding: 1.1rem 1.25rem;
-                border: 1px solid rgba(0, 204, 136, 0.10);
+                border: 1px solid rgba(51, 255, 51, 0.10);
                 border-radius: var(--radius);
                 background: var(--panel-2);
             }}
@@ -501,7 +501,7 @@ def render_intelligence_card(
             .phi-intel-card {{
                 margin: 0 0 1.25rem;
                 padding: 1rem 1.4rem;
-                border: 1px solid rgba(0, 204, 136, 0.15);
+                border: 1px solid rgba(51, 255, 51, 0.15);
                 border-left: 3px solid var(--green);
                 background: var(--panel);
                 font-family: 'JetBrains Mono', 'Fira Code', monospace;
@@ -520,7 +520,7 @@ def render_intelligence_card(
                 align-items: baseline;
                 gap: 1rem;
                 padding: 0.35rem 0;
-                border-top: 1px solid rgba(0, 204, 136, 0.07);
+                border-top: 1px solid rgba(51, 255, 51, 0.07);
                 line-height: 1.45;
             }}
             .phi-intel-row:first-of-type {{ border-top: none; }}
@@ -644,7 +644,7 @@ with overview:
         render_sleep_chart(snapshot)
         render_weight_trend(snapshot)
         st.components.v1.html("""
-<canvas id="phiPong" width="440" height="420" style="width:100%;display:block;margin:0.5rem auto 0;border:1px solid rgba(50,216,255,0.18);border-radius:4px;background:#0b0f1a;"></canvas>
+<canvas id="phiPong" width="440" height="420" style="width:100%;display:block;margin:0.5rem auto 0;border:1px solid rgba(51,255,51,0.18);border-radius:4px;background:#0a0d0a;"></canvas>
 <script>
 (function(){var c=document.getElementById('phiPong');if(!c)return;var x=c.getContext('2d');c.width=440;c.height=420;
 var bx=220,by=210,bdx=1.6,bdy=1.0,p1y=150,p2y=150,s1=0,s2=0,bSize=6,padW=5,padH=36,speed=1.0;
@@ -657,9 +657,9 @@ if(bx<0){s2++;bx=220;by=210;bdx=1.6;bdy=1.0;speed=1.0}
 if(bx>440){s1++;bx=220;by=210;bdx=-1.6;bdy=1.0;speed=1.0}
 p1y=ai(by-18,p1y);if(p1y<0)p1y=0;if(p1y>420-padH)p1y=420-padH;
 p2y=ai(by-18,p2y);if(p2y<0)p2y=0;if(p2y>420-padH)p2y=420-padH;
-x.fillStyle='#0b0f1a';x.fillRect(0,0,440,420);
-x.strokeStyle='rgba(50,216,255,0.22)';x.lineWidth=1;x.setLineDash([4,6]);x.beginPath();x.moveTo(220,0);x.lineTo(220,420);x.stroke();x.setLineDash([]);
-x.fillStyle='#32d8ff';x.fillRect(2,p1y,padW,padH);x.fillRect(438-padW,p2y,padW,padH);
+x.fillStyle='#0a0d0a';x.fillRect(0,0,440,420);
+x.strokeStyle='rgba(51,255,51,0.22)';x.lineWidth=1;x.setLineDash([4,6]);x.beginPath();x.moveTo(220,0);x.lineTo(220,420);x.stroke();x.setLineDash([]);
+x.fillStyle='#33FF33';x.fillRect(2,p1y,padW,padH);x.fillRect(438-padW,p2y,padW,padH);
 x.fillRect(bx-bSize,by-bSize,bSize*2,bSize*2);
 x.font='18px "JetBrains Mono","IBM Plex Mono",monospace';x.textAlign='center';x.fillText(s1+' : '+s2,220,28);
 requestAnimationFrame(loop)}loop()})();

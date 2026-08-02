@@ -17,7 +17,7 @@ def render_readiness_ring(score: int, label: str) -> None:
     stroke_w = 7
     circumference = 2 * math.pi * radius
     dash_offset = circumference * (1 - clipped / 100)
-    glow = "rgba(50,216,255,0.34)"
+    glow = "rgba(51,255,51,0.34)"
 
     ticks = "".join(
         f'<line x1="{center}" y1="4" x2="{center}" y2="10" transform="rotate({a}, {center}, {center})"/>'
@@ -43,21 +43,21 @@ def render_readiness_ring(score: int, label: str) -> None:
 </feMerge>
 </filter>
 </defs>
-<circle cx="{center}" cy="{center}" r="72" fill="#0b0f1a" stroke="rgba(50,216,255,0.12)" stroke-width="1"/>
+<circle cx="{center}" cy="{center}" r="72" fill="#0a0d0a" stroke="rgba(51,255,51,0.12)" stroke-width="1"/>
 {scanlines_str}
-<g stroke="rgba(50,216,255,0.24)" stroke-width="1">
+<g stroke="rgba(51,255,51,0.24)" stroke-width="1">
 {ticks}
 </g>
-<circle cx="{center}" cy="{center}" r="68" fill="none" stroke="#b56cff" stroke-width="0.5" opacity="0.34"/>
-<circle cx="{center}" cy="{center}" r="{radius}" fill="none" stroke="#111827" stroke-width="{stroke_w}"/>
-<circle cx="{center}" cy="{center}" r="{radius}" fill="none" stroke="#32d8ff" stroke-width="{stroke_w}" stroke-dasharray="{circumference}" stroke-dashoffset="{dash_offset}" stroke-linecap="square" filter="url(#phiPhosGlow)" style="transform-origin: 50% 50%; transform: rotate(-90deg);"/>
-<circle cx="{center}" cy="{center}" r="{radius - stroke_w - 2}" fill="#0b0f1a"/>
-<text x="{center}" y="{center - 7}" text-anchor="middle" dominant-baseline="central" fill="#f6fbff" font-size="32" font-weight="700" font-family="'JetBrains Mono', 'IBM Plex Mono', monospace">{score}</text>
-<text x="{center}" y="{center + 15}" text-anchor="middle" dominant-baseline="central" fill="#32d8ff" font-size="7" font-weight="700" font-family="'JetBrains Mono', 'IBM Plex Mono', monospace" letter-spacing="0.2em" opacity="0.65">READINESS</text>
+<circle cx="{center}" cy="{center}" r="68" fill="none" stroke="#33FF33" stroke-width="0.5" opacity="0.34"/>
+<circle cx="{center}" cy="{center}" r="{radius}" fill="none" stroke="#0d110d" stroke-width="{stroke_w}"/>
+<circle cx="{center}" cy="{center}" r="{radius}" fill="none" stroke="#33FF33" stroke-width="{stroke_w}" stroke-dasharray="{circumference}" stroke-dashoffset="{dash_offset}" stroke-linecap="square" filter="url(#phiPhosGlow)" style="transform-origin: 50% 50%; transform: rotate(-90deg);"/>
+<circle cx="{center}" cy="{center}" r="{radius - stroke_w - 2}" fill="#0a0d0a"/>
+<text x="{center}" y="{center - 7}" text-anchor="middle" dominant-baseline="central" fill="#33FF33" font-size="32" font-weight="700" font-family="'JetBrains Mono', 'IBM Plex Mono', monospace">{score}</text>
+<text x="{center}" y="{center + 15}" text-anchor="middle" dominant-baseline="central" fill="#33FF33" font-size="7" font-weight="700" font-family="'JetBrains Mono', 'IBM Plex Mono', monospace" letter-spacing="0.2em" opacity="0.65">READINESS</text>
 </svg>
 <div>
 <div class="phi-label">Today's status</div>
-<div class="phi-ring-label" style="font-family:'JetBrains Mono','IBM Plex Mono',monospace;color:#32d8ff;">{label}</div>
+<div class="phi-ring-label" style="font-family:'JetBrains Mono','IBM Plex Mono',monospace;color:#33FF33;">{label}</div>
 </div>
 </div>"""
     st.markdown(html, unsafe_allow_html=True)
