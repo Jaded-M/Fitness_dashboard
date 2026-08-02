@@ -20,14 +20,13 @@ import pandas as pd
 import datetime
 import plotly.graph_objects as go
 from core.bca_engine import BCA_Engine
-from ui.theme import CHART_CONFIG, PHI_COLORS, chart_layout as cl_fn
+from design_tokens import *
 from utils import get_day_stats
 
 # Keep the cl() helper signature that this file already uses
 def cl(**overrides):
     """Shorthand: merge BASE_LAYOUT with overrides."""
-    return cl_fn(**overrides)
-
+    return plotly_layout(**overrides)
 
 def render_weekly_trends(food_df, tf_days, cal_goal):
     if food_df.empty:
@@ -43,31 +42,31 @@ def render_weekly_trends(food_df, tf_days, cal_goal):
     daily_cal["Date"] = pd.to_datetime(daily_cal["Date"])
 
     bar_colors = [
-        PHI_COLORS["green"] if c <= cal_goal else PHI_COLORS["rose"]
+        STATUS_GOOD if c <= cal_goal else ROSE
         for c in daily_cal["Calories"]
     ]
 
     fig_cal = go.Figure(go.Bar(
         x=daily_cal["Date"], y=daily_cal["Calories"],
-        marker=dict(color=bar_colors, line=dict(color="rgba(255,255,255,0.1)", width=0.5)),
+        marker=dict(color=bar_colors, line=dict(color=PRIMARY_GHOST, width=0.5)),
         hovertemplate="<b>%{x|%d %b}</b><br>Calories: %{y:,} kcal<extra></extra>"
     ))
     
     fig_cal.add_hline(
-        y=cal_goal, line_dash="dot", line_color=PHI_COLORS["amber"],
-        annotation_text="Daily goal", annotation_font_color=PHI_COLORS["amber"]
+        y=cal_goal, line_dash="dot", line_color=AMBER,
+        annotation_text="Daily goal", annotation_font_color=AMBER
     )
     
     if len(daily_cal) > 0:
         avg_cal = daily_cal["Calories"].mean()
         fig_cal.add_hline(
-            y=avg_cal, line_dash="dash", line_color=PHI_COLORS["blue"],
-            annotation_text=f"Average {int(avg_cal)}", annotation_font_color=PHI_COLORS["blue"]
+            y=avg_cal, line_dash="dash", line_color=PRIMARY,
+            annotation_text=f"Average {int(avg_cal)}", annotation_font_color=PRIMARY
         )
     
     chart_title = f"Calorie intake - last {tf_days} days" if tf_days < 9999 else "Calorie intake - all time"
-    fig_cal.update_layout(**cl(title=dict(text=chart_title, font=dict(size=16, color=PHI_COLORS["blue"])), yaxis_title="Calories (kcal)"))
-    st.plotly_chart(fig_cal, use_container_width=True, config=CHART_CONFIG)
+    fig_cal.update_layout(**cl(title=dict(text=chart_title, font=dict(size=16, color=PRIMARY)), yaxis_title="Calories (kcal)"))
+    st.plotly_chart(fig_cal, use_container_width=True)
 
     # ── Protein Trend ──
     daily_p = last_7.groupby(last_7["date"].dt.date)["protein"].sum().reset_index()
@@ -78,14 +77,14 @@ def render_weekly_trends(food_df, tf_days, cal_goal):
     fig_prot.add_trace(go.Scatter(
         x=daily_p["Date"], y=daily_p["Protein"],
         mode="lines+markers", name="Protein",
-        line=dict(color=PHI_COLORS["green"], width=3),
-        marker=dict(size=8, color=PHI_COLORS["green"], line=dict(color="rgba(23,32,28,0.20)", width=1.2)),
-        fill="tozeroy", fillcolor="rgba(47,159,104,0.10)",
+        line=dict(color=STATUS_GOOD, width=3),
+        marker=dict(size=8, color=STATUS_GOOD, line=dict(color=BG, width=1.2)),
+        fill="tozeroy", fillcolor=PRIMARY_GHOST,
         hovertemplate="<b>%{x|%d %b}</b><br>Protein: %{y}g<extra></extra>"
     ))
     chart_title_prot = f"Protein intake - last {tf_days} days" if tf_days < 9999 else "Protein intake - all time"
-    fig_prot.update_layout(**cl(title=dict(text=chart_title_prot, font=dict(size=16, color=PHI_COLORS["green"])), yaxis_title="Protein (g)"))
-    st.plotly_chart(fig_prot, use_container_width=True, config=CHART_CONFIG)
+    fig_prot.update_layout(**cl(title=dict(text=chart_title_prot, font=dict(size=16, color=STATUS_GOOD)), yaxis_title="Protein (g)"))
+    st.plotly_chart(fig_prot, use_container_width=True)
 
 
 def render_day_breakdown(food_df, cal_goal, MACRO_SPLIT_PROTEIN, MACRO_SPLIT_CARBS, MACRO_SPLIT_FATS):
@@ -153,22 +152,22 @@ def render_day_breakdown(food_df, cal_goal, MACRO_SPLIT_PROTEIN, MACRO_SPLIT_CAR
     fig_gauge = go.Figure(go.Indicator(
         mode="gauge+number+delta",
         value=s_cal,
-        delta={"reference": cal_goal, "decreasing": {"color": PHI_COLORS["green"]}, "increasing": {"color": PHI_COLORS["rose"]}},
-        title={"text": f"Calories - {selected_day.strftime('%d %b %Y')}", "font": {"color": PHI_COLORS["ink"]}},
+        delta={"reference": cal_goal, "decreasing": {"color": STATUS_GOOD}, "increasing": {"color": ROSE}},
+        title={"text": f"Calories - {selected_day.strftime('%d %b %Y')}", "font": {"color": PRIMARY}},
         gauge={
-            "axis": {"range": [0, cal_goal * 1.5], "tickcolor": "#94a3b8"},
-            "bar":  {"color": PHI_COLORS["blue"]},
+            "axis": {"range": [0, cal_goal * 1.5], "tickcolor": PRIMARY_DIM},
+            "bar":  {"color": PRIMARY},
             "steps": [
-                {"range": [0, cal_goal * 0.75], "color": "rgba(94,226,160,0.15)"},
-                {"range": [cal_goal * 0.75, cal_goal], "color": "rgba(86,199,216,0.15)"},
-                {"range": [cal_goal, cal_goal * 1.5], "color": "rgba(255,107,122,0.15)"},
+                {"range": [0, cal_goal * 0.75], "color": PRIMARY_GHOST},
+                {"range": [cal_goal * 0.75, cal_goal], "color": PRIMARY_GHOST},
+                {"range": [cal_goal, cal_goal * 1.5], "color": PRIMARY_GHOST},
             ],
-            "threshold": {"line": {"color": PHI_COLORS["amber"], "width": 3}, "value": cal_goal}
+            "threshold": {"line": {"color": AMBER, "width": 3}, "value": cal_goal}
         },
-        number={"suffix": " kcal", "font": {"color": PHI_COLORS["ink"]}}
+        number={"suffix": " kcal", "font": {"color": PRIMARY}}
     ))
     fig_gauge.update_layout(**cl(height=400, margin=dict(t=30, b=15, l=40, r=35), hovermode=False))
-    st.plotly_chart(fig_gauge, use_container_width=True, config=CHART_CONFIG)
+    st.plotly_chart(fig_gauge, use_container_width=True)
 
     gc1, gc2 = st.columns(2)
     with gc1:
@@ -176,25 +175,25 @@ def render_day_breakdown(food_df, cal_goal, MACRO_SPLIT_PROTEIN, MACRO_SPLIT_CAR
             labels=["Protein", "Carbs", "Fats"],
             values=[s_prot, s_carb, s_fat],
             hole=0.5,
-            marker=dict(colors=[PHI_COLORS["green"], PHI_COLORS["blue"], PHI_COLORS["amber"]], line=dict(color="rgba(23,32,28,0.10)", width=2)),
+            marker=dict(colors=[STATUS_GOOD, PRIMARY, AMBER], line=dict(color=BG, width=2)),
             hovertemplate="<b>%{label}</b>: %{value}g (%{percent})<extra></extra>", textinfo="label+percent"
         ))
         fig_donut.update_layout(**cl(height=280, margin=dict(t=40, b=10, l=10, r=10), hovermode=False,
-            title=dict(text="Consumed macro split", font=dict(size=14, color=PHI_COLORS["amber"])),
-            annotations=[dict(text=f"<b>{s_cal}</b><br>kcal", x=0.5, y=0.5, font_size=13, showarrow=False, font=dict(color=PHI_COLORS["ink"]))]
+            title=dict(text="Consumed macro split", font=dict(size=14, color=AMBER)),
+            annotations=[dict(text=f"<b>{s_cal}</b><br>kcal", x=0.5, y=0.5, font_size=13, showarrow=False, font=dict(color=PRIMARY))]
         ))
-        st.plotly_chart(fig_donut, use_container_width=True, config=CHART_CONFIG)
+        st.plotly_chart(fig_donut, use_container_width=True)
         
     with gc2:
         meal_split = day_df.groupby("meal_type")["calories"].sum().reset_index()
         meal_split.columns = ["Meal", "Calories"]
         fig_meal = go.Figure(go.Bar(
             x=meal_split["Calories"], y=meal_split["Meal"], orientation="h",
-            marker=dict(color=PHI_COLORS["blue"], line=dict(color="rgba(23,32,28,0.1)", width=0.5)),
-            text=meal_split["Calories"].apply(lambda v: f"{v} kcal"), textposition="inside", textfont=dict(color="#ffffff")
+            marker=dict(color=PRIMARY, line=dict(color=BG, width=0.5)),
+            text=meal_split["Calories"].apply(lambda v: f"{v} kcal"), textposition="inside", textfont=dict(color=PRIMARY)
         ))
-        fig_meal.update_layout(**cl(height=280, margin=dict(t=40, b=10, l=10, r=10), hovermode="y unified", title=dict(text="By meal", font=dict(size=14, color=PHI_COLORS["blue"])), xaxis_title="kcal"))
-        st.plotly_chart(fig_meal, use_container_width=True, config=CHART_CONFIG)
+        fig_meal.update_layout(**cl(height=280, margin=dict(t=40, b=10, l=10, r=10), hovermode="y unified", title=dict(text="By meal", font=dict(size=14, color=PRIMARY)), xaxis_title="kcal"))
+        st.plotly_chart(fig_meal, use_container_width=True)
 
     st.markdown("##### Food Log")
     show_cols = ["food_item", "calories", "protein", "carbs", "fats", "fiber", "meal_type"]
@@ -216,9 +215,9 @@ def render_body_progress(physical_df, tf_days):
     fig_w.add_trace(go.Scatter(
         x=phys["Date"], y=phys["Weight"],
         mode="lines+markers", name="Weight (kg)",
-        line=dict(color=PHI_COLORS["blue"], width=3),
-        marker=dict(size=9, color=PHI_COLORS["blue"], line=dict(color="rgba(23,32,28,0.20)", width=1.2)),
-        fill="tozeroy", fillcolor="rgba(25,127,150,0.09)",
+        line=dict(color=PRIMARY, width=3),
+        marker=dict(size=9, color=PRIMARY, line=dict(color=BG, width=1.2)),
+        fill="tozeroy", fillcolor=PRIMARY_GHOST,
         hovertemplate="<b>%{x|%d %b %Y}</b><br>%{y:.1f} kg<extra></extra>"
     ))
     
@@ -228,12 +227,12 @@ def render_body_progress(physical_df, tf_days):
             x=phys["Date"].iloc[-1], y=phys["Weight"].iloc[-1],
             text=(f"{'down' if delta <= 0 else 'up'} {abs(delta):.1f} kg {'lost' if delta <= 0 else 'gained'}"),
             showarrow=True, arrowhead=2,
-            font=dict(color=PHI_COLORS["green"] if delta <= 0 else PHI_COLORS["rose"], size=12),
-            bgcolor="rgba(255,255,255,0.92)", borderpad=4
+            font=dict(color=STATUS_GOOD if delta <= 0 else ROSE, size=12),
+            bgcolor=PANEL, borderpad=4
         )
         
-    fig_w.update_layout(**cl(title=dict(text="Weight trend", font=dict(size=16, color=PHI_COLORS["blue"])), yaxis_title="Weight (kg)"))
-    st.plotly_chart(fig_w, use_container_width=True, config=CHART_CONFIG)
+    fig_w.update_layout(**cl(title=dict(text="Weight trend", font=dict(size=16, color=PRIMARY)), yaxis_title="Weight (kg)"))
+    st.plotly_chart(fig_w, use_container_width=True)
 
     def render_measurement_chart(measurement, color, emoji):
         if measurement not in phys.columns: return
@@ -244,18 +243,18 @@ def render_body_progress(physical_df, tf_days):
                 x=m_data["Date"], y=m_data[measurement],
                 mode="lines+markers", name=f"{measurement} (in)",
                 line=dict(color=color, width=3),
-                marker=dict(size=9, color=color, line=dict(color="rgba(255,255,255,0.55)", width=1.2)),
-                fill="tozeroy", fillcolor=color.replace(")", ",0.07)").replace("rgb", "rgba"),
+                marker=dict(size=9, color=color, line=dict(color=PRIMARY_GHOST, width=1.2)),
+                fill="tozeroy", fillcolor=PRIMARY_GHOST,
                 hovertemplate="<b>%{x|%d %b %Y}</b><br>%{y:.1f} in<extra></extra>"
             ))
             fig.update_layout(**cl(title=dict(text=f"{measurement} trend", font=dict(size=16, color=color)), yaxis_title=f"{measurement} (inches)"))
-            st.plotly_chart(fig, use_container_width=True, config=CHART_CONFIG)
+            st.plotly_chart(fig, use_container_width=True)
 
-    render_measurement_chart("Waist", PHI_COLORS["rose"], "")
-    render_measurement_chart("Hips", "#b9a7ff", "")
-    render_measurement_chart("Thigh", PHI_COLORS["amber"], "")
-    render_measurement_chart("Chest", PHI_COLORS["green"], "")
-    render_measurement_chart("Arms", PHI_COLORS["blue"], "")
+    render_measurement_chart("Waist", ROSE, "")
+    render_measurement_chart("Hips", PRIMARY_FAINT, "")
+    render_measurement_chart("Thigh", AMBER, "")
+    render_measurement_chart("Chest", STATUS_GOOD, "")
+    render_measurement_chart("Arms", PRIMARY, "")
 
     st.markdown("##### All Measurements")
     disp = phys.copy()
@@ -274,15 +273,15 @@ def render_macro_history(food_df, water_df_raw, tf_days, water_goal):
         m_daily["Date"] = pd.to_datetime(m_daily["Date"])
 
         fig_stack = go.Figure()
-        macro_colors = {"Protein": PHI_COLORS["green"], "Carbs": PHI_COLORS["blue"], "Fats": PHI_COLORS["amber"], "Fiber": PHI_COLORS["violet"]}
+        macro_colors = {"Protein": STATUS_GOOD, "Carbs": PRIMARY, "Fats": AMBER, "Fiber": PRIMARY_FAINT}
         for macro, color in macro_colors.items():
             fig_stack.add_trace(go.Bar(
                 x=m_daily["Date"], y=m_daily[macro], name=macro, marker_color=color,
                 hovertemplate=f"<b>%{{x|%d %b}}</b><br>{macro}: %{{y}}g<extra></extra>"
             ))
         chart_title_stack = f"Daily macros - last {tf_days} days" if tf_days < 9999 else "Daily macros - all time"
-        fig_stack.update_layout(**cl(barmode="stack", title=dict(text=chart_title_stack, font=dict(size=16, color=PHI_COLORS["amber"])), yaxis_title="Grams (g)"))
-        st.plotly_chart(fig_stack, use_container_width=True, config=CHART_CONFIG)
+        fig_stack.update_layout(**cl(barmode="stack", title=dict(text=chart_title_stack, font=dict(size=16, color=AMBER)), yaxis_title="Grams (g)"))
+        st.plotly_chart(fig_stack, use_container_width=True)
 
     # Hydration history
     if not water_df_raw.empty:
@@ -296,13 +295,13 @@ def render_macro_history(food_df, water_df_raw, tf_days, water_goal):
 
         fig_water = go.Figure(go.Bar(
             x=wh_7["Date"], y=wh_7["Cups"],
-            marker=dict(color=PHI_COLORS["blue"], line=dict(color="rgba(23,32,28,0.1)", width=0.5)),
+            marker=dict(color=PRIMARY, line=dict(color=BG, width=0.5)),
             hovertemplate="<b>%{x|%d %b}</b><br>Cups: %{y}<extra></extra>"
         ))
-        fig_water.add_hline(y=water_goal, line_dash="dot", line_color=PHI_COLORS["blue"], annotation_text="Daily goal", annotation_font_color=PHI_COLORS["blue"])
+        fig_water.add_hline(y=water_goal, line_dash="dot", line_color=PRIMARY, annotation_text="Daily goal", annotation_font_color=PRIMARY)
         chart_title_water = f"Hydration - last {tf_days} days" if tf_days < 9999 else "Hydration - all time"
-        fig_water.update_layout(**cl(title=dict(text=chart_title_water, font=dict(size=16, color=PHI_COLORS["blue"])), yaxis_title="Cups"))
-        st.plotly_chart(fig_water, use_container_width=True, config=CHART_CONFIG)
+        fig_water.update_layout(**cl(title=dict(text=chart_title_water, font=dict(size=16, color=PRIMARY)), yaxis_title="Cups"))
+        st.plotly_chart(fig_water, use_container_width=True)
     elif food_df.empty and water_df_raw.empty:
         st.info("Log food and water to see history charts.")
 
@@ -319,14 +318,14 @@ def render_bca_engine(latest_weight: float) -> None:
     from core.bca_engine import BCA_Engine, ACTIVITY_MULTIPLIERS
 
     st.markdown(
-        """
+        f"""
         <div style="margin-bottom:1.1rem;">
-            <div style="color:var(--muted);font-size:0.72rem;font-weight:700;
+            <div style="color:{PRIMARY_DIM};font-size:0.72rem;font-weight:700;
                         letter-spacing:0.08em;text-transform:uppercase;
                         margin-bottom:0.3rem;">Biological Engine</div>
-            <div style="color:#f5f1e8;font-size:1.05rem;font-weight:700;
+            <div style="color:{PRIMARY};font-size:1.05rem;font-weight:700;
                         margin-bottom:0.25rem;">Precision Metabolic Calculator</div>
-            <div style="color:var(--muted);font-size:0.85rem;">
+            <div style="color:{PRIMARY_DIM};font-size:0.85rem;">
                 Katch-McArdle BMR blended with Mifflin-St Jeor when profile data
                 is provided. All figures update in real time.
             </div>
@@ -426,34 +425,34 @@ def render_bca_engine(latest_weight: float) -> None:
     # ── KPI row 2: macro targets ──────────────────────────────────────────────
     st.markdown(
         f"""
-        <div style="background:var(--panel);border:1px solid var(--line);
+        <div style="background:{PANEL};border:1px solid {BORDER_FAINT};
                     border-radius:10px;padding:1rem;margin:0.75rem 0;">
-            <div style="color:var(--muted);font-size:0.72rem;font-weight:700;
+            <div style="color:{PRIMARY_DIM};font-size:0.72rem;font-weight:700;
                         letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.6rem;">
                 Precision macro targets - {goal.capitalize()} phase
                 &nbsp;/&nbsp; {targets['target_calories']:,} kcal/day
             </div>
             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;">
                 <div>
-                    <div style="color:var(--muted);font-size:0.72rem;font-weight:700;
+                    <div style="color:{PRIMARY_DIM};font-size:0.72rem;font-weight:700;
                                 letter-spacing:0.06em;text-transform:uppercase;">Protein</div>
-                    <div style="color:var(--green);font-size:1.6rem;font-weight:800;
+                    <div style="color:{STATUS_GOOD};font-size:1.6rem;font-weight:800;
                                 margin:0.3rem 0 0.1rem;">{targets['protein_g']}g</div>
-                    <div style="color:var(--muted);font-size:0.8rem;">Preserve muscle</div>
+                    <div style="color:{PRIMARY_DIM};font-size:0.8rem;">Preserve muscle</div>
                 </div>
                 <div>
-                    <div style="color:var(--muted);font-size:0.72rem;font-weight:700;
+                    <div style="color:{PRIMARY_DIM};font-size:0.72rem;font-weight:700;
                                 letter-spacing:0.06em;text-transform:uppercase;">Fats</div>
-                    <div style="color:var(--amber);font-size:1.6rem;font-weight:800;
+                    <div style="color:{AMBER};font-size:1.6rem;font-weight:800;
                                 margin:0.3rem 0 0.1rem;">{targets['fat_g']}g</div>
-                    <div style="color:var(--muted);font-size:0.8rem;">Hormone health</div>
+                    <div style="color:{PRIMARY_DIM};font-size:0.8rem;">Hormone health</div>
                 </div>
                 <div>
-                    <div style="color:var(--muted);font-size:0.72rem;font-weight:700;
+                    <div style="color:{PRIMARY_DIM};font-size:0.72rem;font-weight:700;
                                 letter-spacing:0.06em;text-transform:uppercase;">Carbs</div>
-                    <div style="color:var(--blue);font-size:1.6rem;font-weight:800;
+                    <div style="color:{PRIMARY};font-size:1.6rem;font-weight:800;
                                 margin:0.3rem 0 0.1rem;">{targets['carbs_g']}g</div>
-                    <div style="color:var(--muted);font-size:0.8rem;">Workout fuel</div>
+                    <div style="color:{PRIMARY_DIM};font-size:0.8rem;">Workout fuel</div>
                 </div>
             </div>
         </div>
@@ -489,16 +488,16 @@ def render_bca_engine(latest_weight: float) -> None:
             y=projection_weights,
             mode="lines",
             name="Projection",
-            line=dict(color="#e5b35d", width=3, dash="dash"),
+            line=dict(color=AMBER, width=3, dash="dash"),
             fill="tozeroy",
-            fillcolor="rgba(229,179,93,0.05)",
+            fillcolor=PRIMARY_GHOST,
             hovertemplate="<b>%{x|%d %b %Y}</b><br>Est. weight: %{y:.1f} kg<extra></extra>",
         ))
         fig_proj.add_hline(
             y=target_wt,
-            line_dash="dot", line_color=PHI_COLORS["blue"], line_width=1.5,
+            line_dash="dot", line_color=PRIMARY, line_width=1.5,
             annotation_text=f"Target {target_wt} kg",
-            annotation_font_color=PHI_COLORS["blue"], annotation_font_size=11,
+            annotation_font_color=PRIMARY, annotation_font_size=11,
         )
         fig_proj.update_layout(**cl(
             title=f"Scientific weight projection - {goal.capitalize()} phase",
@@ -506,7 +505,7 @@ def render_bca_engine(latest_weight: float) -> None:
             height=320,
             margin=dict(t=45, b=20, l=10, r=10),
         ))
-        st.plotly_chart(fig_proj, use_container_width=True, config=CHART_CONFIG)
+        st.plotly_chart(fig_proj, use_container_width=True)
     elif goal == "maintenance":
         st.info("Maintenance mode selected - no weight projection needed.")
     else:
