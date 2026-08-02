@@ -22,7 +22,7 @@ from services.health_data import (
 )
 import database
 from core.muscle_mapping import canonical_exercise_name, dedupe_exercise_names
-from ui.theme import CHART_CONFIG, PHI_COLORS, chart_layout
+from design_tokens import *
 from ui.charts import (
     render_consistency_heatmap,
     render_progression_tab,
@@ -32,7 +32,7 @@ from ui.charts import (
 
 
 def _layout(height=380):
-    return chart_layout(
+    return plotly_layout(
         height=height,
         xaxis={"tickformat": "%d %b", "title": ""},
         yaxis={"rangemode": "tozero"},
@@ -162,8 +162,8 @@ def render_recovery_matrix(snapshot: HealthSnapshot, calorie_goal: int, step_goa
         return
 
     status = status.sort_values("readiness", ascending=True)
-    color_map = {"Ready": PHI_COLORS["green"], "Manage load": PHI_COLORS["amber"], "Fatigued": PHI_COLORS["rose"]}
-    colors = [color_map.get(value, PHI_COLORS["muted"]) for value in status["status"]]
+    color_map = {"Ready": STATUS_GOOD, "Manage load": STATUS_WARN, "Fatigued": STATUS_RISK}
+    colors = [color_map.get(value, PRIMARY_DIM) for value in status["status"]]
 
     fig = make_subplots(
         rows=1,
@@ -189,7 +189,7 @@ def render_recovery_matrix(snapshot: HealthSnapshot, calorie_goal: int, step_goa
             x=status["load_7d"],
             y=status["muscle"],
             orientation="h",
-            marker_color=PHI_COLORS["blue"],
+            marker_color=PRIMARY,
             name="Load",
             hovertemplate="<b>%{y}</b><br>7-day load: %{x:,.0f}<extra></extra>",
         ),
@@ -200,15 +200,15 @@ def render_recovery_matrix(snapshot: HealthSnapshot, calorie_goal: int, step_goa
     layout.update(
         title="Recovery and load matrix",
         showlegend=False,
-        xaxis={"range": [0, 100], "title": "Readiness %", "gridcolor": PHI_COLORS["grid"], "zeroline": False},
-        xaxis2={"title": "Load", "gridcolor": PHI_COLORS["grid"], "zeroline": False},
+        xaxis={"range": [0, 100], "title": "Readiness %", "gridcolor": BORDER_FAINT, "zeroline": False},
+        xaxis2={"title": "Load", "gridcolor": BORDER_FAINT, "zeroline": False},
         yaxis={"showgrid": False, "zeroline": False},
         yaxis2={"showgrid": False, "zeroline": False, "showticklabels": False},
     )
     for ann in layout.get("annotations", []):
-        ann.update(font={"color": PHI_COLORS["muted"], "size": 11})
+        ann.update(font={"color": PRIMARY_DIM, "size": 11})
     fig.update_layout(**layout)
-    st.plotly_chart(fig, use_container_width=True, config=CHART_CONFIG, key=key)
+    st.plotly_chart(fig, use_container_width=True, key=key)
 
 
 def render_weight_chart(snapshot: HealthSnapshot, key: str = "weight_trend_chart"):
@@ -224,7 +224,7 @@ def render_weight_chart(snapshot: HealthSnapshot, key: str = "weight_trend_chart
             y=df["Weight"],
             mode="markers",
             name="Daily weight",
-            marker={"size": 8, "color": "rgba(50, 216, 255, 0.55)"},
+            marker={"size": 8, "color": PRIMARY_DIM},
             hovertemplate="%{x|%d %b}<br>%{y:.1f} kg<extra></extra>",
         )
     )
@@ -234,13 +234,13 @@ def render_weight_chart(snapshot: HealthSnapshot, key: str = "weight_trend_chart
             y=df["Trend"],
             mode="lines",
             name="Smoothed trend",
-            line={"color": PHI_COLORS["ink"], "width": 3},
+            line={"color": PRIMARY, "width": 3},
             hovertemplate="%{x|%d %b}<br>Trend %{y:.1f} kg<extra></extra>",
         )
     )
     fig.update_layout(**_layout(height=420), title="Weight trend")
     fig.update_yaxes(title_text="Weight (kg)")
-    st.plotly_chart(fig, width="stretch", config=CHART_CONFIG, key=key)
+    st.plotly_chart(fig, use_container_width=True, key=key)
 
 
 def render_nutrition_chart(snapshot: HealthSnapshot, calorie_goal: int, key: str = "nutrition_adherence_chart"):
@@ -268,7 +268,7 @@ def render_nutrition_chart(snapshot: HealthSnapshot, calorie_goal: int, key: str
 
     # ── Row 1: Calorie bars ────────────────────────────────────
     bar_colors = [
-        PHI_COLORS["green"] if on else "rgba(50,216,255,0.38)"
+        STATUS_GOOD if on else PRIMARY_GHOST
         for on in on_target
     ]
     fig.add_trace(
@@ -285,10 +285,10 @@ def render_nutrition_chart(snapshot: HealthSnapshot, calorie_goal: int, key: str
     fig.add_hline(
         y=calorie_goal,
         line_dash="dot",
-        line_color=PHI_COLORS["amber"],
+        line_color=AMBER,
         line_width=1.5,
         annotation_text=f"Goal {calorie_goal:,}",
-        annotation_font_color=PHI_COLORS["amber"],
+        annotation_font_color=AMBER,
         annotation_font_size=11,
         row=1, col=1,
     )
@@ -296,10 +296,10 @@ def render_nutrition_chart(snapshot: HealthSnapshot, calorie_goal: int, key: str
     fig.add_hline(
         y=avg_cal,
         line_dash="dash",
-        line_color="rgba(154,167,184,0.55)",
+        line_color=BORDER_FAINT,
         line_width=1,
         annotation_text=f"Avg {avg_cal:,}",
-        annotation_font_color=PHI_COLORS["muted"],
+        annotation_font_color=PRIMARY_DIM,
         annotation_font_size=10,
         row=1, col=1,
     )
@@ -311,10 +311,10 @@ def render_nutrition_chart(snapshot: HealthSnapshot, calorie_goal: int, key: str
             y=df["Protein"],
             name="Protein (g)",
             mode="lines+markers",
-            line={"color": PHI_COLORS["green"], "width": 2.5},
-            marker={"size": 6, "color": PHI_COLORS["green"]},
+            line={"color": STATUS_GOOD, "width": 2.5},
+            marker={"size": 6, "color": STATUS_GOOD},
             fill="tozeroy",
-            fillcolor="rgba(64,242,160,0.10)",
+            fillcolor=PRIMARY_GHOST,
             hovertemplate="<b>%{x|%a %d %b}</b><br>Protein: %{y}g<extra></extra>",
         ),
         row=2, col=1,
@@ -328,14 +328,14 @@ def render_nutrition_chart(snapshot: HealthSnapshot, calorie_goal: int, key: str
         legend={"orientation": "h", "y": 1.06, "x": 0, "font": {"size": 11}},
         margin={"l": 18, "r": 18, "t": 58, "b": 38},
         xaxis2={"tickformat": "%d %b", "showgrid": False, "zeroline": False},
-        yaxis={"title": "kcal", "gridcolor": PHI_COLORS["grid"], "zeroline": False},
-        yaxis2={"title": "g", "gridcolor": PHI_COLORS["grid"], "zeroline": False},
+        yaxis={"title": "kcal", "gridcolor": BORDER_FAINT, "zeroline": False},
+        yaxis2={"title": "g", "gridcolor": BORDER_FAINT, "zeroline": False},
     )
     # Subplot titles styling
     for ann in layout.get("annotations", []):
-        ann.update(font={"color": PHI_COLORS["muted"], "size": 11})
+        ann.update(font={"color": PRIMARY_DIM, "size": 11})
     fig.update_layout(**layout)
-    st.plotly_chart(fig, width="stretch", config=CHART_CONFIG, key=key)
+    st.plotly_chart(fig, use_container_width=True, key=key)
 
 
 def render_steps_chart(snapshot: HealthSnapshot, step_goal: int, key: str = "activity_trend_chart"):
@@ -347,10 +347,10 @@ def render_steps_chart(snapshot: HealthSnapshot, step_goal: int, key: str = "act
     # Three-tier colour coding
     def _step_color(s):
         if s >= step_goal:
-            return PHI_COLORS["green"]        # green — goal hit
+            return STATUS_GOOD        # green — goal hit
         elif s >= step_goal * 0.7:
-            return PHI_COLORS["blue"]        # blue - close
-        return "rgba(154,167,184,0.46)"            # slate — far off
+            return PRIMARY            # blue - close
+        return PRIMARY_DIM            # slate — far off
 
     colors = [_step_color(s) for s in df["Steps"]]
     avg_steps = int(df["Steps"].mean()) if len(df) else 0
@@ -369,62 +369,62 @@ def render_steps_chart(snapshot: HealthSnapshot, step_goal: int, key: str = "act
     fig.add_hline(
         y=step_goal,
         line_dash="dot",
-        line_color=PHI_COLORS["blue"],
+        line_color=PRIMARY,
         line_width=1.5,
         annotation_text=f"Goal {step_goal:,}",
-        annotation_font_color=PHI_COLORS["blue"],
+        annotation_font_color=PRIMARY,
         annotation_font_size=11,
     )
     # 7-day average
     fig.add_hline(
         y=avg_steps,
         line_dash="dash",
-        line_color="rgba(154,167,184,0.55)",
+        line_color=BORDER_FAINT,
         line_width=1,
         annotation_text=f"Avg {avg_steps:,}",
-        annotation_font_color=PHI_COLORS["muted"],
+        annotation_font_color=PRIMARY_DIM,
         annotation_font_size=10,
     )
     # Provide a generic fallback layout
     layout = _layout(height=400)
     layout.update(
         title="Activity breakdown",
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="transparent",
+        plot_bgcolor="transparent",
         showlegend=False,
     )
     fig.update_layout(**layout)
-    st.plotly_chart(fig, use_container_width=True, config=CHART_CONFIG, key=key)
+    st.plotly_chart(fig, use_container_width=True, key=key)
 
 
 def _get_phi_layout(title: str) -> dict:
     """Shared RGB layout for compact PHI visualisations."""
     font_stack = "Inter, Space Grotesk, sans-serif"
-    primary = PHI_COLORS["blue"]
-    dark = "rgba(0,0,0,0)"
-    grid_color = PHI_COLORS["grid"]
+    primary = PRIMARY
+    dark = "transparent"
+    grid_color = BORDER_FAINT
     
     return {
         "title": {"text": title, "font": {"color": primary, "family": font_stack, "size": 14}},
         "paper_bgcolor": dark,
         "plot_bgcolor": dark,
-        "font": {"color": PHI_COLORS["muted"], "family": font_stack},
+        "font": {"color": PRIMARY_DIM, "family": font_stack},
         "xaxis": {
             "gridcolor": grid_color,
             "zerolinecolor": grid_color,
-            "tickfont": {"color": PHI_COLORS["muted"]},
+            "tickfont": {"color": PRIMARY_DIM},
         },
         "yaxis": {
             "gridcolor": grid_color,
             "zerolinecolor": grid_color,
-            "tickfont": {"color": PHI_COLORS["muted"]},
+            "tickfont": {"color": PRIMARY_DIM},
         },
         "margin": {"l": 40, "r": 20, "t": 50, "b": 30},
     }
 
 def _add_neon_glow(fig, x, y, name, color=None, mode="lines", shape="spline"):
     """Helper to add a retro neon glow effect using layered traces."""
-    color = color or PHI_COLORS["blue"]
+    color = color or PRIMARY
     # Outer glow
     fig.add_trace(go.Scatter(x=x, y=y, mode=mode, name=name,
                              line=dict(color=color, width=8, shape=shape),
@@ -436,7 +436,7 @@ def _add_neon_glow(fig, x, y, name, color=None, mode="lines", shape="spline"):
     # Core line
     fig.add_trace(go.Scatter(x=x, y=y, mode=mode, name=name,
                              line=dict(color=color, width=1.5, shape=shape),
-                             marker=dict(size=6, color="#0b0f1a", line=dict(color=color, width=1.5)),
+                             marker=dict(size=6, color=BG, line=dict(color=color, width=1.5)),
                              opacity=1.0))
 
 def render_sleep_chart(snapshot: HealthSnapshot) -> None:
@@ -452,9 +452,9 @@ def render_sleep_chart(snapshot: HealthSnapshot) -> None:
     fig.add_trace(go.Scatter(
         x=df["date"], y=df["sleep_hours"],
         mode="lines",
-        line=dict(color="rgba(50,216,255,0)", shape="spline"),
+        line=dict(color="transparent", shape="spline"),
         fill="tozeroy",
-        fillcolor="rgba(50,216,255,0.10)",
+        fillcolor=PRIMARY_GHOST,
         showlegend=False,
         hoverinfo="skip"
     ))
@@ -478,13 +478,13 @@ def render_protein_chart(snapshot: HealthSnapshot, protein_target: int) -> None:
         x=df["date"], 
         y=df["protein"],
         marker=dict(
-            color="rgba(64,242,160,0.12)",
-            line=dict(color=PHI_COLORS["green"], width=1.5)
+            color=PRIMARY_GHOST,
+            line=dict(color=STATUS_GOOD, width=1.5)
         ),
         name="Protein"
     ))
     # Glowing target line
-    fig.add_hline(y=protein_target, line_color=PHI_COLORS["amber"], line_dash="dash", line_width=1, opacity=0.8)
+    fig.add_hline(y=protein_target, line_color=AMBER, line_dash="dash", line_width=1, opacity=0.8)
     fig.update_layout(**_get_phi_layout(f"14-Day Protein (Target: {protein_target}g)"))
     st.plotly_chart(fig, use_container_width=True)
 
@@ -518,12 +518,12 @@ def render_fiber_chart(snapshot: HealthSnapshot) -> None:
         x=df["date"], 
         y=df["fiber"],
         marker=dict(
-            color="rgba(181,108,255,0.12)",
-            line=dict(color=PHI_COLORS["violet"], width=1.5)
+            color=PRIMARY_GHOST,
+            line=dict(color=PRIMARY_FAINT, width=1.5)
         ),
         name="Fiber"
     ))
-    fig.add_hline(y=30, line_color=PHI_COLORS["amber"], line_dash="dash", line_width=1, opacity=0.8)
+    fig.add_hline(y=30, line_color=AMBER, line_dash="dash", line_width=1, opacity=0.8)
     fig.update_layout(**_get_phi_layout("14-Day Fiber Intake (Target: 30g)"))
     st.plotly_chart(fig, use_container_width=True)
 
@@ -578,9 +578,9 @@ def render_training_table(snapshot: HealthSnapshot, key: str = "training_history
 
                         st.markdown(
                             f"<span style='font-size:0.82rem;font-weight:700;"
-                            f"color:#68766f;letter-spacing:0.06em;text-transform:uppercase'>"
+                            f"color:{PRIMARY_DIM};letter-spacing:0.06em;text-transform:uppercase'>"
                             f"{exercise_name}</span>"
-                            + (f"<span style='color:#34d399;font-size:0.8rem;margin-left:8px'>"
+                            + (f"<span style='color:{STATUS_GOOD};font-size:0.8rem;margin-left:8px'>"
                                f"Top {max_w:.1f} kg</span>" if max_w else ""),
                             unsafe_allow_html=True,
                         )
@@ -591,7 +591,7 @@ def render_training_table(snapshot: HealthSnapshot, key: str = "training_history
                         )
                     else:
                         st.markdown(
-                            f"<span style='font-size:0.82rem;color:#68766f'>"
+                            f"<span style='font-size:0.82rem;color:{PRIMARY_DIM}'>"
                             f"{exercise_name} — {row['Sets']} sets × {row['Reps']} reps @ {row['Weight']} kg</span>",
                             unsafe_allow_html=True,
                         )
@@ -680,4 +680,3 @@ def render_activity_sync_panel(snapshot: HealthSnapshot, step_goal: int, sync_fn
         summary = kpi_summary(snapshot, step_goal=step_goal)
         stat_card("Average steps", f"{summary['avg_steps']:,}", "Last 7 logged days")
         stat_card("Goal hit rate", f"{summary['activity_score']}%", f"Goal {step_goal:,} steps")
-
