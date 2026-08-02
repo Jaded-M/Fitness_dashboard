@@ -21,6 +21,7 @@ from core.muscle_mapping import save_muscle_map as engine_save_muscle_map
 from core.muscle_mapping import unmapped_exercises as engine_unmapped_exercises
 from core.readiness_engine import ReadinessInputs, calculate_readiness
 from ui.theme import PHI_COLORS
+from design_tokens import *
 from supabase_client import is_authenticated
 
 st.set_page_config(page_title="Muscle Atlas Engine", layout="wide", page_icon="PHI")
@@ -284,7 +285,7 @@ if not df.empty:
             y=coverage["Exercises"],
             marker=dict(
                 color=coverage["Exercises"],
-                colorscale=[[0, "rgba(50,216,255,0.24)"], [0.55, PHI_COLORS["violet"]], [1, PHI_COLORS["green"]]],
+                colorscale=[[0, PRIMARY_GHOST], [0.55, PRIMARY_FAINT], [1, PRIMARY]],
                 showscale=False,
                 line=dict(width=0),
                 cornerradius=4,
@@ -304,7 +305,7 @@ if not df.empty:
         xaxis=dict(showgrid=False, zeroline=False, tickfont=dict(size=11)),
         yaxis=dict(showgrid=True, gridcolor=PHI_COLORS["grid"], zeroline=False, title="Exercises mapped"),
         showlegend=False,
-        hoverlabel=dict(bgcolor="rgba(12,18,31,0.96)", bordercolor="rgba(50,216,255,0.28)", font_color=PHI_COLORS["ink"], font_size=13),
+        hoverlabel=dict(bgcolor=PANEL, bordercolor=PRIMARY_GHOST, font_color=PRIMARY, font_size=13),
     )
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 else:

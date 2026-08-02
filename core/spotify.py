@@ -6,6 +6,8 @@ import spotipy
 import streamlit as st
 from spotipy.oauth2 import SpotifyOAuth
 
+from design_tokens import *
+
 
 SPOTIFY_SCOPE = (
     "user-read-currently-playing "
@@ -98,8 +100,8 @@ def render_login(auth_url: str):
         <a href="{auth_url}" target="_self" style="text-decoration:none;">
             <div style="
                 background:transparent;
-                border:1px solid #33FF33;
-                color:#33FF33;
+                border:1px solid {PRIMARY};
+                color:{PRIMARY};
                 border-radius:0;
                 font-family:monospace;
                 text-transform:uppercase;
@@ -134,18 +136,18 @@ def render_now_playing(sp, playback):
     st.sidebar.markdown(
         f"""
         <div style="
-            background:rgba(21,29,44,.95);
-            border:1px solid rgba(148,163,184,.18);
+            background:{PANEL};
+            border:1px solid {BORDER_FAINT};
             border-radius:14px;
             padding:12px;
             margin-bottom:10px;">
             <div style="display:flex; gap:10px; align-items:center;">
                 <img src="{album_art}" width="54" height="54" style="border-radius:10px; object-fit:cover;">
                 <div style="min-width:0;">
-                    <div style="font-size:12px; color:#9aa7b8; font-weight:700;">Now playing</div>
-                    <div style="font-size:13px; color:#f8fafc; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{track_name}</div>
-                    <div style="font-size:11px; color:#34d399; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{artist_name}</div>
-                    <div style="font-size:10px; color:#9aa7b8;">{device_name}</div>
+                    <div style="font-size:12px; color:{PRIMARY_DIM}; font-weight:700;">Now playing</div>
+                    <div style="font-size:13px; color:{WHITE}; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{track_name}</div>
+                    <div style="font-size:11px; color:{PRIMARY}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{artist_name}</div>
+                    <div style="font-size:10px; color:{PRIMARY_DIM};">{device_name}</div>
                 </div>
             </div>
         </div>
@@ -201,7 +203,7 @@ def render_top_artists(sp):
             f"""
             <div style="display:flex; align-items:center; gap:8px; margin:6px 0;">
                 <img src="{image}" width="28" height="28" style="border-radius:50%; object-fit:cover;">
-                <span style="font-size:12px; color:#e5e7eb;">{name}</span>
+                <span style="font-size:12px; color:{PRIMARY_DIM};">{name}</span>
             </div>
             """,
             unsafe_allow_html=True,
@@ -225,7 +227,7 @@ def render_recent_tracks(sp):
         name = escape(track.get("name", "Unknown track"))
         artist = escape(track.get("artists", [{}])[0].get("name", "Unknown artist"))
         st.sidebar.markdown(
-            f"<div style='font-size:11px; color:#9aa7b8; margin-bottom:4px;'>{name} · {artist}</div>",
+            f"<div style='font-size:11px; color:{PRIMARY_DIM}; margin-bottom:4px;'>{name} · {artist}</div>",
             unsafe_allow_html=True,
         )
 

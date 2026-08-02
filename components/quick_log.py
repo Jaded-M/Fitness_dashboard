@@ -10,6 +10,8 @@ import database
 from components.widgets import check_new_pr
 from core.muscle_mapping import canonical_exercise_name, dedupe_exercise_names, exercise_muscle_profile
 
+from design_tokens import *
+
 # ── Constants ────────────────────────────────────────────────────────────────
 _SESSION_KEY = "phi_wl_session"
 _SPLITS = ["Upper A", "Lower A", "Upper B", "Lower B", "Full Body", "Conditioning", "Custom"]
@@ -185,7 +187,7 @@ def workout_dialog():
 
     if not exs:
         st.markdown(
-            "<p style='color:#64748b;font-size:0.88rem;padding:1rem 0;text-align:center'>"
+            f"<p style='color:{PRIMARY_DIM};font-size:0.88rem;padding:1rem 0;text-align:center'>"
             "No exercises added. Use <strong>Add Exercise</strong> below to begin.</p>",
             unsafe_allow_html=True,
         )
@@ -195,7 +197,7 @@ def workout_dialog():
 
     for i, ex in enumerate(exs):
         st.markdown(
-            f"<div style='border-top:1px solid rgba(148,163,184,0.15);margin:0.75rem 0 0.5rem'></div>",
+            f"<div style='border-top:1px solid {BORDER_FAINT};margin:0.75rem 0 0.5rem'></div>",
             unsafe_allow_html=True,
         )
 
@@ -281,7 +283,7 @@ def workout_dialog():
 
     # ── Footer ────────────────────────────────────────────────
     st.markdown(
-        "<div style='border-top:1px solid rgba(148,163,184,0.15);margin:1rem 0 0.5rem'></div>",
+        "<div style='border-top:1px solid " + BORDER_FAINT + ";margin:1rem 0 0.5rem'></div>",
         unsafe_allow_html=True,
     )
     fc1, fc2, fc3 = st.columns([2, 1, 1])
