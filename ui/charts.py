@@ -22,6 +22,8 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
+from copy import deepcopy
+
 from core.muscle_mapping import canonical_exercise_name, exercise_muscle_profile, normalize_group
 
 from design_tokens import (
@@ -30,6 +32,17 @@ from design_tokens import (
     CHART_LINE, CHART_BAR_GOOD, CHART_BAR_BAD, CHART_TARGET,
     CHART_SECONDARY, CHART_FILL, PLOTLY_THEME, FONT_MONO
 )
+
+
+def _layout(**overrides):
+    """Deep-merge PLOTLY_THEME with per-chart overrides so xaxis/yaxis never collide."""
+    layout = deepcopy(PLOTLY_THEME)
+    for key, value in overrides.items():
+        if isinstance(value, dict) and key in layout and isinstance(layout[key], dict):
+            layout[key].update(value)
+        else:
+            layout[key] = value
+    return layout
 
 
 def render_consistency_heatmap(workout_df, key: str = "consistency_heatmap"):
@@ -79,8 +92,7 @@ def render_consistency_heatmap(workout_df, key: str = "consistency_heatmap"):
         hoverlabel=dict(bgcolor=PANEL, bordercolor=PRIMARY_DIM, font=dict(color=PRIMARY))
     ))
     
-    fig.update_layout(
-        **PLOTLY_THEME,
+    fig.update_layout(_layout(
         height=160,
         margin=dict(t=0, b=0, l=40, r=0),
         yaxis=dict(
@@ -93,7 +105,7 @@ def render_consistency_heatmap(workout_df, key: str = "consistency_heatmap"):
             tickfont=dict(color=PRIMARY_DIM, size=10)
         ),
         xaxis=dict(showgrid=False, zeroline=False, showticklabels=False)
-    )
+    ))
     
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False}, key=key)
 
@@ -196,8 +208,7 @@ def render_progression_tab(real_df, all_exercises, key: str = "prog_ex", chart_k
     # ── Layout with dual Y-axes ────────────────────────────────
     # yaxis = left axis (Weight, 1RM)
     # yaxis2 = right axis (Volume), overlaid on top (overlaying="y")
-    fig.update_layout(
-        **PLOTLY_THEME,
+    fig.update_layout(_layout(
         title=dict(
             text=f"📈 {chosen} — Strength × Volume Evolution",
             font=dict(size=16, color=PRIMARY)
@@ -218,7 +229,7 @@ def render_progression_tab(real_df, all_exercises, key: str = "prog_ex", chart_k
         ),
         barmode="overlay",   # Bars render behind the lines
         hovermode="closest",
-    )
+    ))
     
     st.plotly_chart(fig, use_container_width=True, key=chart_key)
 
@@ -270,8 +281,7 @@ def render_split_volume_tab(real_df, key_prefix: str = "split_volume"):
         hovertemplate="<b>%{y}</b><br>%{x} sessions<extra></extra>",
     ))
     
-    fig_freq.update_layout(
-        **PLOTLY_THEME,
+    fig_freq.update_layout(_layout(
         title=dict(
             text=f"Training Split Frequency — {total_sessions} total sessions",
             font=dict(size=15, color=PRIMARY),
@@ -281,7 +291,7 @@ def render_split_volume_tab(real_df, key_prefix: str = "split_volume"):
         showlegend=False,
         height=max(180, len(split_sessions) * 54 + 80),
         margin=dict(l=10, r=80, t=55, b=30),
-    )
+    ))
     st.plotly_chart(fig_freq, use_container_width=True, key=f"{key_prefix}_freq")
 
     # ── 2. Weekly volume grouped by split — last 8 weeks ─────────────────────
@@ -318,8 +328,7 @@ def render_split_volume_tab(real_df, key_prefix: str = "split_volume"):
             hovertemplate=f"<b>{split}</b><br>Week of %{{x}}<br>Volume: %{{y:,.0f}} kg·reps<extra></extra>",
         ))
 
-    fig_weekly.update_layout(
-        **PLOTLY_THEME,
+    fig_weekly.update_layout(_layout(
         title=dict(
             text="Weekly Volume by Split — Last 8 Weeks",
             font=dict(size=15, color=PRIMARY),
@@ -333,7 +342,7 @@ def render_split_volume_tab(real_df, key_prefix: str = "split_volume"):
         ),
         height=380,
         margin=dict(l=10, r=10, t=72, b=50),
-    )
+    ))
     st.plotly_chart(fig_weekly, use_container_width=True, key=f"{key_prefix}_weekly")
 
 
@@ -379,10 +388,9 @@ def render_rpg_tab(real_df, best_df, key_prefix: str = "pr"):
             textposition="inside", insidetextanchor="middle", textfont=dict(color=PRIMARY, size=11)
         ))
         
-        fig_pr.update_layout(
-            **PLOTLY_THEME,
+        fig_pr.update_layout(_layout(
             title=dict(text="🏅 Top 10 — Personal Records by Max Weight", font=dict(size=16, color=AMBER)),
             xaxis_title="Max Weight (kg)",
             yaxis=dict(categoryorder="total ascending")
-        )
+        ))
         st.plotly_chart(fig_pr, use_container_width=True, key=f"{key_prefix}_chart")

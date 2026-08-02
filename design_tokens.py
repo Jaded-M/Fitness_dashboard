@@ -77,3 +77,19 @@ ANIM_FAST       = "0.2s"
 ANIM_MED        = "0.6s"
 ANIM_SLOW       = "1.2s"
 GLOW_PULSE      = "1.6s"
+
+# ── Layout helper ─────────────────────────────────────────────
+from copy import deepcopy
+
+def plotly_layout(**overrides) -> dict:
+    """Deep-merge PLOTLY_THEME with per-chart overrides.
+    Use this instead of **PLOTLY_THEME to avoid duplicate keyword arg errors.
+    Usage: fig.update_layout(plotly_layout(title=..., yaxis=dict(...)))
+    """
+    layout = deepcopy(PLOTLY_THEME)
+    for key, value in overrides.items():
+        if isinstance(value, dict) and key in layout and isinstance(layout[key], dict):
+            layout[key].update(value)
+        else:
+            layout[key] = value
+    return layout
