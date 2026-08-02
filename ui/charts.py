@@ -23,53 +23,13 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 from core.muscle_mapping import canonical_exercise_name, exercise_muscle_profile, normalize_group
-from ui import theme as chart_theme
-from ui.theme import PHI_COLORS
 
-# ==========================================
-# ELITE v2 — DESIGN TOKENS
-# ==========================================
-ACCENT_BLUE = PHI_COLORS["blue"]
-ACCENT_STEEL = PHI_COLORS["muted"]
-ACCENT_SURFACE = "#11161d"
-ACCENT_GREEN = PHI_COLORS["green"]
-ACCENT_ROSE = PHI_COLORS["rose"]
-ACCENT_PURPLE = PHI_COLORS["violet"]
-
-# Clean, professional layout for Elite v2
-CHART_LAYOUT = dict(
-    paper_bgcolor="rgba(0,0,0,0)",
-    plot_bgcolor="rgba(0,0,0,0)",
-    margin=dict(t=40, b=40, l=40, r=40),
-    font=dict(color="#94A3B8", family="Inter, sans-serif"),
-    xaxis=dict(
-        showgrid=True,
-        gridcolor="rgba(31, 41, 55, 0.5)", 
-        zeroline=False, 
-        tickfont=dict(size=10),
-        title_font=dict(size=11, color="#64748B")
-    ),
-    yaxis=dict(
-        gridcolor="rgba(31, 41, 55, 0.5)", 
-        zeroline=False, 
-        tickfont=dict(size=10),
-        title_font=dict(size=11, color="#64748B")
-    ),
-    hoverlabel=dict(
-        bgcolor="#ffffff",
-        font_size=13,
-        font_family="Inter, sans-serif"
-    ),
-    legend=dict(
-        bgcolor="rgba(0,0,0,0.2)",
-        bordercolor="rgba(255,255,255,0.05)",
-        font=dict(size=11)
-    )
+from design_tokens import (
+    PRIMARY, PRIMARY_DIM, PRIMARY_FAINT, PRIMARY_GHOST, PRIMARY_GLOW,
+    BG, PANEL, PANEL_2, AMBER, ROSE, BORDER_FAINT,
+    CHART_LINE, CHART_BAR_GOOD, CHART_BAR_BAD, CHART_TARGET,
+    CHART_SECONDARY, CHART_FILL, PLOTLY_THEME, FONT_MONO
 )
-
-CHART_CONFIG = chart_theme.CHART_CONFIG
-CHART_LAYOUT = chart_theme.CHART_LAYOUT
-
 
 
 def render_consistency_heatmap(workout_df, key: str = "consistency_heatmap"):
@@ -108,29 +68,21 @@ def render_consistency_heatmap(workout_df, key: str = "consistency_heatmap"):
     matrix = df.pivot(index="Day", columns="Week_Rank", values="counts").fillna(0)
     text_matrix = df.pivot(index="Day", columns="Week_Rank", values="Date").astype(str).replace("NaT", "")
     
-    colors = [
-        [0.0, "rgba(154, 167, 184, 0.08)"],
-        [0.01, "rgba(50, 216, 255, 0.18)"],
-        [0.55, "rgba(181, 108, 255, 0.58)"],
-        [1.0, "rgba(64, 242, 160, 0.95)"]
-    ]
-    
     fig = go.Figure(data=go.Heatmap(
         z=matrix.values,
         text=text_matrix.values,
         hovertemplate="Date: %{text}<br>Exercises logged: %{z}<extra></extra>",
-        colorscale=colors,
+        colorscale=[[0, PRIMARY_GHOST], [1, PRIMARY]],
         showscale=False,
         xgap=4,
         ygap=4,
-        hoverlabel=dict(bgcolor="rgba(12,18,31,0.96)", bordercolor="rgba(50,216,255,0.28)", font=dict(color=PHI_COLORS["ink"]))
+        hoverlabel=dict(bgcolor=PANEL, bordercolor=PRIMARY_DIM, font=dict(color=PRIMARY))
     ))
     
     fig.update_layout(
+        **PLOTLY_THEME,
         height=160,
         margin=dict(t=0, b=0, l=40, r=0),
-        plot_bgcolor="rgba(0,0,0,0)",
-        paper_bgcolor="rgba(0,0,0,0)",
         yaxis=dict(
             tickmode="array",
             tickvals=[0, 2, 4, 6],
@@ -138,12 +90,13 @@ def render_consistency_heatmap(workout_df, key: str = "consistency_heatmap"):
             autorange="reversed",
             showgrid=False,
             zeroline=False,
-            tickfont=dict(color=PHI_COLORS["muted"], size=10)
+            tickfont=dict(color=PRIMARY_DIM, size=10)
         ),
         xaxis=dict(showgrid=False, zeroline=False, showticklabels=False)
     )
     
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False}, key=key)
+
 
 def render_progression_tab(real_df, all_exercises, key: str = "prog_ex", chart_key: str = "progression_chart"):
     """
@@ -212,7 +165,7 @@ def render_progression_tab(real_df, all_exercises, key: str = "prog_ex", chart_k
         name="Volume (kg·reps)",
         marker=dict(
             color=daily["Volume"],
-            colorscale=[[0, "rgba(50,216,255,0.24)"], [0.55, "rgba(181,108,255,0.55)"], [1, "rgba(255,92,138,0.86)"]],
+            colorscale=[[0, PRIMARY_GHOST], [1, PRIMARY]],
             showscale=False,
             line=dict(width=0),
             cornerradius=4,
@@ -226,9 +179,9 @@ def render_progression_tab(real_df, all_exercises, key: str = "prog_ex", chart_k
     fig.add_trace(go.Scatter(
         x=daily["Date"], y=daily["Weight"],
         mode="lines+markers", name="Max Weight (kg)",
-        line=dict(color=ACCENT_BLUE, width=3),
-        marker=dict(size=8, color=ACCENT_BLUE, line=dict(color="rgba(246,251,255,0.75)", width=1.2)),
-        fill="tozeroy", fillcolor="rgba(50,216,255,0.08)",
+        line=dict(color=PRIMARY, width=3),
+        marker=dict(size=8, color=PRIMARY, line=dict(color=PRIMARY, width=1.2)),
+        fill="tozeroy", fillcolor=PRIMARY_GHOST,
         hovertemplate="<b>%{x|%d %b}</b><br>Max: %{y:.1f} kg<extra></extra>"
     ))
 
@@ -236,19 +189,18 @@ def render_progression_tab(real_df, all_exercises, key: str = "prog_ex", chart_k
     fig.add_trace(go.Scatter(
         x=daily["Date"], y=daily["E1RM"],
         mode="lines", name="Est. 1RM",
-        line=dict(color=PHI_COLORS["amber"], width=2, dash="dash"),
+        line=dict(color=CHART_TARGET, width=2, dash="dash"),
         hovertemplate="<b>%{x|%d %b}</b><br>E1RM: %{y:.1f} kg<extra></extra>"
     ))
 
     # ── Layout with dual Y-axes ────────────────────────────────
     # yaxis = left axis (Weight, 1RM)
     # yaxis2 = right axis (Volume), overlaid on top (overlaying="y")
-    # Create a copy of the base layout so we don't modify it permanently
-    layout = CHART_LAYOUT.copy()
-    layout.update(
+    fig.update_layout(
+        **PLOTLY_THEME,
         title=dict(
             text=f"📈 {chosen} — Strength × Volume Evolution",
-            font=dict(size=16, color=PHI_COLORS["ink"])
+            font=dict(size=16, color=PRIMARY)
         ),
         yaxis=dict(title="Weight / E1RM (kg)", side="left", showgrid=False),
         yaxis2=dict(
@@ -257,20 +209,18 @@ def render_progression_tab(real_df, all_exercises, key: str = "prog_ex", chart_k
             overlaying="y",
             showgrid=False,
             zeroline=False,
-            tickfont=dict(color=ACCENT_PURPLE),
+            tickfont=dict(color=PRIMARY_FAINT),
             rangemode="tozero"
         ),
         legend=dict(
             orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1,
-            bgcolor="rgba(12,18,31,0.72)", bordercolor="rgba(50,216,255,0.16)"
+            bgcolor=PANEL, bordercolor=PRIMARY_DIM
         ),
         barmode="overlay",   # Bars render behind the lines
         hovermode="closest",
     )
     
-    fig.update_layout(**layout)
-
-    st.plotly_chart(fig, use_container_width=True, config=CHART_CONFIG, key=chart_key)
+    st.plotly_chart(fig, use_container_width=True, key=chart_key)
 
 
 def render_split_volume_tab(real_df, key_prefix: str = "split_volume"):
@@ -285,8 +235,8 @@ def render_split_volume_tab(real_df, key_prefix: str = "split_volume"):
     """
     # ── Palette: enough distinct colours for up to 8 splits ──────────────────
     _PALETTE = [
-        PHI_COLORS["blue"], PHI_COLORS["violet"], PHI_COLORS["green"], PHI_COLORS["amber"],
-        PHI_COLORS["rose"], PHI_COLORS["orange"], "#6ee7ff", "#ff9bd2",
+        PRIMARY, PRIMARY_FAINT, PRIMARY_DIM, AMBER,
+        ROSE, CHART_TARGET, CHART_LINE, CHART_SECONDARY
     ]
 
     # ── 1. Session frequency per split ───────────────────────────────────────
@@ -316,14 +266,15 @@ def render_split_volume_tab(real_df, key_prefix: str = "split_volume"):
         ),
         text=split_sessions["Sessions"].apply(lambda v: f"{v} session{'s' if v != 1 else ''}"),
         textposition="outside",
-        textfont=dict(color=PHI_COLORS["muted"], size=11),
+        textfont=dict(color=PRIMARY_DIM, size=11),
         hovertemplate="<b>%{y}</b><br>%{x} sessions<extra></extra>",
     ))
-    layout_freq = CHART_LAYOUT.copy()
-    layout_freq.update(
+    
+    fig_freq.update_layout(
+        **PLOTLY_THEME,
         title=dict(
             text=f"Training Split Frequency — {total_sessions} total sessions",
-            font=dict(size=15, color=PHI_COLORS["ink"]),
+            font=dict(size=15, color=PRIMARY),
         ),
         xaxis=dict(title="Sessions", showgrid=False, zeroline=False),
         yaxis=dict(showgrid=False, zeroline=False),
@@ -331,8 +282,7 @@ def render_split_volume_tab(real_df, key_prefix: str = "split_volume"):
         height=max(180, len(split_sessions) * 54 + 80),
         margin=dict(l=10, r=80, t=55, b=30),
     )
-    fig_freq.update_layout(layout_freq)
-    st.plotly_chart(fig_freq, use_container_width=True, config=CHART_CONFIG, key=f"{key_prefix}_freq")
+    st.plotly_chart(fig_freq, use_container_width=True, key=f"{key_prefix}_freq")
 
     # ── 2. Weekly volume grouped by split — last 8 weeks ─────────────────────
     df_vol = real_df.copy()
@@ -368,24 +318,23 @@ def render_split_volume_tab(real_df, key_prefix: str = "split_volume"):
             hovertemplate=f"<b>{split}</b><br>Week of %{{x}}<br>Volume: %{{y:,.0f}} kg·reps<extra></extra>",
         ))
 
-    layout_weekly = CHART_LAYOUT.copy()
-    layout_weekly.update(
+    fig_weekly.update_layout(
+        **PLOTLY_THEME,
         title=dict(
             text="Weekly Volume by Split — Last 8 Weeks",
-            font=dict(size=15, color=PHI_COLORS["ink"]),
+            font=dict(size=15, color=PRIMARY),
         ),
         barmode="group",
-        yaxis=dict(title="Volume (kg·reps)", gridcolor=PHI_COLORS["grid"], zeroline=False),
+        yaxis=dict(title="Volume (kg·reps)", gridcolor=BORDER_FAINT, zeroline=False),
         xaxis=dict(tickangle=-20, showgrid=False, zeroline=False),
         legend=dict(
             orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1,
-            bgcolor="rgba(12,18,31,0.72)", bordercolor="rgba(50,216,255,0.16)",
+            bgcolor=PANEL, bordercolor=PRIMARY_GHOST,
         ),
         height=380,
         margin=dict(l=10, r=10, t=72, b=50),
     )
-    fig_weekly.update_layout(layout_weekly)
-    st.plotly_chart(fig_weekly, use_container_width=True, config=CHART_CONFIG, key=f"{key_prefix}_weekly")
+    st.plotly_chart(fig_weekly, use_container_width=True, key=f"{key_prefix}_weekly")
 
 
 def render_rpg_tab(real_df, best_df, key_prefix: str = "pr"):
@@ -421,21 +370,19 @@ def render_rpg_tab(real_df, best_df, key_prefix: str = "pr"):
             x=top10["Best Weight (kg)"], y=top10["Exercise"], orientation="h",
             marker=dict(
                 color=top10["Best Weight (kg)"],
-                colorscale=[[0, PHI_COLORS["blue"]], [0.55, PHI_COLORS["violet"]], [1, PHI_COLORS["rose"]]],
+                colorscale=[[0, PRIMARY_GHOST], [1, PRIMARY]],
                 showscale=False,
-                line=dict(color="rgba(246,251,255,0.16)", width=0.5)
+                line=dict(color=PRIMARY_GHOST, width=0.5)
             ),
             hovertemplate="<b>%{y}</b><br>Best: %{x:.1f} kg<extra></extra>",
             text=top10["Best Weight (kg)"].apply(lambda v: f"{v:.1f} kg"),
-            textposition="inside", insidetextanchor="middle", textfont=dict(color=PHI_COLORS["ink"], size=11)
+            textposition="inside", insidetextanchor="middle", textfont=dict(color=PRIMARY, size=11)
         ))
-        layout_pr = CHART_LAYOUT.copy()
-        layout_pr.update(dict(
-            title=dict(text="🏅 Top 10 — Personal Records by Max Weight", font=dict(size=16, color="#f1fa8c")),
+        
+        fig_pr.update_layout(
+            **PLOTLY_THEME,
+            title=dict(text="🏅 Top 10 — Personal Records by Max Weight", font=dict(size=16, color=AMBER)),
             xaxis_title="Max Weight (kg)",
             yaxis=dict(categoryorder="total ascending")
-        ))
-        fig_pr.update_layout(layout_pr)
-        st.plotly_chart(fig_pr, use_container_width=True, config=CHART_CONFIG, key=f"{key_prefix}_chart")
-
-
+        )
+        st.plotly_chart(fig_pr, use_container_width=True, key=f"{key_prefix}_chart")
