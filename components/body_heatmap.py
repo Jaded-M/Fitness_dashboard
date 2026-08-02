@@ -4,13 +4,14 @@ from html import escape
 
 import streamlit as st
 from streamlit.components.v1 import html as render_html
+from design_tokens import *
 
 
 STATUS_STYLE = {
-    "Ready": {"fill": "#40f2a0", "glow": "rgba(64,242,160,0.32)", "label": "Ready"},
-    "Manage load": {"fill": "#ffd166", "glow": "rgba(255,209,102,0.26)", "label": "Manage"},
-    "Fatigued": {"fill": "#ff5c8a", "glow": "rgba(255,92,138,0.28)", "label": "Fatigued"},
-    "Empty": {"fill": "#142033", "glow": "rgba(50,216,255,0.08)", "label": "Empty"},
+    "Ready": {"fill": STATUS_GOOD, "glow": STATUS_GOOD, "label": "Ready"},
+    "Manage load": {"fill": STATUS_WARN, "glow": STATUS_WARN, "label": "Manage"},
+    "Fatigued": {"fill": STATUS_RISK, "glow": STATUS_RISK, "label": "Fatigued"},
+    "Empty": {"fill": PANEL, "glow": PRIMARY_GHOST, "label": "Empty"},
 }
 
 
@@ -208,9 +209,9 @@ def generate_body_svg(readiness_status: list[dict]) -> str:
  style="width:100%;height:auto;display:block;">
   <defs>
     <radialGradient id="bgGlow" cx="50%" cy="20%" r="75%">
-      <stop offset="0%" stop-color="rgba(50,216,255,0.06)"/>
-      <stop offset="50%" stop-color="rgba(50,216,255,0.02)"/>
-      <stop offset="100%" stop-color="rgba(50,216,255,0)"/>
+      <stop offset="0%" stop-color="{PRIMARY_GHOST}"/>
+      <stop offset="50%" stop-color="{PRIMARY_GHOST}"/>
+      <stop offset="100%" stop-color="transparent"/>
     </radialGradient>
     <filter id="neonGlow">
       <feGaussianBlur stdDeviation="3" result="blur"/>
@@ -223,35 +224,35 @@ def generate_body_svg(readiness_status: list[dict]) -> str:
   </defs>
 
   <!-- Background -->
-  <rect x="0" y="0" width="540" height="500" fill="#000000"/>
+  <rect x="0" y="0" width="540" height="500" fill="{BG}"/>
   <rect x="16" y="16" width="508" height="468" rx="0" fill="url(#bgGlow)"
-   stroke="rgba(50,216,255,0.10)" stroke-width="1"/>
+   stroke="{BORDER_FAINT}" stroke-width="1"/>
 
   <!-- Scanlines -->
   <rect x="0" y="0" width="540" height="500" fill="url(#scanlines)" opacity="0.04"
-   style="background-image:repeating-linear-gradient(0deg,transparent,transparent 1px,rgba(50,216,255,0.03) 1px,rgba(50,216,255,0.03) 2px);background-size:100% 2px"/>
+   style="background-image:repeating-linear-gradient(0deg,transparent,transparent 1px,{PRIMARY_GHOST} 1px,{PRIMARY_GHOST} 2px);background-size:100% 2px"/>
 
   <!-- Center divider -->
-  <line x1="270" y1="56" x2="270" y2="456" stroke="rgba(50,216,255,0.08)" stroke-dasharray="3 6"/>
+  <line x1="270" y1="56" x2="270" y2="456" stroke="{BORDER_FAINT}" stroke-dasharray="3 6"/>
 
   <!-- FRONT / BACK labels -->
-  <text x="135" y="46" text-anchor="middle" fill="rgba(50,216,255,0.50)"
+  <text x="135" y="46" text-anchor="middle" fill="{PRIMARY_DIM}"
    font-family="'IBM Plex Mono','JetBrains Mono',monospace" font-size="10"
    font-weight="600" letter-spacing="0.15em">FRONT</text>
-  <text x="405" y="46" text-anchor="middle" fill="rgba(50,216,255,0.50)"
+  <text x="405" y="46" text-anchor="middle" fill="{PRIMARY_DIM}"
    font-family="'IBM Plex Mono','JetBrains Mono',monospace" font-size="10"
    font-weight="600" letter-spacing="0.15em">BACK</text>
 
   <!-- Heads -->
-  <circle cx="155" cy="82" r="22" fill="rgba(50,216,255,0.06)"
-   stroke="rgba(50,216,255,0.12)" stroke-width="1.2"/>
-  <circle cx="385" cy="82" r="22" fill="rgba(50,216,255,0.06)"
-   stroke="rgba(50,216,255,0.12)" stroke-width="1.2"/>
+  <circle cx="155" cy="82" r="22" fill="{PRIMARY_GHOST}"
+   stroke="{BORDER_FAINT}" stroke-width="1.2"/>
+  <circle cx="385" cy="82" r="22" fill="{PRIMARY_GHOST}"
+   stroke="{BORDER_FAINT}" stroke-width="1.2"/>
 
   <!-- Body silhouettes -->
   <g opacity="0.06">
-    <path d="M135 104 C150 104 162 110 168 124 L168 450 L135 450 Z" fill="#32d8ff"/>
-    <path d="M405 104 C390 104 378 110 372 124 L372 450 L405 450 Z" fill="#32d8ff"/>
+    <path d="M135 104 C150 104 162 110 168 124 L168 450 L135 450 Z" fill="{PRIMARY}"/>
+    <path d="M405 104 C390 104 378 110 372 124 L372 450 L405 450 Z" fill="{PRIMARY}"/>
   </g>
 
   <!-- Front muscles -->
@@ -262,43 +263,43 @@ def generate_body_svg(readiness_status: list[dict]) -> str:
 
   <!-- Labels -->
   <g font-family="'IBM Plex Mono','JetBrains Mono',monospace" font-size="8"
-   fill="rgba(50,216,255,0.45)" font-weight="600" letter-spacing="0.10em">
-    <circle cx="34" cy="145" r="2.5" fill="#32d8ff" filter="url(#dotGlow)"/>
+   fill="{PRIMARY_DIM}" font-weight="600" letter-spacing="0.10em">
+    <circle cx="34" cy="145" r="2.5" fill="{PRIMARY}" filter="url(#dotGlow)"/>
     <text x="42" y="148">Shoulders</text>
-    <circle cx="34" cy="200" r="2.5" fill="#32d8ff" filter="url(#dotGlow)"/>
+    <circle cx="34" cy="200" r="2.5" fill="{PRIMARY}" filter="url(#dotGlow)"/>
     <text x="42" y="203">Biceps</text>
-    <circle cx="34" cy="255" r="2.5" fill="#32d8ff" filter="url(#dotGlow)"/>
+    <circle cx="34" cy="255" r="2.5" fill="{PRIMARY}" filter="url(#dotGlow)"/>
     <text x="42" y="258">Forearms</text>
-    <circle cx="34" cy="330" r="2.5" fill="#32d8ff" filter="url(#dotGlow)"/>
+    <circle cx="34" cy="330" r="2.5" fill="{PRIMARY}" filter="url(#dotGlow)"/>
     <text x="42" y="333">Quads</text>
-    <circle cx="34" cy="410" r="2.5" fill="#32d8ff" filter="url(#dotGlow)"/>
+    <circle cx="34" cy="410" r="2.5" fill="{PRIMARY}" filter="url(#dotGlow)"/>
     <text x="42" y="413">Calves</text>
-    <circle cx="500" cy="145" r="2.5" fill="#32d8ff" filter="url(#dotGlow)"/>
+    <circle cx="500" cy="145" r="2.5" fill="{PRIMARY}" filter="url(#dotGlow)"/>
     <text x="508" y="148" text-anchor="end">Back</text>
-    <circle cx="500" cy="200" r="2.5" fill="#32d8ff" filter="url(#dotGlow)"/>
+    <circle cx="500" cy="200" r="2.5" fill="{PRIMARY}" filter="url(#dotGlow)"/>
     <text x="508" y="203" text-anchor="end">Triceps</text>
-    <circle cx="500" cy="255" r="2.5" fill="#32d8ff" filter="url(#dotGlow)"/>
+    <circle cx="500" cy="255" r="2.5" fill="{PRIMARY}" filter="url(#dotGlow)"/>
     <text x="508" y="258" text-anchor="end">Forearms</text>
-    <circle cx="500" cy="330" r="2.5" fill="#32d8ff" filter="url(#dotGlow)"/>
+    <circle cx="500" cy="330" r="2.5" fill="{PRIMARY}" filter="url(#dotGlow)"/>
     <text x="508" y="333" text-anchor="end">Hamstrings</text>
-    <circle cx="500" cy="410" r="2.5" fill="#32d8ff" filter="url(#dotGlow)"/>
+    <circle cx="500" cy="410" r="2.5" fill="{PRIMARY}" filter="url(#dotGlow)"/>
     <text x="508" y="413" text-anchor="end">Calves</text>
-    <circle cx="270" cy="145" r="2.5" fill="#32d8ff" filter="url(#dotGlow)"/>
+    <circle cx="270" cy="145" r="2.5" fill="{PRIMARY}" filter="url(#dotGlow)"/>
     <text x="278" y="148">Chest</text>
-    <circle cx="270" cy="210" r="2.5" fill="#32d8ff" filter="url(#dotGlow)"/>
+    <circle cx="270" cy="210" r="2.5" fill="{PRIMARY}" filter="url(#dotGlow)"/>
     <text x="278" y="213">Core</text>
-    <circle cx="270" cy="305" r="2.5" fill="#32d8ff" filter="url(#dotGlow)"/>
+    <circle cx="270" cy="305" r="2.5" fill="{PRIMARY}" filter="url(#dotGlow)"/>
     <text x="278" y="308">Glutes</text>
   </g>
 
   <!-- Legend -->
   <g font-family="'IBM Plex Mono','JetBrains Mono',monospace" font-size="7"
-   fill="rgba(50,216,255,0.35)" letter-spacing="0.05em">
-    <rect x="22" y="460" width="6" height="6" fill="#32d8ff" opacity="0.7"/>
+   fill="{PRIMARY_DIM}" letter-spacing="0.05em">
+    <rect x="22" y="460" width="6" height="6" fill="{STATUS_GOOD}" opacity="0.7"/>
     <text x="32" y="465">{ready} ready</text>
-    <rect x="82" y="460" width="6" height="6" fill="#e0b45d" opacity="0.7"/>
+    <rect x="82" y="460" width="6" height="6" fill="{STATUS_WARN}" opacity="0.7"/>
     <text x="92" y="465">{manage} manage</text>
-    <rect x="158" y="460" width="6" height="6" fill="#ef6b75" opacity="0.7"/>
+    <rect x="158" y="460" width="6" height="6" fill="{STATUS_RISK}" opacity="0.7"/>
     <text x="168" y="465">{fatigued} fatigued</text>
   </g>
 </svg>"""
@@ -319,7 +320,7 @@ def render_svg_body_heatmap(readiness_status: list[dict]) -> None:
     fatigued = sum(1 for r in readiness_status if r.get("status") == "Fatigued")
 
     html = f"""<div id="phi-heatmap" style="
-  background:#000000; border:1px solid rgba(50,216,255,0.10); padding:0;
+  background:{BG}; border:1px solid {BORDER_FAINT}; padding:0;
   position:relative; overflow:hidden;
   font-family:'IBM Plex Mono','JetBrains Mono',monospace;">
   <div style="
@@ -327,26 +328,26 @@ def render_svg_body_heatmap(readiness_status: list[dict]) -> None:
     padding:12px 18px 0 18px;">
     <div>
       <div style="
-        font-size:9px; color:rgba(50,216,255,0.50);
+        font-size:9px; color:{PRIMARY_DIM};
         letter-spacing:0.12em; text-transform:uppercase;
         margin-bottom:2px;">Muscle atlas</div>
       <div style="
-        font-size:15px; font-weight:700; color:#32d8ff;
+        font-size:15px; font-weight:700; color:{PRIMARY};
         letter-spacing:-0.02em;">Recovery Map</div>
     </div>
     <div style="display:flex; gap:8px; align-items:center;">
       <span style="display:inline-flex;align-items:center;gap:4px;
-        color:rgba(50,216,255,0.50);font-size:9px;">
-        <i style="width:6px;height:6px;background:#32d8ff;display:inline-block;
-        box-shadow:0 0 8px rgba(50,216,255,0.5);"></i>{ready} ready</span>
+        color:{PRIMARY_DIM};font-size:9px;">
+        <i style="width:6px;height:6px;background:{STATUS_GOOD};display:inline-block;
+        box-shadow:0 0 8px {STATUS_GOOD};"></i>{ready} ready</span>
       <span style="display:inline-flex;align-items:center;gap:4px;
-        color:rgba(224,180,93,0.50);font-size:9px;">
-        <i style="width:6px;height:6px;background:#e0b45d;display:inline-block;
-        box-shadow:0 0 8px rgba(224,180,93,0.5);"></i>{manage} manage</span>
+        color:{PRIMARY_DIM};font-size:9px;">
+        <i style="width:6px;height:6px;background:{STATUS_WARN};display:inline-block;
+        box-shadow:0 0 8px {STATUS_WARN};"></i>{manage} manage</span>
       <span style="display:inline-flex;align-items:center;gap:4px;
-        color:rgba(239,107,117,0.50);font-size:9px;">
-        <i style="width:6px;height:6px;background:#ef6b75;display:inline-block;
-        box-shadow:0 0 8px rgba(239,107,117,0.5);"></i>{fatigued} fatigued</span>
+        color:{PRIMARY_DIM};font-size:9px;">
+        <i style="width:6px;height:6px;background:{STATUS_RISK};display:inline-block;
+        box-shadow:0 0 8px {STATUS_RISK};"></i>{fatigued} fatigued</span>
     </div>
   </div>
 
@@ -354,23 +355,23 @@ def render_svg_body_heatmap(readiness_status: list[dict]) -> None:
 
   <div id="phi-detail" style="
     display:none; margin:0 16px 14px 16px;
-    border:1px solid rgba(50,216,255,0.12);
-    background:#0d110d; padding:12px 16px;">
+    border:1px solid {BORDER_FAINT};
+    background:{PANEL}; padding:12px 16px;">
     <div id="phi-detail-name" style="
-      font-size:13px; font-weight:700; color:#32d8ff;
+      font-size:13px; font-weight:700; color:{PRIMARY};
       letter-spacing:0.05em; margin-bottom:8px;"></div>
     <div style="
-      height:4px; background:rgba(50,216,255,0.08);
+      height:4px; background:{PRIMARY_GHOST};
       margin-bottom:8px;">
       <div id="phi-detail-bar" style="
-        height:100%; width:0%; background:#32d8ff;
+        height:100%; width:0%; background:{PRIMARY};
         transition:width 400ms ease;"></div>
     </div>
     <div style="
       display:flex; gap:16px; font-size:10px;
-      color:rgba(50,216,255,0.45);">
+      color:{PRIMARY_DIM};">
       <span>Readiness <strong id="phi-readiness"
-        style="color:#32d8ff;font-weight:700;">0%</strong></span>
+        style="color:{PRIMARY};font-weight:700;">0%</strong></span>
     </div>
   </div>
 
@@ -444,4 +445,3 @@ def render_svg_body_heatmap(readiness_status: list[dict]) -> None:
   </script>
 </div>"""
     render_html(html, height=600, scrolling=False)
-
